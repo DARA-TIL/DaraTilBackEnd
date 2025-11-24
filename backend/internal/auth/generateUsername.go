@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// for cases if username is created, but login with google
 func normalizeUsername(base string) string {
 	base = strings.TrimSpace(base)
 	base = strings.ToLower(base)
@@ -17,11 +18,9 @@ func normalizeUsername(base string) string {
 	return base
 }
 
-// Генерим уникальный ник: base, base_1, base_2, ...
 func generateUniqueUsername(base string) string {
 	base = normalizeUsername(base)
 
-	// сначала пробуем без суффикса
 	username := base
 	var count int64
 	database.DB.Model(&models.User{}).
@@ -32,7 +31,6 @@ func generateUniqueUsername(base string) string {
 		return username
 	}
 
-	// если занят - перебираем суффиксы
 	for i := 1; i <= 50; i++ {
 		candidate := fmt.Sprintf("%s_%d", base, i)
 		count = 0
@@ -45,6 +43,5 @@ func generateUniqueUsername(base string) string {
 		}
 	}
 
-	// на всякий пожарный fallback
 	return fmt.Sprintf("%s_%d", base, count+1)
 }
