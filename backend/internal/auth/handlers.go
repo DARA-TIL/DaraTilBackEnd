@@ -4,9 +4,12 @@ import (
 	"DaraTilBackEnd/backend/internal/config"
 	"DaraTilBackEnd/backend/internal/database"
 	"DaraTilBackEnd/backend/internal/models"
+	"context"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/markbates/goth/gothic"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -96,6 +99,66 @@ func (h *Handler) Login(c *gin.Context) {
 	resp := AuthResponse{
 		AccessToken:  token.AccessToken,
 		RefreshToken: token.RefreshToken,
+		User:         user,
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *Handler) GoogleLogin(c *gin.Context) {
+	req := c.Request.WithContext(context.WithValue(c.Request.Context(), "provider", "google"))
+	c.Request = req
+	gothic.BeginAuthHandler(c.Writer, c.Request)
+}
+
+func (h *Handler) GoogleCallback(c *gin.Context) {
+	req := c.Request.WithContext(context.WithValue(c.Request.Context(), "provider", "google"))
+	c.Request = req
+	gUser, err := gothic.CompleteUserAuth(c.Writer, c.Request)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if gUser.Email == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No Email Provided"})
+		return
+	}
+	var user models.User
+	if err := database.DB.Where("email = ?", gUser.Email).First(&user).Error; err != nil {
+		baseUsername := gUser.NickName
+		if baseUsername == "" {
+			parts := strings.Split(gUser.Email, "@")
+			if len(parts) > 0 {
+				baseUsername = parts[0]
+			} else {
+				baseUsername = "user"
+			}
+		}
+
+		username := generateUniqueUsername(baseUsername)
+		user = models.User{
+			Username:     username,
+			Email:        gUser.Email,
+			Password:     "",
+			Avatar:       gUser.AvatarURL,
+			Role:         "user",
+			Level:        0,
+			Experience:   0,
+			AuthProvider: "google",
+		}
+		if err := database.DB.Create(&user).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create user"})
+			return
+		}
+	}
+	tokens, err := GenerateTokenPair(user, h.cfg)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create tokens"})
+		return
+	}
+
+	resp := AuthResponse{
+		AccessToken:  tokens.AccessToken,
+		RefreshToken: tokens.RefreshToken,
 		User:         user,
 	}
 	c.JSON(http.StatusOK, resp)

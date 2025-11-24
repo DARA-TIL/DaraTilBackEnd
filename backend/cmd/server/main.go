@@ -11,16 +11,21 @@ import (
 )
 
 func main() {
+	//
+	//
+	//Config
 	_ = godotenv.Load()
 	cfg := config.Load()
+	cfg.SetupGoogleOAuth()
 	database.Connect(cfg)
 	r := gin.Default()
-	api := r.Group("/api")
+	cfg.SetupSessionStore()
 
 	//Handlers
 	authHandler := auth.NewHandler(cfg)
 
 	//Groups
+	api := r.Group("/api")
 	authGroup := api.Group("/auth")
 
 	auth.RegisterRoutes(authGroup, authHandler)
