@@ -4,12 +4,12 @@ import "gorm.io/gorm"
 
 type User struct {
 	gorm.Model
-	Username     string `gorm:"unique; not null"`
-	Email        string `gorm:"unique; not null"`
-	Password     string `gorm:"not null"`
-	Avatar       string
-	Role         string `gorm:"not null"`
-	Level        int    `gorm:"not null; default:1"`
-	Experience   int    `gorm:"not null; default:0"`
-	AuthProvider string `gorm:"not null; "`
+	Username     string `gorm:"unique; not null" json:"username"`
+	Email        string `gorm:"unique; not null" json:"email"`
+	Password     string `gorm:"not null" json:"password"`
+	Avatar       string `json:"avatar"`
+	Role         string `gorm:"not null" json:"role"`
+	Level        int    `gorm:"not null; default:0" json:"level"`
+	Experience   int    `gorm:"not null; default:0" json:"experience"`
+	AuthProvider string `gorm:"not null; " json:"authProvider"`
 }
