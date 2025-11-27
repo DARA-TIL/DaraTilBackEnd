@@ -5,6 +5,7 @@ import (
 	"DaraTilBackEnd/backend/internal/database"
 	"DaraTilBackEnd/backend/internal/models"
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -104,29 +105,30 @@ func (h *Handler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (h *Handler) GoogleLogin(c *gin.Context) {
-	req := c.Request.WithContext(context.WithValue(c.Request.Context(), "provider", "google"))
+func (h *Handler) OauthLogin(c *gin.Context, provider string) {
+	req := c.Request.WithContext(context.WithValue(c.Request.Context(), "provider", provider))
 	c.Request = req
 	gothic.BeginAuthHandler(c.Writer, c.Request)
 }
 
-func (h *Handler) GoogleCallback(c *gin.Context) {
-	req := c.Request.WithContext(context.WithValue(c.Request.Context(), "provider", "google"))
+func (h *Handler) OauthCallback(c *gin.Context, provider string) {
+	req := c.Request.WithContext(context.WithValue(c.Request.Context(), "provider", provider))
 	c.Request = req
-	gUser, err := gothic.CompleteUserAuth(c.Writer, c.Request)
+	userAuth, err := gothic.CompleteUserAuth(c.Writer, c.Request)
+	fmt.Println(userAuth)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if gUser.Email == "" {
+	if userAuth.Email == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No Email Provided"})
 		return
 	}
 	var user models.User
-	if err := database.DB.Where("email = ?", gUser.Email).First(&user).Error; err != nil {
-		baseUsername := gUser.NickName
+	if err := database.DB.Where("email = ?", userAuth.Email).First(&user).Error; err != nil {
+		baseUsername := userAuth.NickName
 		if baseUsername == "" {
-			parts := strings.Split(gUser.Email, "@")
+			parts := strings.Split(userAuth.Email, "@")
 			if len(parts) > 0 {
 				baseUsername = parts[0]
 			} else {
@@ -137,19 +139,24 @@ func (h *Handler) GoogleCallback(c *gin.Context) {
 		username := generateUniqueUsername(baseUsername)
 		user = models.User{
 			Username:     username,
-			Email:        gUser.Email,
+			Email:        userAuth.Email,
 			Password:     "",
-			Avatar:       gUser.AvatarURL,
+			Avatar:       userAuth.AvatarURL,
 			Role:         "user",
 			Level:        0,
 			Experience:   0,
-			AuthProvider: "google",
+			AuthProvider: provider,
 		}
 		if err := database.DB.Create(&user).Error; err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create user"})
 			return
 		}
 	}
+	if user.AuthProvider != provider {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User already signed in with another method"})
+		return
+	}
+	fmt.Println(user.AuthProvider, provider)
 	tokens, err := GenerateTokenPair(user, h.cfg)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create tokens"})

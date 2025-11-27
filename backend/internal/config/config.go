@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
+	"github.com/markbates/goth/providers/github"
 	"github.com/markbates/goth/providers/google"
 )
 
@@ -22,6 +23,8 @@ type Config struct {
 	JwtRefreshExpires  int
 	GoogleClientID     string
 	GoogleClientSecret string
+	GithubClientID     string
+	GithubClientSecret string
 	SessionSecret      string
 }
 
@@ -36,6 +39,8 @@ func Load() *Config {
 		JwtRefreshExpires:  MustEnvInt("JWT_REFRESH_EXPIRES_HOURS"),
 		GoogleClientID:     MustEnvStr("GOOGLE_CLIENT_ID"),
 		GoogleClientSecret: MustEnvStr("Google_CLIENT_SECRET"),
+		GithubClientID:     MustEnvStr("Github_CLIENT_ID"),
+		GithubClientSecret: MustEnvStr("Github_CLIENT_SECRET"),
 		SessionSecret:      MustEnvStr("SESSION_SECRET"),
 	}
 	return cfg
@@ -76,6 +81,18 @@ func (c *Config) SetupGoogleOAuth() {
 		),
 	)
 }
+
+func (c *Config) SetupGithubOAuth() {
+	callbackURL := c.BaseURL + "/api/auth/github/callback"
+	goth.UseProviders(
+		github.New(
+			c.GithubClientID,
+			c.GithubClientSecret,
+			callbackURL,
+			"user"),
+	)
+}
+
 func (c *Config) SetupSessionStore() {
 	secret := c.SessionSecret
 	if secret == "" {

@@ -17,6 +17,7 @@ func main() {
 	_ = godotenv.Load()
 	cfg := config.Load()
 	cfg.SetupGoogleOAuth()
+	cfg.SetupGithubOAuth()
 	database.Connect(cfg)
 	r := gin.Default()
 	cfg.SetupSessionStore()
