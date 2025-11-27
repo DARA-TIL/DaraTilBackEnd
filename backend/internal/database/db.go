@@ -17,7 +17,7 @@ func Connect(cfg *config.Config) {
 	}
 
 	//migrations
-	if err := db.AutoMigrate(&models.User{}); err != nil {
+	if err := db.AutoMigrate(&models.User{}, &models.Folklore{}); err != nil {
 		panic("failed to migrate database")
 	}
 	DB = db
