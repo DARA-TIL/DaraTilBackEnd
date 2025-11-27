@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"net/smtp"
 	"os"
 	"strconv"
 
@@ -25,6 +26,8 @@ type Config struct {
 	GoogleClientSecret string
 	GithubClientID     string
 	GithubClientSecret string
+	SmtpUser           string
+	SmtpPassword       string
 	SessionSecret      string
 }
 
@@ -41,6 +44,8 @@ func Load() *Config {
 		GoogleClientSecret: MustEnvStr("Google_CLIENT_SECRET"),
 		GithubClientID:     MustEnvStr("Github_CLIENT_ID"),
 		GithubClientSecret: MustEnvStr("Github_CLIENT_SECRET"),
+		SmtpUser:           MustEnvStr("SMTP_USER"),
+		SmtpPassword:       MustEnvStr("SMTP_PASSWORD"),
 		SessionSecret:      MustEnvStr("SESSION_SECRET"),
 	}
 	return cfg
@@ -98,12 +103,17 @@ func (c *Config) SetupSessionStore() {
 	if secret == "" {
 		log.Fatal("SESSION_SECRET is not set")
 	}
-
-	// создаём cookie-store
 	store := sessions.NewCookieStore([]byte(secret))
 	store.Options.HttpOnly = true
-	store.Options.Secure = false // в проде поставим true (HTTPS)
-	store.Options.SameSite = 2   // SameSite=Lax
-
+	store.Options.Secure = false
+	store.Options.SameSite = 2
 	gothic.Store = store
+}
+
+func (c *Config) SmtpAuth() smtp.Auth {
+	smtpHost := "smtp.gmail.com"
+	username := c.SmtpUser
+	password := c.SmtpPassword
+	auth := smtp.PlainAuth("", username, password, smtpHost)
+	return auth
 }
