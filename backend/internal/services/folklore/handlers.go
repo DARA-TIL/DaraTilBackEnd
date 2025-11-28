@@ -118,5 +118,9 @@ func (h *Handler) GetFolkloreByType(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
+	if len(folklore) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Folklore not found"})
+		return
+	}
 	c.JSON(http.StatusOK, folklore)
 }

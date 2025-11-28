@@ -6,7 +6,9 @@ import (
 	auth2 "DaraTilBackEnd/backend/internal/services/auth"
 	"DaraTilBackEnd/backend/internal/services/folklore"
 	"log"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -22,6 +24,27 @@ func main() {
 	database.Connect(cfg)
 	r := gin.Default()
 	cfg.SetupSessionStore()
+
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowCredentials: false,
+		AllowMethods: []string{
+			"GET",
+			"POST",
+			"PUT",
+			"PATCH",
+			"DELETE",
+		},
+		AllowHeaders: []string{
+			"Authorization",
+			"Content-Type",
+			"X-CSRF-Token",
+		},
+		ExposeHeaders: []string{
+			"Content-Length",
+		},
+		MaxAge: 12 * time.Hour,
+	}))
 
 	//Handlers
 	authHandler := auth2.NewHandler(cfg)
