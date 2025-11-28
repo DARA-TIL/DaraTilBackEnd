@@ -26,8 +26,8 @@ func main() {
 	cfg.SetupSessionStore()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "*"},
-		AllowCredentials: false,
+		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:8080"},
+		AllowCredentials: true,
 		AllowMethods: []string{
 			"GET",
 			"POST",
