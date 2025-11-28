@@ -10,9 +10,14 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/markbates/goth/gothic"
 	"golang.org/x/crypto/bcrypt"
 )
+
+type RefreshRequest struct {
+	RefreshToken string `json:"refreshToken"`
+}
 
 type RegisterRequest struct {
 	Username string `json:"username" binding:"required,min=3"`
@@ -257,5 +262,45 @@ func (h *Handler) OauthCallback(c *gin.Context, provider string) {
 	}
 
 	log.Printf("[OAUTH-CALLBACK] Responding 200 OK for user id=%d", user.ID)
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *Handler) RefreshToken(c *gin.Context) {
+	var body RefreshRequest
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	claims := &CustomClaims{}
+	token, err := jwt.ParseWithClaims(body.RefreshToken, claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrTokenUnverifiable
+		}
+		return []byte(h.cfg.JwtRefreshSecret), nil
+	})
+	if err != nil || !token.Valid {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if claims.Subject != "refresh" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid refresh token"})
+		return
+	}
+
+	var user models.User
+	if err := database.DB.Find(&user, claims.UserID).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found in DB"})
+		return
+	}
+	tokens, err := GenerateTokenPair(user, h.cfg)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	resp := AuthResponse{
+		AccessToken:  tokens.AccessToken,
+		RefreshToken: tokens.RefreshToken,
+		User:         user,
+	}
 	c.JSON(http.StatusOK, resp)
 }

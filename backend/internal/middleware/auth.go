@@ -2,6 +2,8 @@ package middleware
 
 import (
 	"DaraTilBackEnd/backend/internal/config"
+	"DaraTilBackEnd/backend/internal/database"
+	"DaraTilBackEnd/backend/internal/models"
 	"DaraTilBackEnd/backend/internal/services/auth"
 	"fmt"
 	"log"
@@ -105,6 +107,14 @@ func RequireRole(requiredRoles ...string) gin.HandlerFunc {
 		}
 
 		claims, ok := val.(*auth.CustomClaims)
+		user, err := GetCurrentUser(c)
+		if err != nil {
+			log.Println("[REQUIRE ROLE] No user in context")
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "No Authorization header"})
+			c.Abort()
+			return
+		}
+
 		if !ok {
 			log.Println("[REQUIRE ROLE] Invalid user claims type in context")
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header"})
@@ -112,10 +122,10 @@ func RequireRole(requiredRoles ...string) gin.HandlerFunc {
 			return
 		}
 
-		log.Printf("[REQUIRE ROLE] User role=%s, required=%v\n", claims.Role, requiredRoles)
+		log.Printf("[REQUIRE ROLE] User role=%s, required=%v\n", user.Role, requiredRoles)
 
 		for _, role := range requiredRoles {
-			if role == claims.Role {
+			if role == user.Role {
 				log.Println("[REQUIRE ROLE] Access granted")
 				c.Next()
 				return
@@ -128,4 +138,18 @@ func RequireRole(requiredRoles ...string) gin.HandlerFunc {
 		c.Abort()
 		return
 	}
+}
+
+func GetCurrentUser(c *gin.Context) (*models.User, error) {
+	claims, ok := GetUserClaims(c)
+	if !ok {
+		return nil, fmt.Errorf("no user claims in context")
+	}
+
+	var user models.User
+	if err := database.DB.First(&user, claims.UserID).Error; err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
