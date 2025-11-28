@@ -9,12 +9,12 @@ import (
 )
 
 type TokenPair struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
 }
 
 type CustomClaims struct {
-	UserID   uint   `json:"user_id"`
+	UserID   uint   `json:"userId"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Role     string `json:"role"`
