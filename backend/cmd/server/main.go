@@ -3,6 +3,7 @@ package main
 import (
 	"DaraTilBackEnd/backend/internal/config"
 	"DaraTilBackEnd/backend/internal/database"
+	"DaraTilBackEnd/backend/internal/middleware"
 	auth2 "DaraTilBackEnd/backend/internal/services/auth"
 	"DaraTilBackEnd/backend/internal/services/folklore"
 	"log"
@@ -56,6 +57,7 @@ func main() {
 	auth2.RegisterRoutes(authGroup, authHandler)
 
 	folkloreGroup := api.Group("/folklore")
+	folkloreGroup.Use(middleware.AuthMiddleware(cfg))
 	folklore.RegisterRoutes(folkloreGroup, folkloreHandler)
 
 	log.Printf("server started on :%s", cfg.Port)

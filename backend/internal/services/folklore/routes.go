@@ -1,10 +1,13 @@
 package folklore
 
-import "github.com/gin-gonic/gin"
+import (
+	"DaraTilBackEnd/backend/internal/middleware"
+
+	"github.com/gin-gonic/gin"
+)
 
 func RegisterRoutes(r *gin.RouterGroup, h *Handler) {
-
-	r.POST("/create", h.CreateFolklore)
+	r.POST("/create", middleware.RequireRole("admin"), h.CreateFolklore)
 	r.GET("/getAll", h.GetFolkloreList)
 	r.GET("/getById/:id", h.GetFolkloreById)
 	r.PATCH("/update/:id", h.UpdateFolklore)
