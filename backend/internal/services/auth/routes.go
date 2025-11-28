@@ -14,6 +14,7 @@ var allowedProviders = map[string]bool{
 func RegisterRoutes(r *gin.RouterGroup, h *Handler) {
 	r.POST("/login", h.Login)
 	r.POST("/register", h.Register)
+	r.POST("/refresh", h.RefreshToken)
 	r.GET(":provider", func(c *gin.Context) {
 		provider := c.Param("provider")
 		if !allowedProviders[provider] {
