@@ -5,8 +5,10 @@ import (
 	"DaraTilBackEnd/backend/internal/database"
 	"DaraTilBackEnd/backend/internal/models"
 	"context"
+	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -255,31 +257,52 @@ func (h *Handler) OauthCallback(c *gin.Context, provider string) {
 
 	log.Printf("[OAUTH-CALLBACK] Tokens generated successfully for user id=%d", user.ID)
 
-	resp := AuthResponse{
-		AccessToken:  tokens.AccessToken,
-		RefreshToken: tokens.RefreshToken,
-		User:         user,
-	}
+	maxAgeSeconds := h.cfg.JwtAccessExpires * 3600
+	secure := true
+	httpOnly := true
+	c.SetCookie(
+		"refreshToken",      // имя cookie
+		tokens.RefreshToken, // значение
+		maxAgeSeconds,       // maxAge (секунды)
+		"/",                 // path
+		"",                  // domain ("" = текущий домен)
+		secure,              // secure
+		httpOnly,            // httpOnly
+	)
 
-	log.Printf("[OAUTH-CALLBACK] Responding 200 OK for user id=%d", user.ID)
-	c.JSON(http.StatusOK, resp)
+	log.Printf("[OAUTH-CALLBACK] refreshToken cookie set for user id=%d", user.ID)
+
+	redirectURL := fmt.Sprintf("%s/login?%s",
+		h.cfg.FrontendUrl,
+		url.Values{"oauth": []string{provider}}.Encode(),
+	)
+
+	log.Printf("[OAUTH-CALLBACK] Redirecting user id=%d to %s", user.ID, redirectURL)
+
+	c.Redirect(http.StatusTemporaryRedirect, redirectURL)
 }
 
 func (h *Handler) RefreshToken(c *gin.Context) {
-	var body RefreshRequest
-	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+	refreshToken, err := c.Cookie("refresh_token")
+
+	if err != nil || refreshToken == "" {
+		log.Printf("[OAUTH-CALLBACK] No refresh token found in cookie")
+		var body RefreshRequest
+		if bindErr := c.ShouldBindJSON(&body); bindErr != nil || body.RefreshToken == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "No refresh token provided"})
+			return
+		}
+		refreshToken = body.RefreshToken
 	}
 	claims := &CustomClaims{}
-	token, err := jwt.ParseWithClaims(body.RefreshToken, claims, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(refreshToken, claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrTokenUnverifiable
 		}
 		return []byte(h.cfg.JwtRefreshSecret), nil
 	})
 	if err != nil || !token.Valid {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid refresh token"})
 		return
 	}
 	if claims.Subject != "refresh" {

@@ -16,6 +16,7 @@ import (
 
 type Config struct {
 	Port               string
+	FrontendUrl        string
 	BaseURL            string
 	DatabaseURL        string
 	JwtAccessSecret    string
@@ -47,6 +48,7 @@ func Load() *Config {
 		SmtpUser:           MustEnvStr("SMTP_USER"),
 		SmtpPassword:       MustEnvStr("SMTP_PASSWORD"),
 		SessionSecret:      MustEnvStr("SESSION_SECRET"),
+		FrontendUrl:        MustEnvStr("FRONTEND_URL"),
 	}
 	return cfg
 }
