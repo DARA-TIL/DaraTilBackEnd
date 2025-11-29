@@ -283,7 +283,7 @@ func (h *Handler) OauthCallback(c *gin.Context, provider string) {
 }
 
 func (h *Handler) RefreshToken(c *gin.Context) {
-	refreshToken, err := c.Cookie("refresh_token")
+	refreshToken, err := c.Cookie("refreshToken")
 
 	if err != nil || refreshToken == "" {
 		log.Printf("[OAUTH-CALLBACK] No refresh token found in cookie")
