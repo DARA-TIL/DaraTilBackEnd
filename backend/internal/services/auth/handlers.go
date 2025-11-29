@@ -175,6 +175,12 @@ func (h *Handler) OauthLogin(c *gin.Context, provider string) {
 }
 
 func (h *Handler) OauthCallback(c *gin.Context, provider string) {
+	redirectError := func(msg string) {
+		redirectURL := fmt.Sprintf("%s/login?oauth=error&error:%s", h.cfg.FrontendUrl, msg)
+		log.Printf("[OAUTH-CALLBACK] Redirecting with ERROR to %s", redirectURL)
+		c.Redirect(http.StatusTemporaryRedirect, redirectURL)
+	}
+
 	log.Printf("[OAUTH-CALLBACK] Callback from provider=%s", provider)
 
 	// снова кладём provider в контекст
@@ -186,7 +192,7 @@ func (h *Handler) OauthCallback(c *gin.Context, provider string) {
 	userAuth, err := gothic.CompleteUserAuth(c.Writer, c.Request)
 	if err != nil {
 		log.Printf("[OAUTH-CALLBACK] Failed to complete auth for provider=%s: %v", provider, err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		redirectError("Failed to complete auth for provider")
 		return
 	}
 
@@ -195,7 +201,7 @@ func (h *Handler) OauthCallback(c *gin.Context, provider string) {
 
 	if userAuth.Email == "" {
 		log.Printf("[OAUTH-CALLBACK] No email provided by %s", provider)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No Email Provided"})
+		redirectError(fmt.Sprintf("No email provided by %s", provider))
 		return
 	}
 
@@ -227,7 +233,7 @@ func (h *Handler) OauthCallback(c *gin.Context, provider string) {
 
 		if err := database.DB.Create(&user).Error; err != nil {
 			log.Printf("[OAUTH-CALLBACK] Failed to create user in DB: %v", err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create user"})
+			redirectError("Failed to create user in DB")
 			return
 		}
 
@@ -242,7 +248,7 @@ func (h *Handler) OauthCallback(c *gin.Context, provider string) {
 	if user.AuthProvider != provider {
 		log.Printf("[OAUTH-CALLBACK] Provider mismatch for email=%s: existing=%s, incoming=%s",
 			user.Email, user.AuthProvider, provider)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User already signed in with another method"})
+		redirectError("User already signed in with another provider")
 		return
 	}
 
@@ -251,7 +257,7 @@ func (h *Handler) OauthCallback(c *gin.Context, provider string) {
 	tokens, err := GenerateTokenPair(user, h.cfg)
 	if err != nil {
 		log.Printf("[OAUTH-CALLBACK] Failed to create tokens for user id=%d: %v", user.ID, err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create tokens"})
+		redirectError("Failed to create tokens for user")
 		return
 	}
 
