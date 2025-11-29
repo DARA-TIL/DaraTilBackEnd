@@ -258,17 +258,16 @@ func (h *Handler) OauthCallback(c *gin.Context, provider string) {
 	log.Printf("[OAUTH-CALLBACK] Tokens generated successfully for user id=%d", user.ID)
 
 	maxAgeSeconds := h.cfg.JwtAccessExpires * 3600
-	secure := true
-	httpOnly := true
-	c.SetCookie(
-		"refreshToken",      // имя cookie
-		tokens.RefreshToken, // значение
-		maxAgeSeconds,       // maxAge (секунды)
-		"/",                 // path
-		"",                  // domain ("" = текущий домен)
-		secure,              // secure
-		httpOnly,            // httpOnly
-	)
+
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "refreshToken",
+		Value:    tokens.RefreshToken,
+		Path:     "/",
+		MaxAge:   maxAgeSeconds,
+		HttpOnly: true,
+		Secure:   true, // SameSite=None requires Secure=true
+		SameSite: http.SameSiteNoneMode,
+	})
 
 	log.Printf("[OAUTH-CALLBACK] refreshToken cookie set for user id=%d", user.ID)
 
