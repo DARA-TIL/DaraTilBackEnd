@@ -176,7 +176,7 @@ func (h *Handler) OauthLogin(c *gin.Context, provider string) {
 
 func (h *Handler) OauthCallback(c *gin.Context, provider string) {
 	redirectError := func(msg string) {
-		redirectURL := fmt.Sprintf("%s/login?oauth=error&error:%s", h.cfg.FrontendUrl, msg)
+		redirectURL := fmt.Sprintf("%s/login?oauth=error&error=%s", h.cfg.FrontendUrl, msg)
 		log.Printf("[OAUTH-CALLBACK] Redirecting with ERROR to %s", redirectURL)
 		c.Redirect(http.StatusTemporaryRedirect, redirectURL)
 	}
