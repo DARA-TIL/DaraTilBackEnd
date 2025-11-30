@@ -3,6 +3,7 @@ package auth
 import (
 	"DaraTilBackEnd/backend/internal/config"
 	"DaraTilBackEnd/backend/internal/database"
+	"errors"
 	"time"
 
 	"DaraTilBackEnd/backend/internal/models"
@@ -17,6 +18,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/markbates/goth/gothic"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type RefreshRequest struct {
@@ -256,28 +258,13 @@ func (h *Handler) OauthCallback(c *gin.Context, provider string) {
 
 	log.Printf("[OAUTH-CALLBACK] Provider verified for user id=%d: %s", user.ID, provider)
 
-	tokens, err := h.CreateAndStoreToken(c, user)
+	_, err = h.CreateAndStoreToken(c, user)
 	if err != nil {
 		log.Printf("[OAUTH-CALLBACK] Failed to create tokens for user id=%d: %v", user.ID, err)
 		redirectError("Failed to create tokens for user")
 		return
 	}
-
 	log.Printf("[OAUTH-CALLBACK] Tokens generated successfully for user id=%d", user.ID)
-
-	maxAgeSeconds := h.cfg.JwtAccessExpires * 3600
-
-	http.SetCookie(c.Writer, &http.Cookie{
-		Name:     "refreshToken",
-		Value:    tokens.RefreshToken,
-		Path:     "/",
-		MaxAge:   maxAgeSeconds,
-		HttpOnly: true,
-		Secure:   true, // SameSite=None requires Secure=true
-		SameSite: http.SameSiteNoneMode,
-	})
-
-	log.Printf("[OAUTH-CALLBACK] refreshToken cookie set for user id=%d", user.ID)
 
 	redirectURL := fmt.Sprintf("%s/login?%s",
 		h.cfg.FrontendUrl,
@@ -292,11 +279,13 @@ func (h *Handler) OauthCallback(c *gin.Context, provider string) {
 func (h *Handler) CreateAndStoreToken(c *gin.Context, user models.User) (*TokenPair, error) {
 	tokens, err := GenerateTokenPair(user, h.cfg)
 	if err != nil {
-		log.Printf("[OAUTH-CALLBACK] Failed to create tokens for user: %v", err)
-		c.JSON(400, gin.H{"error": "Failed to create tokens for user"})
+		log.Printf("[AUTH] Failed to create tokens for user_id=%d: %v", user.ID, err)
+		return nil, err
 	}
+
 	now := time.Now()
-	refreshExp := now.Add(time.Minute * time.Duration(h.cfg.JwtRefreshExpires))
+
+	refreshExp := now.Add(time.Hour * time.Duration(h.cfg.JwtRefreshExpires))
 
 	tokenModel := models.Token{
 		UserID:           user.ID,
@@ -307,13 +296,13 @@ func (h *Handler) CreateAndStoreToken(c *gin.Context, user models.User) (*TokenP
 		IsRevoked:        false,
 		Expires:          refreshExp,
 		LastUsed:         now,
-		User:             models.User{},
 	}
 
 	if err := database.DB.Create(&tokenModel).Error; err != nil {
-		log.Printf("[OAUTH-CALLBACK] Failed to create token for user: %v", err)
-		c.JSON(400, gin.H{"error": "Failed to create token for user"})
+		log.Printf("[AUTH] Failed to save refresh token for user_id=%d: %v", user.ID, err)
+		return nil, err
 	}
+
 	maxAgeSeconds := int(time.Until(refreshExp).Seconds())
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:     "refreshToken",
@@ -324,6 +313,7 @@ func (h *Handler) CreateAndStoreToken(c *gin.Context, user models.User) (*TokenP
 		Secure:   true,
 		SameSite: http.SameSiteNoneMode,
 	})
+
 	return tokens, nil
 }
 
@@ -357,6 +347,13 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 
 	var storedToken models.Token
 	if err := database.DB.Where("user_id = ? AND refresh_token_hash = ? AND is_revoked = ?", claims.UserID, hashToken(refreshToken), false).First(&storedToken).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Printf("[REFRESH] Refresh token not found or already used for user_id=%d", claims.UserID)
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Refresh token invalid or already used"})
+			return
+		}
+
 		log.Printf("[OAUTH-CALLBACK] Failed to refresh token: %v", err)
 		c.JSON(400, gin.H{"error": "Failed to refresh token"})
 		return
@@ -392,4 +389,43 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 		User:         user,
 	}
 	c.JSON(http.StatusOK, resp)
+}
+
+func (h *Handler) Logout(c *gin.Context) {
+	deleteCookie := func() {
+		http.SetCookie(c.Writer, &http.Cookie{
+			Name:     "refreshToken",
+			Value:    "",
+			Path:     "/",
+			MaxAge:   -1, // удалить
+			HttpOnly: true,
+			Secure:   true,
+			SameSite: http.SameSiteNoneMode,
+		})
+	}
+	refreshToken, err := c.Cookie("refreshToken")
+	if err != nil || refreshToken == "" {
+		deleteCookie()
+		log.Printf("[OAUTH-CALLBACK] No refresh token found in cookie")
+		c.Status(http.StatusNoContent)
+		return
+	}
+	claims := &CustomClaims{}
+	_, err = jwt.ParseWithClaims(refreshToken, claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrTokenUnverifiable
+		}
+		return []byte(h.cfg.JwtRefreshSecret), nil
+	})
+	if err != nil || claims.Subject != "refresh" {
+		log.Printf("[OAUTH-CALLBACK] Invalid refresh token: %v", err)
+		deleteCookie()
+		c.Status(http.StatusNoContent)
+		return
+	}
+	if err := database.DB.Model(&models.Token{}).Where("refresh_token_hash = ? AND user_id = ?", hashToken(refreshToken), claims.UserID).Update("is_revoked", true).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Printf("[OAUTH-CALLBACK] Failed to revoke token: %v", err)
+	}
+	deleteCookie()
+	c.Status(http.StatusNoContent)
 }
