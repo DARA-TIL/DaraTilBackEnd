@@ -38,9 +38,8 @@ type LoginRequest struct {
 }
 
 type AuthResponse struct {
-	AccessToken  string      `json:"accessToken"`
-	RefreshToken string      `json:"refreshToken"`
-	User         models.User `json:"user"`
+	AccessToken string      `json:"accessToken"`
+	User        models.User `json:"user"`
 }
 
 type Handler struct {
@@ -105,9 +104,8 @@ func (h *Handler) Register(c *gin.Context) {
 
 	// Ответ клиенту
 	resp := AuthResponse{
-		AccessToken:  token.AccessToken,
-		RefreshToken: token.RefreshToken,
-		User:         user,
+		AccessToken: token.AccessToken,
+		User:        user,
 	}
 
 	log.Printf("[REGISTER] Responding with JSON for user id=%d", user.ID)
@@ -157,9 +155,8 @@ func (h *Handler) Login(c *gin.Context) {
 
 	// Ответ клиенту
 	resp := AuthResponse{
-		AccessToken:  token.AccessToken,
-		RefreshToken: token.RefreshToken,
-		User:         user,
+		AccessToken: token.AccessToken,
+		User:        user,
 	}
 
 	log.Printf("[LOGIN] Responding with 200 OK for user id=%d", user.ID)
@@ -384,9 +381,8 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 		return
 	}
 	resp := AuthResponse{
-		AccessToken:  newTokens.AccessToken,
-		RefreshToken: newTokens.RefreshToken,
-		User:         user,
+		AccessToken: newTokens.AccessToken,
+		User:        user,
 	}
 	c.JSON(http.StatusOK, resp)
 }
