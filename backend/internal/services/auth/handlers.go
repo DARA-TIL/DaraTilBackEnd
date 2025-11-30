@@ -356,7 +356,7 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 	}
 
 	var storedToken models.Token
-	if err := database.DB.Where("id = ? AND refresh_token_hash = ? AND is_revoked", claims.UserID, hashToken(refreshToken), false).First(&storedToken).Error; err != nil {
+	if err := database.DB.Where("user_id = ? AND refresh_token_hash = ? AND is_revoked", claims.UserID, hashToken(refreshToken), false).First(&storedToken).Error; err != nil {
 		log.Printf("[OAUTH-CALLBACK] Failed to refresh token: %v", err)
 		c.JSON(400, gin.H{"error": "Failed to refresh token"})
 		return
