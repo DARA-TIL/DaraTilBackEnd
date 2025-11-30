@@ -3,6 +3,8 @@ package auth
 import (
 	"DaraTilBackEnd/backend/internal/config"
 	"DaraTilBackEnd/backend/internal/models"
+	"crypto/sha256"
+	"encoding/hex"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -19,6 +21,11 @@ type CustomClaims struct {
 	Email    string `json:"email"`
 	Role     string `json:"role"`
 	jwt.RegisteredClaims
+}
+
+func hashToken(token string) string {
+	sum := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(sum[:])
 }
 
 func GenerateTokenPair(user models.User, cfg *config.Config) (*TokenPair, error) {

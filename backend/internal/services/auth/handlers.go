@@ -3,6 +3,8 @@ package auth
 import (
 	"DaraTilBackEnd/backend/internal/config"
 	"DaraTilBackEnd/backend/internal/database"
+	"time"
+
 	"DaraTilBackEnd/backend/internal/models"
 	"context"
 	"fmt"
@@ -90,7 +92,7 @@ func (h *Handler) Register(c *gin.Context) {
 		user.ID, user.Username, user.Email)
 
 	// Генерация токенов
-	token, err := GenerateTokenPair(user, h.cfg)
+	token, err := h.CreateAndStoreToken(c, user)
 	if err != nil {
 		log.Printf("[REGISTER] Error generating tokens: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create token"})
@@ -142,7 +144,7 @@ func (h *Handler) Login(c *gin.Context) {
 	log.Printf("[LOGIN] Password correct for user id=%d", user.ID)
 
 	// Генерация токенов
-	token, err := GenerateTokenPair(user, h.cfg)
+	token, err := h.CreateAndStoreToken(c, user)
 	if err != nil {
 		log.Printf("[LOGIN] Failed to generate JWT tokens for user id=%d: %v", user.ID, err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create token"})
@@ -254,7 +256,7 @@ func (h *Handler) OauthCallback(c *gin.Context, provider string) {
 
 	log.Printf("[OAUTH-CALLBACK] Provider verified for user id=%d: %s", user.ID, provider)
 
-	tokens, err := GenerateTokenPair(user, h.cfg)
+	tokens, err := h.CreateAndStoreToken(c, user)
 	if err != nil {
 		log.Printf("[OAUTH-CALLBACK] Failed to create tokens for user id=%d: %v", user.ID, err)
 		redirectError("Failed to create tokens for user")
@@ -287,6 +289,44 @@ func (h *Handler) OauthCallback(c *gin.Context, provider string) {
 	c.Redirect(http.StatusTemporaryRedirect, redirectURL)
 }
 
+func (h *Handler) CreateAndStoreToken(c *gin.Context, user models.User) (*TokenPair, error) {
+	tokens, err := GenerateTokenPair(user, h.cfg)
+	if err != nil {
+		log.Printf("[OAUTH-CALLBACK] Failed to create tokens for user: %v", err)
+		c.JSON(400, gin.H{"error": "Failed to create tokens for user"})
+	}
+	now := time.Now()
+	refreshExp := now.Add(time.Minute * time.Duration(h.cfg.JwtRefreshExpires))
+
+	tokenModel := models.Token{
+		UserID:           user.ID,
+		RefreshTokenHash: hashToken(tokens.RefreshToken),
+		Device:           "Web",
+		IpAddress:        c.ClientIP(),
+		UserAgent:        c.Request.UserAgent(),
+		IsRevoked:        false,
+		Expires:          refreshExp,
+		LastUsed:         now,
+		User:             models.User{},
+	}
+
+	if err := database.DB.Create(&tokenModel).Error; err != nil {
+		log.Printf("[OAUTH-CALLBACK] Failed to create token for user: %v", err)
+		c.JSON(400, gin.H{"error": "Failed to create token for user"})
+	}
+	maxAgeSeconds := int(time.Until(refreshExp).Seconds())
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "refreshToken",
+		Value:    tokens.RefreshToken,
+		Path:     "/",
+		MaxAge:   maxAgeSeconds,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteNoneMode,
+	})
+	return tokens, nil
+}
+
 func (h *Handler) RefreshToken(c *gin.Context) {
 	refreshToken, err := c.Cookie("refreshToken")
 
@@ -315,19 +355,40 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 		return
 	}
 
+	var storedToken models.Token
+	if err := database.DB.Where("id = ? AND refresh_token_hash = ? AND is_revoked", claims.ID, hashToken(refreshToken), false).First(&storedToken).Error; err != nil {
+		log.Printf("[OAUTH-CALLBACK] Failed to refresh token: %v", err)
+		c.JSON(400, gin.H{"error": "Failed to refresh token"})
+		return
+	}
+
+	if time.Now().After(storedToken.Expires) {
+		log.Printf("[OAUTH-CALLBACK] Refresh token expired")
+		c.JSON(400, gin.H{"error": "Refresh token expired"})
+		return
+	}
+
 	var user models.User
 	if err := database.DB.Find(&user, claims.UserID).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found in DB"})
 		return
 	}
-	tokens, err := GenerateTokenPair(user, h.cfg)
+
+	if err := database.DB.Model(&storedToken).Update("is_revoked", true).Error; err != nil {
+		log.Printf("[OAUTH-CALLBACK] Failed to revoke token: %v", err)
+		c.JSON(400, gin.H{"error": "Failed to revoke token"})
+		return
+	}
+
+	newTokens, err := h.CreateAndStoreToken(c, user)
 	if err != nil {
+		log.Printf("[OAUTH-CALLBACK] Failed to create tokens for user: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	resp := AuthResponse{
-		AccessToken:  tokens.AccessToken,
-		RefreshToken: tokens.RefreshToken,
+		AccessToken:  newTokens.AccessToken,
+		RefreshToken: newTokens.RefreshToken,
 		User:         user,
 	}
 	c.JSON(http.StatusOK, resp)
