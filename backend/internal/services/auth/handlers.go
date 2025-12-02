@@ -438,7 +438,6 @@ func (h *Handler) GetMe(c *gin.Context) {
 		return
 	}
 	claims := &CustomClaims{}
-	fmt.Print("Token", parts[1])
 	token, err := jwt.ParseWithClaims(parts[1], claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrTokenUnverifiable

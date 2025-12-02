@@ -3,13 +3,14 @@ package folklore
 import (
 	"DaraTilBackEnd/backend/internal/config"
 	"DaraTilBackEnd/backend/internal/database"
+	"DaraTilBackEnd/backend/internal/middleware"
 	"DaraTilBackEnd/backend/internal/models"
+	"DaraTilBackEnd/backend/internal/utils"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type Handler struct {
@@ -134,32 +135,60 @@ func (h *Handler) DeleteFolklore(c *gin.Context) {
 
 func (h *Handler) LikeFolklore(c *gin.Context) {
 	id := c.Param("id")
+	user, err := middleware.GetCurrentUser(c)
+
+	if id == "" || err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "id is required"})
+		return
+	}
+	uintId, err := utils.ToUint(id)
 	log.Printf("[FOLKLORE][LIKE] id=%s", id)
-
-	var folklore models.Folklore
-	results := database.DB.Model(models.Folklore{}).Where("id = ?", id).
-		UpdateColumn("likes", gorm.Expr("likes + ?", 1))
-
-	if results.RowsAffected == 0 {
-		log.Printf("[FOLKLORE][LIKE] Record not found: id=%s", id)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found"})
+	log.Printf("[FOLKLORE][LIKE] id=%s, [USER ID] id = %d", id, user.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Can't like without authorization"})
 		return
 	}
-
-	if results.Error != nil {
-		log.Printf("[FOLKLORE][LIKE] DB error: %v", results.Error)
-		c.JSON(http.StatusBadRequest, gin.H{"error": results.Error.Error()})
-		return
+	like := models.FolkloreLike{
+		UserID:     user.ID,
+		FolkloreID: uintId,
 	}
-
-	if err := database.DB.Where("id = ?", id).First(&folklore).Error; err != nil {
-		log.Printf("[FOLKLORE][LIKE] Fetch error: %v", err)
+	if err := database.DB.Create(&like).Error; err != nil {
+		log.Printf("[FOLKLORE][LIKE] DB error: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	log.Printf("[FOLKLORE][LIKE] Success: %+v", like)
+	c.JSON(http.StatusOK, "Liked")
+}
 
-	log.Printf("[FOLKLORE][LIKE] Success: %+v", folklore)
-	c.JSON(http.StatusOK, folklore)
+func (h *Handler) UnlikeFolklore(c *gin.Context) {
+	folkloreID := c.Param("id")
+	user, err := middleware.GetCurrentUser(c)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if folkloreID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "folkloreID is required"})
+		return
+	}
+	//uintId, err := utils.ToUint(folkloreID)
+	log.Printf("[FOLKLORE][LIKE] folkloreID=%s", folkloreID)
+	log.Printf("[FOLKLORE][LIKE] folkloreID=%s, [USER ID] folkloreID = %d", folkloreID, user.ID)
+	//if err != nil {
+	//	c.JSON(http.StatusBadRequest, gin.H{"error": "invalid folkloreID"})
+	//	return
+	//}
+	res := database.DB.Where("folklore_id = ? AND user_id = ?", folkloreID, user.ID).Delete(&models.FolkloreLike{})
+	if res.Error != nil {
+		log.Printf("[FOLKLORE][UNLIKE] DB error: %v", res.Error)
+		c.JSON(http.StatusBadRequest, gin.H{"error": res.Error.Error()})
+		return
+	}
+	log.Println("[FOLKLORE][UNLIKE] Success")
+	c.JSON(http.StatusOK, "Unlike")
+
 }
 
 func (h *Handler) GetFolkloreByType(c *gin.Context) {

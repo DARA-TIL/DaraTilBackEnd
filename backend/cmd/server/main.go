@@ -6,6 +6,7 @@ import (
 	"DaraTilBackEnd/backend/internal/middleware"
 	auth2 "DaraTilBackEnd/backend/internal/services/auth"
 	"DaraTilBackEnd/backend/internal/services/folklore"
+	"DaraTilBackEnd/backend/internal/services/user"
 	"log"
 	"time"
 
@@ -50,6 +51,7 @@ func main() {
 	//Handlers
 	authHandler := auth2.NewHandler(cfg)
 	folkloreHandler := folklore.NewHandler(cfg)
+	userHandler := user.NewHandler(cfg)
 
 	//Groups
 	api := r.Group("/api")
@@ -59,6 +61,10 @@ func main() {
 	folkloreGroup := api.Group("/folklore")
 	folkloreGroup.Use(middleware.AuthMiddleware(cfg))
 	folklore.RegisterRoutes(folkloreGroup, folkloreHandler)
+
+	userGroup := api.Group("/user")
+	userGroup.Use(middleware.AuthMiddleware(cfg))
+	user.RegisterRoutes(userGroup, userHandler)
 
 	log.Printf("server started on :%s", cfg.Port)
 	if err := r.Run(":" + cfg.Port); err != nil {

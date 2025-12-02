@@ -8,5 +8,4 @@ type Folklore struct {
 	Content  string `json:"content" gorm:"not null"`
 	Author   string `json:"author" gorm:"not null"`
 	ImageUrl string `json:"imageUrl"`
-	Likes    int    `json:"likes" gorm:"not null"`
 }
