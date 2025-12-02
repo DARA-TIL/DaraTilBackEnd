@@ -16,6 +16,7 @@ func RegisterRoutes(r *gin.RouterGroup, h *Handler) {
 	r.POST("/register", h.Register)
 	r.GET("/refresh", h.RefreshToken)
 	r.POST("/logout", h.Logout)
+	r.GET("/me", h.GetMe)
 	r.GET(":provider", func(c *gin.Context) {
 		provider := c.Param("provider")
 		if !allowedProviders[provider] {

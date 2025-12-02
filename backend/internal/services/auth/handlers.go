@@ -425,3 +425,38 @@ func (h *Handler) Logout(c *gin.Context) {
 	deleteCookie()
 	c.Status(http.StatusNoContent)
 }
+
+func (h *Handler) GetMe(c *gin.Context) {
+	authheader := c.Request.Header.Get("Authorization")
+	if authheader == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "No Authorization header provided"})
+		return
+	}
+	parts := strings.SplitN(authheader, " ", 2)
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "No Authorization header provided"})
+		return
+	}
+	claims := &CustomClaims{}
+	fmt.Print("Token", parts[1])
+	token, err := jwt.ParseWithClaims(parts[1], claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrTokenUnverifiable
+		}
+		return []byte(h.cfg.JwtAccessSecret), nil
+	})
+	if err != nil || !token.Valid {
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token expired"})
+			return
+		}
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		return
+	}
+	var user models.User
+	if err := database.DB.Find(&user, claims.UserID).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found in DB"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"user": user})
+}

@@ -5,6 +5,7 @@ import (
 	"DaraTilBackEnd/backend/internal/database"
 	"DaraTilBackEnd/backend/internal/models"
 	"DaraTilBackEnd/backend/internal/services/auth"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -49,7 +50,12 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 			}
 			return []byte(cfg.JwtAccessSecret), nil
 		})
-
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			log.Println("[AUTH MIDDLEWARE] Token expired")
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token expired"})
+			c.Abort()
+			return
+		}
 		if err != nil || !token.Valid {
 			log.Printf("[AUTH MIDDLEWARE] Invalid or expired token: %v\n", err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header"})
