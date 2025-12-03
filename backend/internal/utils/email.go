@@ -11,7 +11,7 @@ var (
 	smtpPort = "587"
 )
 
-func sendEmail(toEmail, fromEmail, subject, text string, cfg config.Config) error {
+func SendEmail(toEmail, fromEmail, subject, text string, cfg config.Config) error {
 	auth := cfg.SmtpAuth()
 	body := fmt.Sprintf("Subject: %s\n\n%s\n\nFrom: %s", subject, text, fromEmail)
 

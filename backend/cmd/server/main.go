@@ -63,7 +63,7 @@ func main() {
 	folklore.RegisterRoutes(folkloreGroup, folkloreHandler)
 
 	userGroup := api.Group("/user")
-	userGroup.Use(middleware.AuthMiddleware(cfg))
+	//userGroup.Use(middleware.AuthMiddleware(cfg))
 	user.RegisterRoutes(userGroup, userHandler)
 
 	log.Printf("server started on :%s", cfg.Port)
