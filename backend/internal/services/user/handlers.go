@@ -30,38 +30,6 @@ func NewHandler(cfg *config.Config) *Handler {
 	return &Handler{cfg: cfg}
 }
 
-func (h *Handler) Update(c *gin.Context) {
-	id := c.Param("id")
-	var body map[string]interface{}
-	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	log.Printf("[FOLKLORE][UPDATE] id: %s, Body: %+v", id, body)
-	delete(body, "ID")
-	delete(body, "id")
-	delete(body, "CreatedAt")
-	delete(body, "UpdatedAt")
-	delete(body, "DeletedAt")
-	delete(body, "password")
-	delete(body, "email")
-
-	if err := database.DB.Model(&models.User{}).Where("id = ?", id).Updates(&body).Error; err != nil {
-		log.Printf("[FOLKLORE][UPDATE] Error: %+v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	var updatedUser models.User
-	if err := database.DB.Where("id = ?", id).First(&updatedUser).Error; err != nil {
-		log.Printf("[FOLKLORE][UPDATE] Error: %+v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	log.Printf("[FOLKLORE][UPDATE] Success: %+v", updatedUser)
-	c.JSON(http.StatusOK, gin.H{"user": updatedUser})
-}
-
 type PasswordResetSession struct {
 	Email     string    `json:"email"`
 	Code      string    `json:"code"`
@@ -91,7 +59,7 @@ func (h *Handler) ChangePassword(c *gin.Context) {
 	code, err := rand.Int(rand.Reader, big.NewInt(1000000))
 	if err != nil {
 		log.Printf("[FOLKLORE][ChangePassword] Error: %+v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
 		return
 	}
 	codeStr := fmt.Sprintf("%06d", code.Int64())
@@ -144,25 +112,25 @@ func (h *Handler) VerifyPasswordResetCode(c *gin.Context) {
 	}
 	log.Printf("[FOLKLORE][VerifyPasswordResetCode] code: %s", c.Param("code"))
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 	ck, err := c.Request.Cookie("password_reset")
 	if err != nil {
 		log.Printf("[FOLKLORE][VerifyPasswordResetCode] Error: %+v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
 		return
 	}
 	decoded, err := base64.StdEncoding.DecodeString(ck.Value)
 	if err != nil {
 		log.Printf("[FOLKLORE][VerifyPasswordResetCode] Error: %+v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
 		return
 	}
 	var session PasswordResetSession
 	if err := json.Unmarshal(decoded, &session); err != nil {
 		log.Printf("[FOLKLORE][VerifyPasswordResetCode] Error: %+v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
 		return
 	}
 	if time.Since(session.CreatedAt).Minutes() > 10 {
@@ -272,7 +240,11 @@ func (h *Handler) GetLikedFolklore(c *gin.Context) {
 	log.Printf("[LIKE][USER] id = %s", user.ID)
 	var folklore []models.Folklore
 	if err := database.DB.Joins("JOIN folklore_likes ON folklore_likes.folklore_id = folklores.id").Where("folklore_likes.user_id = ?", user.ID).Find(&folklore).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
+		return
+	}
+	if len(folklore) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "no liked folklore"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": folklore})

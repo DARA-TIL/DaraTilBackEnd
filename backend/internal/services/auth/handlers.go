@@ -67,7 +67,7 @@ func (h *Handler) Register(c *gin.Context) {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Printf("[REGISTER] Failed to hash password: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to hash password"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
 		return
 	}
 
@@ -84,6 +84,10 @@ func (h *Handler) Register(c *gin.Context) {
 	}
 
 	if err := database.DB.Create(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "username or email already exists"})
+			return
+		}
 		log.Printf("[REGISTER] Failed to create user in DB: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create user"})
 		return
@@ -147,7 +151,7 @@ func (h *Handler) Login(c *gin.Context) {
 	token, err := h.CreateAndStoreToken(c, user)
 	if err != nil {
 		log.Printf("[LOGIN] Failed to generate JWT tokens for user id=%d: %v", user.ID, err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create token"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
 		return
 	}
 
@@ -321,7 +325,7 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 		log.Printf("[OAUTH-CALLBACK] No refresh token found in cookie")
 		var body RefreshRequest
 		if bindErr := c.ShouldBindJSON(&body); bindErr != nil || body.RefreshToken == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "No refresh token provided"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
 			return
 		}
 		refreshToken = body.RefreshToken
@@ -377,7 +381,7 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 	newTokens, err := h.CreateAndStoreToken(c, user)
 	if err != nil {
 		log.Printf("[OAUTH-CALLBACK] Failed to create tokens for user: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
 		return
 	}
 	resp := AuthResponse{

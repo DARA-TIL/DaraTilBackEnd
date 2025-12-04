@@ -62,10 +62,11 @@ func main() {
 	folkloreGroup.Use(middleware.AuthMiddleware(cfg))
 	folklore.RegisterRoutes(folkloreGroup, folkloreHandler)
 
+	protectedUserGroup := api.Group("/user")
+	protectedUserGroup.Use(middleware.AuthMiddleware(cfg))
+	user.RegisterProtectedRoutes(protectedUserGroup, userHandler)
 	userGroup := api.Group("/user")
-	//userGroup.Use(middleware.AuthMiddleware(cfg))
 	user.RegisterRoutes(userGroup, userHandler)
-
 	log.Printf("server started on :%s", cfg.Port)
 	if err := r.Run(":" + cfg.Port); err != nil {
 		log.Fatal(err)

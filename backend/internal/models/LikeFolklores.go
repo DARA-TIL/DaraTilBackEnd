@@ -11,6 +11,6 @@ type FolkloreLike struct {
 	FolkloreID uint `gorm:"not null;uniqueIndex:user_folklore_idx" json:"folkloreId"`
 
 	// связи
-	User     User     `gorm:"foreignKey:UserID"`
-	Folklore Folklore `gorm:"foreignKey:FolkloreID"`
+	User     User     `gorm:"foreignKey:UserID; OnDelete:CASCADE;"`
+	Folklore Folklore `gorm:"foreignKey:FolkloreID; OnDelete:CASCADE;"`
 }

@@ -6,11 +6,13 @@ import (
 	"DaraTilBackEnd/backend/internal/middleware"
 	"DaraTilBackEnd/backend/internal/models"
 	"DaraTilBackEnd/backend/internal/utils"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type Handler struct {
@@ -27,7 +29,7 @@ func (h *Handler) CreateFolklore(c *gin.Context) {
 	var folklore models.Folklore
 	if err := c.ShouldBindJSON(&folklore); err != nil {
 		log.Printf("[FOLKLORE][CREATE] Bind error: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
 		return
 	}
 
@@ -35,7 +37,7 @@ func (h *Handler) CreateFolklore(c *gin.Context) {
 
 	if err := database.DB.Create(&folklore).Error; err != nil {
 		log.Printf("[FOLKLORE][CREATE] DB error: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
 		return
 	}
 
@@ -49,8 +51,13 @@ func (h *Handler) GetFolkloreById(c *gin.Context) {
 
 	var folklore models.Folklore
 	if err := database.DB.Where("id = ?", id).First(&folklore).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Printf("[FOLKLORE][GET BY ID] id=%s not found", id)
+			c.JSON(http.StatusNotFound, "not found")
+			return
+		}
 		log.Printf("[FOLKLORE][GET BY ID] DB error: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
 		return
 	}
 
@@ -64,10 +71,14 @@ func (h *Handler) GetFolkloreList(c *gin.Context) {
 	var folklore []models.Folklore
 	if err := database.DB.Find(&folklore).Error; err != nil {
 		log.Printf("[FOLKLORE][GET ALL] DB error: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
 		return
 	}
-
+	if len(folklore) == 0 {
+		log.Printf("[FOLKLORE][GET ALL] No Folklore")
+		c.JSON(http.StatusOK, gin.H{"data": "There are no Folklore"})
+		return
+	}
 	log.Printf("[FOLKLORE][GET ALL] Count=%d", len(folklore))
 	fmt.Println(folklore)
 
@@ -81,7 +92,7 @@ func (h *Handler) UpdateFolklore(c *gin.Context) {
 	var body map[string]interface{}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		log.Printf("[FOLKLORE][UPDATE] Bind error: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 
@@ -94,15 +105,25 @@ func (h *Handler) UpdateFolklore(c *gin.Context) {
 	delete(body, "DeletedAt")
 
 	if err := database.DB.Model(&models.Folklore{}).Where("id = ?", id).Updates(body).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Printf("[FOLKLORE][UPDATE] DB error: %v", err)
+			c.JSON(http.StatusNotFound, "not found")
+			return
+		}
 		log.Printf("[FOLKLORE][UPDATE] DB update error: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
 		return
 	}
 
 	var folklore models.Folklore
 	if err := database.DB.Where("id = ?", id).First(&folklore).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Printf("[FOLKLORE][UPDATE] DB error: %v", err)
+			c.JSON(http.StatusNotFound, "not found")
+			return
+		}
 		log.Printf("[FOLKLORE][UPDATE] Fetch error: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
 		return
 	}
 
@@ -125,7 +146,7 @@ func (h *Handler) DeleteFolklore(c *gin.Context) {
 
 	if result.Error != nil {
 		log.Printf("[FOLKLORE][DELETE] DB error: %v", result.Error)
-		c.JSON(http.StatusBadRequest, gin.H{"error": result.Error.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
 		return
 	}
 
@@ -153,8 +174,13 @@ func (h *Handler) LikeFolklore(c *gin.Context) {
 		FolkloreID: uintId,
 	}
 	if err := database.DB.Create(&like).Error; err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			log.Printf("[FOLKLORE][LIKE] DB error: %v", err)
+			c.JSON(http.StatusConflict, gin.H{"error": "Already liked"})
+			return
+		}
 		log.Printf("[FOLKLORE][LIKE] DB error: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
 		return
 	}
 	log.Printf("[FOLKLORE][LIKE] Success: %+v", like)
@@ -166,7 +192,7 @@ func (h *Handler) UnlikeFolklore(c *gin.Context) {
 	user, err := middleware.GetCurrentUser(c)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
 		return
 	}
 	if folkloreID == "" {
@@ -180,10 +206,10 @@ func (h *Handler) UnlikeFolklore(c *gin.Context) {
 	//	c.JSON(http.StatusBadRequest, gin.H{"error": "invalid folkloreID"})
 	//	return
 	//}
-	res := database.DB.Where("folklore_id = ? AND user_id = ?", folkloreID, user.ID).Delete(&models.FolkloreLike{})
+	res := database.DB.Unscoped().Where("folklore_id = ? AND user_id = ?", folkloreID, user.ID).Delete(&models.FolkloreLike{})
 	if res.Error != nil {
 		log.Printf("[FOLKLORE][UNLIKE] DB error: %v", res.Error)
-		c.JSON(http.StatusBadRequest, gin.H{"error": res.Error.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
 		return
 	}
 	log.Println("[FOLKLORE][UNLIKE] Success")
@@ -197,14 +223,19 @@ func (h *Handler) GetFolkloreByType(c *gin.Context) {
 
 	var folklore []models.Folklore
 	if err := database.DB.Where("type = ?", folkType).Find(&folklore).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Printf("[FOLKLORE][GET BY TYPE] DB error: %v", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "not found"})
+			return
+		}
 		log.Printf("[FOLKLORE][GET BY TYPE] DB error: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
 		return
 	}
 
 	if len(folklore) == 0 {
 		log.Printf("[FOLKLORE][GET BY TYPE] No records found: type=%s", folkType)
-		c.JSON(http.StatusNotFound, gin.H{"error": "Folklore not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Folklore with this type not found"})
 		return
 	}
 

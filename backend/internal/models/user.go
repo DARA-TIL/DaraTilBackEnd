@@ -14,5 +14,5 @@ type User struct {
 	Level        int     `gorm:"not null; default:0" json:"level"`
 	Experience   int     `gorm:"not null; default:0" json:"experience"`
 	AuthProvider string  `gorm:"not null; " json:"authProvider"`
-	Tokens       []Token `gorm:"foreignKey:UserID" json:"tokens,omitempty"`
+	Tokens       []Token `gorm:"foreignKey:UserID;" json:"tokens,omitempty"`
 }
