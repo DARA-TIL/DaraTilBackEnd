@@ -1,0 +1,20 @@
+package models
+
+type User struct {
+	ID           uint
+	Username     string
+	Email        string
+	Password     string
+	Avatar       string
+	Role         string
+	AuthProvider string
+	Progress     UserProgress
+	Tokens       []Token
+}
+
+type UserProgress struct {
+	ID             uint
+	Level          int
+	XpTotal        int
+	XpForNextLevel int
+}
