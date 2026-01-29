@@ -1,7 +1,7 @@
 package models
 
 type FolkloreLike struct {
-	ID       uint
-	User     User
-	Folklore Folklore
+	ID         uint
+	UserID     uint
+	FolkloreID uint
 }

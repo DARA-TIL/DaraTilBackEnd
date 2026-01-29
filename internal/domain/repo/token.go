@@ -1,4 +1,4 @@
-package interfaces
+package repo
 
 import "DaraTilBackendV2/internal/domain/models"
 

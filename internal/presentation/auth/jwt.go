@@ -1,0 +1,74 @@
+package auth
+
+import (
+	"DaraTilBackendV2/internal/config"
+	"DaraTilBackendV2/internal/domain/models"
+	"crypto/sha256"
+	"encoding/hex"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+)
+
+type TokenPair struct {
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
+}
+
+type CustomClaims struct {
+	UserID   uint   `json:"userId"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Role     string `json:"role"`
+	jwt.RegisteredClaims
+}
+
+func hashToken(token string) string {
+	sum := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(sum[:])
+}
+
+func GenerateTokenPair(user models.User, cfg *config.Config) (*TokenPair, error) {
+	now := time.Now()
+	accessExp := now.Add(time.Minute * time.Duration(cfg.Jwt.JwtAccessExpiresMin))
+	refreshExp := now.Add(time.Hour * time.Duration(cfg.Jwt.JwtRefreshExpiresHours))
+
+	accessClaims := CustomClaims{
+		UserID:   user.ID,
+		Username: user.Username,
+		Email:    user.Email,
+		Role:     user.Role,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   "access",
+			ExpiresAt: jwt.NewNumericDate(accessExp),
+			IssuedAt:  jwt.NewNumericDate(now),
+		},
+	}
+
+	refreshClaims := CustomClaims{
+		UserID:   user.ID,
+		Username: user.Username,
+		Email:    user.Email,
+		Role:     user.Role,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   "refresh",
+			ExpiresAt: jwt.NewNumericDate(refreshExp),
+			IssuedAt:  jwt.NewNumericDate(now),
+		},
+	}
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
+
+	access, err := accessToken.SignedString([]byte(cfg.Jwt.JwtAccessSecret))
+	if err != nil {
+		return nil, err
+	}
+	refresh, err := refreshToken.SignedString([]byte(cfg.Jwt.JwtRefreshSecret))
+	if err != nil {
+		return nil, err
+	}
+	return &TokenPair{
+		AccessToken:  access,
+		RefreshToken: refresh,
+	}, nil
+}

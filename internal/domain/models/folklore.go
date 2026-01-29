@@ -13,9 +13,19 @@ type Folklore struct {
 	Likes        []FolkloreLike
 	Translations []FolkloreTranslation
 }
-
+type UpdatableFolkloreFields struct {
+	Type         *string
+	Author       *string
+	Region       *string
+	Content      *string
+	Name         *string
+	MediaUrl     *string
+	ImageUrl     *string
+	Translations []FolkloreTranslation
+}
 type FolkloreTranslation struct {
 	ID          uint
+	FolkloreID  uint
 	Language    string
 	Name        string
 	Content     string

@@ -14,6 +14,7 @@ type User struct {
 
 type UserProgress struct {
 	ID             uint
+	UserID         uint
 	Level          int
 	XpTotal        int
 	XpForNextLevel int

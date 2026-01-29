@@ -1,8 +1,6 @@
 package config
 
 import (
-	"log"
-
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -53,6 +51,5 @@ func LoadConfig() (*Config, error) {
 	if err != nil {
 		return &cfg, err
 	}
-	log.Printf("config: %+v\n", cfg)
 	return &cfg, nil
 }
