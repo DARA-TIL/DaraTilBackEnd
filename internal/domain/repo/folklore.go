@@ -13,4 +13,5 @@ type FolkloreRepo interface {
 	Delete(ctx context.Context, id int) error
 	ToggleLike(ctx context.Context, folkloreID, userID int) (*models.Folklore, bool, error)
 	GetByQuery(ctx context.Context, query models.FolkloreFilter) ([]models.Folklore, error)
+	GetLikedFolklore(ctx context.Context, userID int) ([]models.Folklore, error)
 }

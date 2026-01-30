@@ -19,3 +19,9 @@ type UserProgress struct {
 	XpTotal        int
 	XpForNextLevel int
 }
+
+type UserUpdatableFields struct {
+	Username *string
+	Avatar   *string
+	Role     *string
+}

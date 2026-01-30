@@ -1,12 +1,14 @@
 package repo
 
-import "DaraTilBackendV2/internal/domain/models"
+import (
+	"DaraTilBackendV2/internal/domain/models"
+	"context"
+)
 
 type UserRepo interface {
-	Create(user models.User) (models.User, error)
-	GetByEmail(email string) (models.User, error)
-	GetByID(id int) (models.User, error)
-	Update(user models.User) (models.User, error)
-	GetAll() ([]models.User, error)
-	GetLikedFolklore(id int) ([]models.User, error)
+	Create(ctx context.Context, user models.User) (*models.User, error)
+	GetByEmail(ctx context.Context, email string) (*models.User, error)
+	GetByID(ctx context.Context, id int) (*models.User, error)
+	Update(ctx context.Context, id int, upd models.UserUpdatableFields) (*models.User, error)
+	GetAll(ctx context.Context) ([]models.User, error)
 }

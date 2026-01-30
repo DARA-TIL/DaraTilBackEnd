@@ -5,8 +5,9 @@ import (
 	"DaraTilBackendV2/internal/domain/domErr"
 	"DaraTilBackendV2/internal/presentation/dto"
 	"DaraTilBackendV2/internal/presentation/dto/dtoMappers"
+	"DaraTilBackendV2/internal/presentation/http/middleware"
 	"DaraTilBackendV2/internal/presentation/http/response"
-	"strconv"
+	"DaraTilBackendV2/internal/presentation/http/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,6 +20,7 @@ type HandlerFolklore struct {
 	GetByQueryUC folkloreUC.GetFolkloreByQueryUC
 	GetAllUC     folkloreUC.GetAllFolkloreUC
 	ToggleLikeUC folkloreUC.ToggleLikeUC
+	GetLikedUC   folkloreUC.GetLikedFolkloreUC
 }
 
 func NewHandlerFolklore(
@@ -29,6 +31,7 @@ func NewHandlerFolklore(
 	queryUC folkloreUC.GetFolkloreByQueryUC,
 	getAllUC folkloreUC.GetAllFolkloreUC,
 	toggleLikeUC folkloreUC.ToggleLikeUC,
+	getLikedUC folkloreUC.GetLikedFolkloreUC,
 ) *HandlerFolklore {
 
 	return &HandlerFolklore{
@@ -39,6 +42,7 @@ func NewHandlerFolklore(
 		GetByQueryUC: queryUC,
 		GetAllUC:     getAllUC,
 		ToggleLikeUC: toggleLikeUC,
+		GetLikedUC:   getLikedUC,
 	}
 }
 
@@ -59,19 +63,14 @@ func (h *HandlerFolklore) Create(c *gin.Context) {
 }
 
 func (h *HandlerFolklore) Update(c *gin.Context) {
-	id := c.Param("id")
-	if id == "" {
-		response.HandleDomainError(c, domErr.ErrInvalidInput)
-		return
-	}
-	idInt, err := strconv.Atoi(id)
+	idInt, err := utils.GetIdFromParams(c)
 	if err != nil {
 		response.HandleDomainError(c, domErr.ErrInternal)
 		return
 	}
 	var body dto.UpdatableFolkloreFieldsDTO
 	updFields := dtoMappers.DtoUpdatableToDomain(body)
-	folk, err := h.UpdateUC.Execute(c.Request.Context(), idInt, updFields)
+	folk, err := h.UpdateUC.Execute(c.Request.Context(), *idInt, updFields)
 	if err != nil {
 		response.HandleDomainError(c, err)
 	}
@@ -79,18 +78,13 @@ func (h *HandlerFolklore) Update(c *gin.Context) {
 }
 
 func (h *HandlerFolklore) GetByID(c *gin.Context) {
-	id := c.Param("id")
-	if id == "" {
-		response.HandleDomainError(c, domErr.ErrInvalidInput)
-		return
-	}
-	idInt, err := strconv.Atoi(id)
+	idInt, err := utils.GetIdFromParams(c)
 	if err != nil {
 		response.HandleDomainError(c, domErr.ErrInternal)
 		return
 	}
 
-	folk, err := h.GetByIdUC.Execute(c.Request.Context(), idInt)
+	folk, err := h.GetByIdUC.Execute(c.Request.Context(), *idInt)
 	if err != nil {
 		response.HandleDomainError(c, err)
 		return
@@ -99,22 +93,18 @@ func (h *HandlerFolklore) GetByID(c *gin.Context) {
 }
 
 func (h *HandlerFolklore) Delete(c *gin.Context) {
-	id := c.Param("id")
-	if id == "" {
-		response.HandleDomainError(c, domErr.ErrInvalidInput)
-		return
-	}
-	idInt, err := strconv.Atoi(id)
+
+	idInt, err := utils.GetIdFromParams(c)
 	if err != nil {
 		response.HandleDomainError(c, domErr.ErrInternal)
 		return
 	}
-	err := h.DeleteUC.Execute(c.Request.Context(), idInt)
+	err = h.DeleteUC.Execute(c.Request.Context(), *idInt)
 	if err != nil {
 		response.HandleDomainError(c, err)
 		return
 	}
-	response.Success(c, 200, "record deleted				")
+	response.Success(c, 200, "record deleted")
 }
 
 func (h *HandlerFolklore) GetAll(c *gin.Context) {
@@ -125,7 +115,37 @@ func (h *HandlerFolklore) GetAll(c *gin.Context) {
 	}
 	response.Success(c, 200, folk)
 }
-func (h *HandlerFolklore) ToggleLike(c *gin.Context) {
-	id := c.Param("id")
 
+func (h *HandlerFolklore) ToggleLike(c *gin.Context) {
+	id, err := utils.GetIdFromParams(c)
+	if err != nil {
+		response.HandleDomainError(c, domErr.ErrInternal)
+		return
+	}
+	userID, err := middleware.GetCurrentUserID(c)
+	if err != nil {
+		response.HandleDomainError(c, err)
+		return
+	}
+	folk, isLiked, err := h.ToggleLikeUC.Execute(c.Request.Context(), *id, int(*userID))
+	if err != nil {
+		response.HandleDomainError(c, err)
+		return
+	}
+	response.Success(c, 200, folk, gin.H{"liked": isLiked})
+
+}
+
+func (h *HandlerFolklore) GetLikedFolklore(c *gin.Context) {
+	id, err := utils.GetIdFromParams(c)
+	if err != nil {
+		response.HandleDomainError(c, domErr.ErrInternal)
+		return
+	}
+	folklore, err := h.GetLikedUC.Execute(c.Request.Context(), *id)
+	if err != nil {
+		response.HandleDomainError(c, err)
+		return
+	}
+	response.Success(c, 200, folklore)
 }

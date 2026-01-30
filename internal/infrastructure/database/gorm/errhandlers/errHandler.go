@@ -1,9 +1,10 @@
-package utils
+package errhandlers
 
 import (
 	errs "DaraTilBackendV2/internal/domain/domErr"
 	"context"
 	"errors"
+
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 )
