@@ -59,7 +59,8 @@ func (h *HandlerFolklore) Create(c *gin.Context) {
 		response.HandleDomainError(c, err)
 		return
 	}
-	response.Success(c, 200, folk)
+	folkDto := dtoMappers.FolkloreToDto(*folk)
+	response.Success(c, 200, folkDto)
 }
 
 func (h *HandlerFolklore) Update(c *gin.Context) {
@@ -74,7 +75,8 @@ func (h *HandlerFolklore) Update(c *gin.Context) {
 	if err != nil {
 		response.HandleDomainError(c, err)
 	}
-	response.Success(c, 200, folk)
+	folkDto := dtoMappers.FolkloreToDto(*folk)
+	response.Success(c, 200, folkDto)
 }
 
 func (h *HandlerFolklore) GetByID(c *gin.Context) {
@@ -89,7 +91,8 @@ func (h *HandlerFolklore) GetByID(c *gin.Context) {
 		response.HandleDomainError(c, err)
 		return
 	}
-	response.Success(c, 200, folk)
+	folkDto := dtoMappers.FolkloreToDto(*folk)
+	response.Success(c, 200, folkDto)
 }
 
 func (h *HandlerFolklore) Delete(c *gin.Context) {
@@ -113,7 +116,12 @@ func (h *HandlerFolklore) GetAll(c *gin.Context) {
 		response.HandleDomainError(c, err)
 		return
 	}
-	response.Success(c, 200, folk)
+	var folkDto []dto.FolkloreDTO
+	for _, f := range folk {
+		fd := dtoMappers.FolkloreToDto(f)
+		folkDto = append(folkDto, fd)
+	}
+	response.Success(c, 200, folkDto)
 }
 
 func (h *HandlerFolklore) ToggleLike(c *gin.Context) {
@@ -132,7 +140,8 @@ func (h *HandlerFolklore) ToggleLike(c *gin.Context) {
 		response.HandleDomainError(c, err)
 		return
 	}
-	response.Success(c, 200, folk, gin.H{"liked": isLiked})
+	folkDto := dtoMappers.FolkloreToDto(*folk)
+	response.Success(c, 200, folkDto, gin.H{"liked": isLiked})
 
 }
 
@@ -147,5 +156,10 @@ func (h *HandlerFolklore) GetLikedFolklore(c *gin.Context) {
 		response.HandleDomainError(c, err)
 		return
 	}
-	response.Success(c, 200, folklore)
+	var folkDto []dto.FolkloreDTO
+	for _, f := range folklore {
+		fd := dtoMappers.FolkloreToDto(f)
+		folkDto = append(folkDto, fd)
+	}
+	response.Success(c, 200, folkDto)
 }

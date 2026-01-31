@@ -8,21 +8,21 @@ import (
 )
 
 type UpdateFolkloreUC struct {
-	Repo       repo.FolkloreRepo
-	Translator repo.Translator
+	repo       repo.FolkloreRepo
+	translator repo.Translator
 }
 
 func NewUpdateFolkloreUC(repo repo.FolkloreRepo, translator repo.Translator) *UpdateFolkloreUC {
 	return &UpdateFolkloreUC{
-		Repo:       repo,
-		Translator: translator,
+		repo:       repo,
+		translator: translator,
 	}
 }
 
 func (uc UpdateFolkloreUC) Execute(ctx context.Context, folkloreID int, fields models.UpdatableFolkloreFields) (*models.Folklore, error) {
 	if fields.Name != nil && fields.Content != nil {
 		query := fmt.Sprintf("name" + *fields.Name + "\ncontent:" + *fields.Content)
-		translation, err := uc.Translator.Translate(context.Background(), query)
+		translation, err := uc.translator.Translate(context.Background(), query)
 		if err != nil {
 			return nil, err
 		}
@@ -48,5 +48,5 @@ func (uc UpdateFolkloreUC) Execute(ctx context.Context, folkloreID int, fields m
 		fields.Translations = append(fields.Translations, en)
 		fields.Translations = append(fields.Translations, kz)
 	}
-	return uc.Repo.Update(ctx, folkloreID, fields)
+	return uc.repo.Update(ctx, folkloreID, fields)
 }

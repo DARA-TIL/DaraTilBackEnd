@@ -1,4 +1,4 @@
-package repositories
+package repository
 
 import (
 	"DaraTilBackendV2/internal/domain/domErr"
@@ -31,7 +31,7 @@ func (f FolkloreRepository) Create(ctx context.Context, folklore models.Folklore
 		return nil
 	})
 	if err != nil {
-		return nil, errhandlers.ErrHandler(err)
+		return nil, errhandlers.DBErrHandler(err)
 	}
 	folklore = gormMappers.GormFolkloreToDomainModel(folkloreGorm)
 	return &folklore, nil
@@ -40,7 +40,7 @@ func (f FolkloreRepository) Create(ctx context.Context, folklore models.Folklore
 func (f FolkloreRepository) GetByID(ctx context.Context, id int) (*models.Folklore, error) {
 	var folklore gormModels.Folklore
 	if err := f.db.WithContext(ctx).Preload("Translations").First(&folklore, id).Error; err != nil {
-		return nil, errhandlers.ErrHandler(err)
+		return nil, errhandlers.DBErrHandler(err)
 	}
 	domainFolklore := gormMappers.GormFolkloreToDomainModel(folklore)
 	return &domainFolklore, nil
@@ -49,7 +49,7 @@ func (f FolkloreRepository) GetByID(ctx context.Context, id int) (*models.Folklo
 func (f FolkloreRepository) GetAll(ctx context.Context) ([]models.Folklore, error) {
 	var folklores []gormModels.Folklore
 	if err := f.db.WithContext(ctx).Preload("Translations").Find(&folklores).Error; err != nil {
-		return nil, errhandlers.ErrHandler(err)
+		return nil, errhandlers.DBErrHandler(err)
 	}
 	domainFolklore := make([]models.Folklore, 0)
 	for _, folklore := range folklores {
@@ -102,19 +102,14 @@ func (f FolkloreRepository) Update(ctx context.Context, id int, fields models.Up
 		return nil
 	})
 	if err != nil {
-		return nil, errhandlers.ErrHandler(err)
+		return nil, errhandlers.DBErrHandler(err)
 	}
-	var folklore gormModels.Folklore
-	if err := f.db.WithContext(ctx).Preload("Translations").First(&folklore, id).Error; err != nil {
-		return nil, errhandlers.ErrHandler(err)
-	}
-	domainFolklore := gormMappers.GormFolkloreToDomainModel(folklore)
-	return &domainFolklore, nil
+	return f.GetByID(ctx, id)
 }
 
 func (f FolkloreRepository) Delete(ctx context.Context, id int) error {
 	if err := f.db.WithContext(ctx).Delete(&gormModels.Folklore{}, id).Error; err != nil {
-		return errhandlers.ErrHandler(err)
+		return errhandlers.DBErrHandler(err)
 	}
 	return nil
 }
@@ -141,7 +136,7 @@ func (f FolkloreRepository) ToggleLike(ctx context.Context, folkloreID, userID i
 		})
 		liked = true
 	case err != nil:
-		return nil, false, errhandlers.ErrHandler(err)
+		return nil, false, errhandlers.DBErrHandler(err)
 
 	default:
 		err = f.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
@@ -155,12 +150,12 @@ func (f FolkloreRepository) ToggleLike(ctx context.Context, folkloreID, userID i
 			return nil
 		})
 		if err != nil {
-			return nil, false, errhandlers.ErrHandler(err)
+			return nil, false, errhandlers.DBErrHandler(err)
 		}
 	}
 	var folklore gormModels.Folklore
 	if err := f.db.WithContext(ctx).Preload("Translations").Where("id = ?", folkloreID).First(&folklore).Error; err != nil {
-		return nil, liked, errhandlers.ErrHandler(err)
+		return nil, liked, errhandlers.DBErrHandler(err)
 	}
 	domainFolklore := gormMappers.GormFolkloreToDomainModel(folklore)
 	return &domainFolklore, liked, nil
@@ -186,7 +181,7 @@ func (f FolkloreRepository) GetByQuery(ctx context.Context, query models.Folklor
 	}
 	var folklores []gormModels.Folklore
 	if err := db.WithContext(ctx).Find(&folklores).Error; err != nil {
-		return nil, errhandlers.ErrHandler(err)
+		return nil, errhandlers.DBErrHandler(err)
 	}
 	var domainFolklore []models.Folklore
 	for _, folklore := range folklores {
@@ -198,11 +193,11 @@ func (f FolkloreRepository) GetByQuery(ctx context.Context, query models.Folklor
 
 func (f FolkloreRepository) GetLikedFolklore(ctx context.Context, userID int) ([]models.Folklore, error) {
 	var folklore []models.Folklore
-	if err := f.db.
+	if err := f.db.WithContext(ctx).
 		Joins("JOIN folklore_likes ON folklore_likes.folklore_id = folklores.id").
 		Where("folklore_likes.user_id = ?", userID).
 		Find(&folklore).Error; err != nil {
-		return nil, errhandlers.ErrHandler(err)
+		return nil, errhandlers.DBErrHandler(err)
 	}
 
 	if len(folklore) == 0 {

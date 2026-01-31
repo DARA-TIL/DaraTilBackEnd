@@ -8,20 +8,20 @@ import (
 )
 
 type CreateFolkloreUC struct {
-	Repo       repo.FolkloreRepo
-	Translator repo.Translator
+	repo       repo.FolkloreRepo
+	translator repo.Translator
 }
 
 func NewCreateFolkloreUC(repo repo.FolkloreRepo, tr repo.Translator) *CreateFolkloreUC {
 	return &CreateFolkloreUC{
-		Repo:       repo,
-		Translator: tr,
+		repo:       repo,
+		translator: tr,
 	}
 }
 
 func (uc CreateFolkloreUC) Execute(ctx context.Context, folklore models.Folklore) (*models.Folklore, error) {
 	query := fmt.Sprintf("name" + folklore.Name + "\ncontent:" + folklore.Content)
-	translation, err := uc.Translator.Translate(context.Background(), query)
+	translation, err := uc.translator.Translate(context.Background(), query)
 	if err != nil {
 		return nil, err
 	}
@@ -46,5 +46,5 @@ func (uc CreateFolkloreUC) Execute(ctx context.Context, folklore models.Folklore
 	folklore.Translations = append(folklore.Translations, ru)
 	folklore.Translations = append(folklore.Translations, en)
 	folklore.Translations = append(folklore.Translations, kz)
-	return uc.Repo.Create(ctx, folklore)
+	return uc.repo.Create(ctx, folklore)
 }

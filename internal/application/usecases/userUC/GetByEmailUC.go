@@ -7,14 +7,14 @@ import (
 )
 
 type GetUserByEmailUC struct {
-	Repo repo.UserRepo
+	repo repo.UserRepo
 }
 
 func NewGetUserByEmailUC(repo repo.UserRepo) *GetUserByEmailUC {
 	return &GetUserByEmailUC{
-		Repo: repo,
+		repo: repo,
 	}
 }
 func (uc *GetUserByEmailUC) Execute(ctx context.Context, email string) (*models.User, error) {
-	return uc.Repo.GetByEmail(ctx, email)
+	return uc.repo.GetByEmail(ctx, email)
 }

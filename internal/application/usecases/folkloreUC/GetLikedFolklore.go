@@ -7,15 +7,15 @@ import (
 )
 
 type GetLikedFolkloreUC struct {
-	Repo repo.FolkloreRepo
+	repo repo.FolkloreRepo
 }
 
 func NewGetLikedFolkloreUC(repo repo.FolkloreRepo) *GetLikedFolkloreUC {
 	return &GetLikedFolkloreUC{
-		Repo: repo,
+		repo: repo,
 	}
 }
 
 func (uc GetLikedFolkloreUC) Execute(ctx context.Context, userID int) ([]models.Folklore, error) {
-	return uc.Repo.GetLikedFolklore(ctx, userID)
+	return uc.repo.GetLikedFolklore(ctx, userID)
 }

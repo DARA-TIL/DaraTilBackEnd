@@ -7,14 +7,14 @@ import (
 )
 
 type GetUserByIdUC struct {
-	Repo repo.UserRepo
+	repo repo.UserRepo
 }
 
 func NewGetUserByIdUC(repo repo.UserRepo) *GetUserByEmailUC {
 	return &GetUserByEmailUC{
-		Repo: repo,
+		repo: repo,
 	}
 }
 func (uc *GetUserByIdUC) Execute(ctx context.Context, id int) (*models.User, error) {
-	return uc.Repo.GetByID(ctx, id)
+	return uc.repo.GetByID(ctx, id)
 }

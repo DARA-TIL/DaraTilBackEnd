@@ -7,13 +7,13 @@ import (
 )
 
 type GetFolkloreByQueryUC struct {
-	Repo repo.FolkloreRepo
+	repo repo.FolkloreRepo
 }
 
 func NewGetFolkloreByQueryUC(repo repo.FolkloreRepo) GetFolkloreByQueryUC {
-	return GetFolkloreByQueryUC{Repo: repo}
+	return GetFolkloreByQueryUC{repo: repo}
 }
 
 func (uc GetFolkloreByQueryUC) Execute(ctx context.Context, q models.FolkloreFilter) ([]models.Folklore, error) {
-	return uc.Repo.GetByQuery(ctx, q)
+	return uc.repo.GetByQuery(ctx, q)
 }

@@ -6,7 +6,7 @@ import (
 	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/infrastructure/ai/gemini"
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/postgres"
-	"DaraTilBackendV2/internal/infrastructure/database/gorm/repositories"
+	"DaraTilBackendV2/internal/infrastructure/database/gorm/repository"
 	"fmt"
 	"log"
 

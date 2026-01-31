@@ -6,15 +6,15 @@ import (
 )
 
 type DeleteFolkloreUC struct {
-	Repo repo.FolkloreRepo
+	repo repo.FolkloreRepo
 }
 
 func NewDeleteFolkloreUC(repo repo.FolkloreRepo) DeleteFolkloreUC {
 	return DeleteFolkloreUC{
-		Repo: repo,
+		repo: repo,
 	}
 }
 
 func (uc DeleteFolkloreUC) Execute(ctx context.Context, folkloreID int) error {
-	return uc.Repo.Delete(ctx, folkloreID)
+	return uc.repo.Delete(ctx, folkloreID)
 }

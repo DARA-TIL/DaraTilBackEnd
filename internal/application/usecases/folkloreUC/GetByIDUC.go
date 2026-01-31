@@ -7,14 +7,14 @@ import (
 )
 
 type GetFolkloreByIDUC struct {
-	Repo repo.FolkloreRepo
+	repo repo.FolkloreRepo
 }
 
 func NewGetByFolkloreIDUC(repo repo.FolkloreRepo) *GetFolkloreByIDUC {
 	return &GetFolkloreByIDUC{
-		Repo: repo,
+		repo: repo,
 	}
 }
 func (uc GetFolkloreByIDUC) Execute(ctx context.Context, folkloreID int) (*models.Folklore, error) {
-	return uc.Repo.GetByID(ctx, folkloreID)
+	return uc.repo.GetByID(ctx, folkloreID)
 }

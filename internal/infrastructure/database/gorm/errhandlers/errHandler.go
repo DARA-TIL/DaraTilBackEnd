@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func ErrHandler(err error) error {
+func DBErrHandler(err error) error {
 	if err == nil {
 		return nil
 	}

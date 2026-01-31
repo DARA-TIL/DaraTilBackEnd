@@ -24,4 +24,5 @@ type UserUpdatableFields struct {
 	Username *string
 	Avatar   *string
 	Role     *string
+	Password *string
 }

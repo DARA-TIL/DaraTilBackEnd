@@ -10,18 +10,19 @@ import (
 )
 
 type CreateUserUC struct {
-	Repo repo.UserRepo
+	repo repo.UserRepo
 }
 
 func NewCreateUserUC(repo repo.UserRepo) *CreateUserUC {
-	return &CreateUserUC{Repo: repo}
+	return &CreateUserUC{repo: repo}
 }
 
-func (uc *CreateUserUC) Execute(ctx context.Context, user models.User) (*models.User, error) {
+func (uc *CreateUserUC) Execute(ctx context.Context, user models.User, authProvider string) (*models.User, error) {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, domErr.ErrInternal
 	}
 	user.Password = string(hashed)
-	return uc.Repo.Create(ctx, user)
+	user.AuthProvider = authProvider
+	return uc.repo.Create(ctx, user)
 }

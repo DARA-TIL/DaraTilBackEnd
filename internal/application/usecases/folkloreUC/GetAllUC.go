@@ -7,15 +7,15 @@ import (
 )
 
 type GetAllFolkloreUC struct {
-	Repo repo.FolkloreRepo
+	repo repo.FolkloreRepo
 }
 
 func NewGetAllFolkloreUC(repo repo.FolkloreRepo) *GetAllFolkloreUC {
 	return &GetAllFolkloreUC{
-		Repo: repo,
+		repo: repo,
 	}
 }
 
 func (uc *GetAllFolkloreUC) Execute(ctx context.Context) ([]models.Folklore, error) {
-	return uc.Repo.GetAll(ctx)
+	return uc.repo.GetAll(ctx)
 }
