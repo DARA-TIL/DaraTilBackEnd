@@ -15,6 +15,6 @@ func NewGetByFolkloreIDUC(repo repo.FolkloreRepo) *GetFolkloreByIDUC {
 		repo: repo,
 	}
 }
-func (uc GetFolkloreByIDUC) Execute(ctx context.Context, folkloreID int) (*models.Folklore, error) {
+func (uc *GetFolkloreByIDUC) Execute(ctx context.Context, folkloreID int) (*models.Folklore, error) {
 	return uc.repo.GetByID(ctx, folkloreID)
 }

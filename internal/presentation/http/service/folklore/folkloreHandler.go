@@ -146,7 +146,7 @@ func (h *HandlerFolklore) ToggleLike(c *gin.Context) {
 }
 
 func (h *HandlerFolklore) GetLikedFolklore(c *gin.Context) {
-	id, err := utils.GetIdFromParams(c)
+	id, err := middleware.GetCurrentUserID(c)
 	if err != nil {
 		response.HandleDomainError(c, domErr.ErrInternal)
 		return

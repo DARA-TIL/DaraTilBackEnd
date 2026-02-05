@@ -1,8 +1,9 @@
-package auth
+package utils
 
 import (
+	"DaraTilBackendV2/internal/application/models"
 	"DaraTilBackendV2/internal/config"
-	"DaraTilBackendV2/internal/domain/models"
+	errs "DaraTilBackendV2/internal/domain/domErr"
 	"crypto/sha256"
 	"encoding/hex"
 	"time"
@@ -10,31 +11,18 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type TokenPair struct {
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
-}
-
-type CustomClaims struct {
-	UserID   uint   `json:"userId"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Role     string `json:"role"`
-	jwt.RegisteredClaims
-}
-
-func hashToken(token string) string {
+func HashToken(token string) string {
 	sum := sha256.Sum256([]byte(token))
 	return hex.EncodeToString(sum[:])
 }
 
-func GenerateTokenPair(user models.User, cfg *config.Config) (*TokenPair, error) {
+func GenerateTokenPair(user models.UserClaims, cfg *config.Config) (*models.TokenPair, error) {
 	now := time.Now()
 	accessExp := now.Add(time.Minute * time.Duration(cfg.Jwt.JwtAccessExpiresMin))
 	refreshExp := now.Add(time.Hour * time.Duration(cfg.Jwt.JwtRefreshExpiresHours))
 
-	accessClaims := CustomClaims{
-		UserID:   user.ID,
+	accessClaims := models.CustomClaims{
+		UserID:   user.UserID,
 		Username: user.Username,
 		Email:    user.Email,
 		Role:     user.Role,
@@ -45,8 +33,8 @@ func GenerateTokenPair(user models.User, cfg *config.Config) (*TokenPair, error)
 		},
 	}
 
-	refreshClaims := CustomClaims{
-		UserID:   user.ID,
+	refreshClaims := models.CustomClaims{
+		UserID:   user.UserID,
 		Username: user.Username,
 		Email:    user.Email,
 		Role:     user.Role,
@@ -61,13 +49,14 @@ func GenerateTokenPair(user models.User, cfg *config.Config) (*TokenPair, error)
 
 	access, err := accessToken.SignedString([]byte(cfg.Jwt.JwtAccessSecret))
 	if err != nil {
-		return nil, err
+		return nil, errs.ErrInternal
 	}
+
 	refresh, err := refreshToken.SignedString([]byte(cfg.Jwt.JwtRefreshSecret))
 	if err != nil {
-		return nil, err
+		return nil, errs.ErrInternal
 	}
-	return &TokenPair{
+	return &models.TokenPair{
 		AccessToken:  access,
 		RefreshToken: refresh,
 	}, nil

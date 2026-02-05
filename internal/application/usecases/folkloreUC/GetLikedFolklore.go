@@ -16,6 +16,6 @@ func NewGetLikedFolkloreUC(repo repo.FolkloreRepo) *GetLikedFolkloreUC {
 	}
 }
 
-func (uc GetLikedFolkloreUC) Execute(ctx context.Context, userID int) ([]models.Folklore, error) {
+func (uc *GetLikedFolkloreUC) Execute(ctx context.Context, userID int) ([]models.Folklore, error) {
 	return uc.repo.GetLikedFolklore(ctx, userID)
 }

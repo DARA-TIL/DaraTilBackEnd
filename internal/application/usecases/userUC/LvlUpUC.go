@@ -14,6 +14,6 @@ func NewLvlUpUC(repo repo.UserRepo) *LvlUpUC {
 	return &LvlUpUC{repo: repo}
 }
 
-func (u LvlUpUC) Execute(ctx context.Context, userId, xpAdded int) (int, int, bool, *models.User, error) {
+func (u *LvlUpUC) Execute(ctx context.Context, userId, xpAdded int) (int, int, bool, *models.User, error) {
 	return u.repo.LvlUp(ctx, userId, xpAdded)
 }

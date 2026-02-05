@@ -19,7 +19,7 @@ func NewCreateFolkloreUC(repo repo.FolkloreRepo, tr repo.Translator) *CreateFolk
 	}
 }
 
-func (uc CreateFolkloreUC) Execute(ctx context.Context, folklore models.Folklore) (*models.Folklore, error) {
+func (uc *CreateFolkloreUC) Execute(ctx context.Context, folklore models.Folklore) (*models.Folklore, error) {
 	query := fmt.Sprintf("name" + folklore.Name + "\ncontent:" + folklore.Content)
 	translation, err := uc.translator.Translate(context.Background(), query)
 	if err != nil {

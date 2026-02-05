@@ -15,6 +15,6 @@ func NewDeleteFolkloreUC(repo repo.FolkloreRepo) DeleteFolkloreUC {
 	}
 }
 
-func (uc DeleteFolkloreUC) Execute(ctx context.Context, folkloreID int) error {
+func (uc *DeleteFolkloreUC) Execute(ctx context.Context, folkloreID int) error {
 	return uc.repo.Delete(ctx, folkloreID)
 }
