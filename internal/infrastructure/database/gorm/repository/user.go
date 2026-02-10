@@ -127,3 +127,16 @@ func (u *UserRepository) LvlUp(ctx context.Context, userId, xpAdded int) (int, i
 	userDom := gormMappers.GormUserToDomain(user)
 	return prevLevel, prevXp, isLvlUp, &userDom, nil
 }
+
+func (u *UserRepository) GetByUsername(ctx context.Context, username string) ([]models.User, error) {
+	var userGorm []gormModels.User
+	err := u.db.WithContext(ctx).Preload("Progress").Where("username = ?", username).Find(&userGorm).Error
+	if err != nil {
+		return nil, errhandlers.DBErrHandler(err)
+	}
+	var domUsers []models.User
+	for _, user := range userGorm {
+		domUsers = append(domUsers, gormMappers.GormUserToDomain(user))
+	}
+	return domUsers, nil
+}

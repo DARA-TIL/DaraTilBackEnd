@@ -10,8 +10,8 @@ type GetUserByIdUC struct {
 	repo repo.UserRepo
 }
 
-func NewGetUserByIdUC(repo repo.UserRepo) *GetUserByEmailUC {
-	return &GetUserByEmailUC{
+func NewGetUserByIdUC(repo repo.UserRepo) *GetUserByIdUC {
+	return &GetUserByIdUC{
 		repo: repo,
 	}
 }

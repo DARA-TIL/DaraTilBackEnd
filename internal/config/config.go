@@ -1,7 +1,14 @@
 package config
 
 import (
+	"log"
+
+	"github.com/gorilla/sessions"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/markbates/goth"
+	"github.com/markbates/goth/gothic"
+	"github.com/markbates/goth/providers/github"
+	"github.com/markbates/goth/providers/google"
 )
 
 type Config struct {
@@ -52,4 +59,39 @@ func LoadConfig() (*Config, error) {
 		return &cfg, err
 	}
 	return &cfg, nil
+}
+func (c *Config) SetupGoogleOAuth() {
+	callbackURL := c.Server.BaseUrl + "/api/auth/google/callback"
+
+	goth.UseProviders(
+		google.New(
+			c.Oauth.GoogleClientId,
+			c.Oauth.GoogleClientSecret,
+			callbackURL,
+			"email", "profile",
+		),
+	)
+}
+
+func (c *Config) SetupGithubOAuth() {
+	callbackURL := c.Server.BaseUrl + "/api/auth/github/callback"
+	goth.UseProviders(
+		github.New(
+			c.Oauth.GithubClientId,
+			c.Oauth.GithubClientSecret,
+			callbackURL,
+			"user"),
+	)
+}
+
+func (c *Config) SetupSessionStore() {
+	secret := c.Session.SessionSecret
+	if secret == "" {
+		log.Fatal("SESSION_SECRET is not set")
+	}
+	store := sessions.NewCookieStore([]byte(secret))
+	store.Options.HttpOnly = true
+	store.Options.Secure = false
+	store.Options.SameSite = 2
+	gothic.Store = store
 }

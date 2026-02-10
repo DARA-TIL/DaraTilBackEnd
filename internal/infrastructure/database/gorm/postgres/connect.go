@@ -13,7 +13,7 @@ type PostgresRepository struct {
 	Db *gorm.DB
 }
 
-func NewPostgresRepository(cfg config.Config) *PostgresRepository {
+func NewPostgresRepository(cfg *config.Config) *PostgresRepository {
 	db, err := gorm.Open(postgres.Open(cfg.Database.DatabaseUrl), &gorm.Config{})
 	log.Printf("Starting Database Connection")
 	if err != nil {

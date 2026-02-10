@@ -2,11 +2,13 @@ package jwt
 
 import (
 	"DaraTilBackendV2/internal/application/usecases/jwtTokenUC"
+	"DaraTilBackendV2/internal/application/usecases/userUC"
 	"DaraTilBackendV2/internal/application/utils"
 	"DaraTilBackendV2/internal/config"
 	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/presentation/dto"
 	"DaraTilBackendV2/internal/presentation/dto/dtoMappers"
+	"DaraTilBackendV2/internal/presentation/http/middleware"
 	"DaraTilBackendV2/internal/presentation/http/response"
 	"log"
 	"net/http"
@@ -17,19 +19,21 @@ import (
 )
 
 type JwtTokenHandler struct {
-	CreateUC jwtTokenUC.CreateTokenUC
-	FindUC   jwtTokenUC.FindTokenUC
-	RevokeUC jwtTokenUC.RevokeJwtUC
-	cfg      *config.Config
+	CreateUC   *jwtTokenUC.CreateTokenUC
+	FindUC     *jwtTokenUC.FindTokenUC
+	RevokeUC   *jwtTokenUC.RevokeJwtUC
+	FindByIdUC *userUC.GetUserByIdUC
+	cfg        *config.Config
 }
 
-func NewJwtTokenHandler(createUc jwtTokenUC.CreateTokenUC, findUc jwtTokenUC.FindTokenUC,
-	revokeUc jwtTokenUC.RevokeJwtUC, cfg *config.Config) *JwtTokenHandler {
+func NewJwtTokenHandler(createUc *jwtTokenUC.CreateTokenUC, findUc *jwtTokenUC.FindTokenUC,
+	revokeUc *jwtTokenUC.RevokeJwtUC, findByIdUC *userUC.GetUserByIdUC, cfg *config.Config) *JwtTokenHandler {
 	return &JwtTokenHandler{
-		CreateUC: createUc,
-		FindUC:   findUc,
-		RevokeUC: revokeUc,
-		cfg:      cfg,
+		CreateUC:   createUc,
+		FindUC:     findUc,
+		RevokeUC:   revokeUc,
+		FindByIdUC: findByIdUC,
+		cfg:        cfg,
 	}
 }
 
@@ -169,4 +173,18 @@ func (h *JwtTokenHandler) Logout(c *gin.Context) {
 	}
 	deleteCookie()
 	c.Status(http.StatusNoContent)
+}
+
+func (h *JwtTokenHandler) GetMe(c *gin.Context) {
+	claims, isAuth := middleware.GetUserClaims(c)
+	if !isAuth {
+		response.Fail(c, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+	user, err := h.FindByIdUC.Execute(c.Request.Context(), claims.UserID)
+	if err != nil {
+		response.HandleDomainError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"user": user})
 }

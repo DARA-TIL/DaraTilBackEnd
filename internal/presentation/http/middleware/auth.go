@@ -3,7 +3,7 @@ package middleware
 import (
 	"DaraTilBackendV2/internal/config"
 	"DaraTilBackendV2/internal/domain/domErr"
-	"DaraTilBackendV2/internal/presentation/auth"
+	"DaraTilBackendV2/internal/presentation/dto"
 	"DaraTilBackendV2/internal/presentation/http/response"
 	"errors"
 	"strings"
@@ -32,7 +32,7 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 		}
 		tokenStr := parts[1]
 
-		claims := &auth.CustomClaims{}
+		claims := &dto.CustomClaims{}
 
 		token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -62,12 +62,12 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 	}
 }
 
-func GetUserClaims(c *gin.Context) (*auth.CustomClaims, bool) {
+func GetUserClaims(c *gin.Context) (*dto.CustomClaims, bool) {
 	val, exists := c.Get(ContextUserKey)
 	if !exists {
 		return nil, false
 	}
-	claims, ok := val.(*auth.CustomClaims)
+	claims, ok := val.(*dto.CustomClaims)
 	if !ok {
 		return nil, false
 	}
@@ -89,7 +89,7 @@ func RequireRole(requiredRoles ...string) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		claims, ok := val.(*auth.CustomClaims)
+		claims, ok := val.(*dto.CustomClaims)
 		if !ok {
 			response.HandleDomainError(c, domErr.ErrUnauthorized)
 			c.Abort()

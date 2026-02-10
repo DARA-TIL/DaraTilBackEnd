@@ -10,7 +10,7 @@ type FindTokenUC struct {
 	repo repo.JwtTokensRepo
 }
 
-func NewRefreshTokenUC(repo repo.JwtTokensRepo) *FindTokenUC {
+func NewFindTokenUC(repo repo.JwtTokensRepo) *FindTokenUC {
 	return &FindTokenUC{repo: repo}
 }
 func (uc *FindTokenUC) Execute(ctx context.Context, userId int, refreshToken string) (*models.Token, error) {

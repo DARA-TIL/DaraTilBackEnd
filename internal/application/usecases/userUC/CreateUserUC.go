@@ -17,12 +17,11 @@ func NewCreateUserUC(repo repo.UserRepo) *CreateUserUC {
 	return &CreateUserUC{repo: repo}
 }
 
-func (uc *CreateUserUC) Execute(ctx context.Context, user models.User, authProvider string) (*models.User, error) {
+func (uc *CreateUserUC) Execute(ctx context.Context, user models.User) (*models.User, error) {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, domErr.ErrInternal
 	}
 	user.Password = string(hashed)
-	user.AuthProvider = authProvider
 	return uc.repo.Create(ctx, user)
 }
