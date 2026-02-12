@@ -10,8 +10,8 @@ type ToggleLikeUC struct {
 	repo repo.FolkloreRepo
 }
 
-func NewToggleLikeUC(repo repo.FolkloreRepo) ToggleLikeUC {
-	return ToggleLikeUC{repo: repo}
+func NewToggleLikeUC(repo repo.FolkloreRepo) *ToggleLikeUC {
+	return &ToggleLikeUC{repo: repo}
 }
 
 func (uc *ToggleLikeUC) Execute(ctx context.Context, folkloreID, userID int) (*models.Folklore, bool, error) {

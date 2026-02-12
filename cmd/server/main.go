@@ -15,7 +15,6 @@ func main() {
 	}
 	cfg.SetupGithubOAuth()
 	cfg.SetupGoogleOAuth()
-
 	app := app.New(cfg)
 	app.Run()
 }

@@ -94,7 +94,8 @@ func (u *UserRepository) GetAll(ctx context.Context) ([]models.User, error) {
 	}
 	return domUsers, nil
 }
-func (u *UserRepository) LvlUp(ctx context.Context, userId, xpAdded int) (int, int, bool, *models.User, error) {
+
+func (u *UserRepository) LvlUp(ctx context.Context, userId, xpAdded int) models.LvlRet {
 	var prevLevel, prevXp int
 	var isLvlUp bool
 	var user gormModels.User
@@ -122,10 +123,16 @@ func (u *UserRepository) LvlUp(ctx context.Context, userId, xpAdded int) (int, i
 		return nil
 	})
 	if err != nil {
-		return 0, 0, false, nil, err
+		return models.LvlRet{Err: err}
 	}
 	userDom := gormMappers.GormUserToDomain(user)
-	return prevLevel, prevXp, isLvlUp, &userDom, nil
+	return models.LvlRet{
+		PrevLevel: prevLevel,
+		PrevXp:    prevXp,
+		IsLvlUp:   isLvlUp,
+		User:      &userDom,
+		Err:       nil,
+	}
 }
 
 func (u *UserRepository) GetByUsername(ctx context.Context, username string) ([]models.User, error) {

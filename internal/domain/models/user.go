@@ -26,3 +26,10 @@ type UserUpdatableFields struct {
 	Role     *string
 	Password *string
 }
+type LvlRet struct {
+	PrevLevel int
+	PrevXp    int
+	IsLvlUp   bool
+	User      *User
+	Err       error
+}

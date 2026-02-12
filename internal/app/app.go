@@ -2,13 +2,15 @@ package app
 
 import (
 	"DaraTilBackendV2/internal/config"
+	"DaraTilBackendV2/internal/infrastructure/logger"
 	"DaraTilBackendV2/internal/presentation/http/middleware"
+	"DaraTilBackendV2/internal/presentation/http/service/folklore"
 	"DaraTilBackendV2/internal/presentation/http/service/user"
-	"log"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type App struct {
@@ -38,23 +40,37 @@ func (a *App) setupMiddleware() {
 
 func (a *App) setupRoutes() {
 	api := a.router.Group("/api")
+
+	//Auth
 	auth := api.Group("/auth")
 	authSecure := api.Group("/auth")
 	authSecure.Use(middleware.AuthMiddleware(a.cfg))
 
-	user.RegisterRoutes(
+	//user
+	userRoute := api.Group("/user")
+	userSecure := api.Group("/user")
+	userSecure.Use(middleware.AuthMiddleware(a.cfg))
+	user.RegisterAuthRoutes(
 		auth,
 		a.container.UserHandler,
 		a.container.JwtHandler,
 	)
-	user.RegisterProtectedRoutes(authSecure, a.container.JwtHandler)
+	user.RegisterAuthProtectedRoutes(authSecure, a.container.JwtHandler)
+	user.RegisterRoutes(userRoute, a.container.UserHandler)
+	user.RegisterProtectedRoutes(userSecure, a.container.UserHandler)
+
+	//Folklore
+	folk := api.Group("/folklore")
+	folk.Use(middleware.AuthMiddleware(a.cfg))
+	folklore.RegisterRoutes(folk, a.container.FolkloreHandler)
 }
 
 func (a *App) Run() {
 	a.cfg.SetupSessionStore()
 	a.setupMiddleware()
 	a.setupRoutes()
+	logger.Init(true)
 
-	log.Printf("Server started on :%s", a.cfg.Server.Port)
+	logger.Info("App started:", zap.String("port", a.cfg.Server.Port))
 	_ = a.router.Run(":" + a.cfg.Server.Port)
 }

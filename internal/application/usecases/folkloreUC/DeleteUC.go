@@ -9,8 +9,8 @@ type DeleteFolkloreUC struct {
 	repo repo.FolkloreRepo
 }
 
-func NewDeleteFolkloreUC(repo repo.FolkloreRepo) DeleteFolkloreUC {
-	return DeleteFolkloreUC{
+func NewDeleteFolkloreUC(repo repo.FolkloreRepo) *DeleteFolkloreUC {
+	return &DeleteFolkloreUC{
 		repo: repo,
 	}
 }

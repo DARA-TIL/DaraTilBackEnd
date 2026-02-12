@@ -1,44 +1,37 @@
 package user
 
 import (
-	models2 "DaraTilBackendV2/internal/application/models"
+	"DaraTilBackendV2/internal/application/usecases/folkloreUC"
 	"DaraTilBackendV2/internal/application/usecases/jwtTokenUC"
 	"DaraTilBackendV2/internal/application/usecases/userUC"
 	"DaraTilBackendV2/internal/config"
 	errs "DaraTilBackendV2/internal/domain/domErr"
 	"DaraTilBackendV2/internal/domain/models"
+	"DaraTilBackendV2/internal/infrastructure/logger"
 	"DaraTilBackendV2/internal/presentation/dto"
 	"DaraTilBackendV2/internal/presentation/dto/dtoMappers"
+	"DaraTilBackendV2/internal/presentation/http/middleware"
 	"DaraTilBackendV2/internal/presentation/http/response"
-	"context"
-	"errors"
-	"fmt"
+	"DaraTilBackendV2/internal/presentation/http/utils"
 	"log"
 	"net/http"
-	"net/url"
-	"strings"
-	"time"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/markbates/goth/gothic"
-	"golang.org/x/crypto/bcrypt"
-)
-
-const (
-	refreshCookieKey = "refreshToken"
-	DeviceWeb        = "Web"
+	"go.uber.org/zap"
 )
 
 type UserHandler struct {
-	CreateUC        *userUC.CreateUserUC
-	GetAllUC        *userUC.GetAllUsersUC
-	GetByEmailUC    *userUC.GetUserByEmailUC
-	GetByIdUC       *userUC.GetUserByIdUC
-	LvlUpUC         *userUC.LvlUpUC
-	UpdateUC        *userUC.UpdateUserUC
-	IssueTokenUC    *jwtTokenUC.IssueTokenUC
-	GetByUsernameUC *userUC.GetByUsernameUC
-	cfg             *config.Config
+	CreateUC           *userUC.CreateUserUC
+	GetAllUC           *userUC.GetAllUsersUC
+	GetByEmailUC       *userUC.GetUserByEmailUC
+	GetByIdUC          *userUC.GetUserByIdUC
+	LvlUpUC            *userUC.LvlUpUC
+	UpdateUC           *userUC.UpdateUserUC
+	IssueTokenUC       *jwtTokenUC.IssueTokenUC
+	GetByUsernameUC    *userUC.GetByUsernameUC
+	GetLikedFolkloreUC *folkloreUC.GetLikedFolkloreUC
+	cfg                *config.Config
 }
 
 func NewUserHandler(
@@ -65,177 +58,253 @@ func NewUserHandler(
 	}
 }
 
-func (h *UserHandler) Register(c *gin.Context) {
-	var body dto.RegisterRequest
+func (h *UserHandler) UpdateMe(c *gin.Context) {
+	logger.Info("UpdateMe request started",
+		zap.String("ip", c.ClientIP()),
+	)
+
+	var body dto.UserUpdatableFields
 	if err := c.ShouldBindJSON(&body); err != nil {
-		response.Fail(c, http.StatusBadRequest, err.Error())
+		logger.Warn("UpdateMe failed - invalid body",
+			zap.Error(err),
+		)
+		response.HandleDomainError(c, errs.ErrInvalidInput)
 		return
 	}
-	if body.Role == "admin" {
-		body.Role = "user"
+
+	if body.Password != nil {
+		logger.Warn("UpdateMe attempt to change password ignored")
+		body.Password = nil
 	}
-	user := models.User{
-		Username: body.Username,
-		Email:    body.Email,
-		Password: body.Password,
-		Role:     body.Role,
-	}
-	userCr, err := h.CreateUC.Execute(c.Request.Context(), user)
+
+	id, err := middleware.GetCurrentUserID(c)
 	if err != nil {
-		response.HandleDomainError(c, err)
-		return
-	}
-	accessToken, err := h.issueTokensAndSetCookie(c, userCr)
-	if err != nil {
+		logger.Error("UpdateMe failed - cannot get user ID",
+			zap.Error(err),
+		)
 		response.HandleDomainError(c, errs.ErrInternal)
 		return
 	}
-	userDto := dtoMappers.UserToDto(*userCr)
-	response.Success(c, 201, userDto, gin.H{"accessToken": accessToken})
+
+	logger.Info("UpdateMe executing update",
+		zap.Int("user_id", int(*id)),
+	)
+
+	upd := models.UserUpdatableFields{
+		Username: body.Username,
+		Avatar:   body.Avatar,
+		Role:     body.Role,
+	}
+
+	user, err := h.UpdateUC.Execute(c.Request.Context(), *id, upd)
+	if err != nil {
+		logger.Error("UpdateMe failed during update",
+			zap.Int("user_id", int(*id)),
+			zap.Error(err),
+		)
+		response.HandleDomainError(c, errs.ErrInternal)
+		return
+	}
+
+	logger.Info("UpdateMe success",
+		zap.Int("user_id", int(*id)),
+	)
+
+	response.Success(c, 200, dtoMappers.UserToDto(*user))
 }
 
-func (h *UserHandler) Login(c *gin.Context) {
-	var body dto.LoginRequest
+func (h *UserHandler) UpdateByAdmin(c *gin.Context) {
+	logger.Info("Admin update user started")
+
+	id, err := utils.GetIdFromParams(c)
+	if err != nil {
+		logger.Warn("UpdateByAdmin failed - invalid ID param",
+			zap.Error(err),
+		)
+		response.HandleDomainError(c, errs.ErrInvalidInput)
+		return
+	}
+
+	var body dto.UserUpdatableFields
 	if err := c.ShouldBindJSON(&body); err != nil {
-		response.HandleDomainError(c, errs.ErrBadRequest)
+		logger.Warn("UpdateByAdmin failed - invalid body",
+			zap.Error(err),
+		)
+		response.HandleDomainError(c, errs.ErrInvalidInput)
 		return
 	}
-	user, err := h.GetByEmailUC.Execute(c.Request.Context(), body.Email)
+
+	logger.Info("UpdateByAdmin executing update",
+		zap.Int("target_user_id", int(*id)),
+	)
+
+	upd := models.UserUpdatableFields{
+		Username: body.Username,
+		Avatar:   body.Avatar,
+		Role:     body.Role,
+		Password: body.Password,
+	}
+
+	user, err := h.UpdateUC.Execute(c.Request.Context(), *id, upd)
 	if err != nil {
+		logger.Error("UpdateByAdmin failed",
+			zap.Int("target_user_id", int(*id)),
+			zap.Error(err),
+		)
 		response.HandleDomainError(c, err)
 		return
 	}
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
-		response.Fail(c, http.StatusUnauthorized, "Incorrect password")
+
+	logger.Info("UpdateByAdmin success",
+		zap.Int("target_user_id", int(*id)),
+	)
+
+	response.Success(c, 200, dtoMappers.UserToDto(*user))
+}
+
+func (h *UserHandler) GetAllUsers(c *gin.Context) {
+	logger.Info("GetAllUsers request")
+
+	users, err := h.GetAllUC.Execute(c.Request.Context())
+	if err != nil {
+		logger.Error("GetAllUsers failed",
+			zap.Error(err),
+		)
+		response.HandleDomainError(c, errs.ErrInternal)
 		return
 	}
 
-	accessToken, err := h.issueTokensAndSetCookie(c, user)
+	logger.Info("GetAllUsers success",
+		zap.Int("count", len(users)),
+	)
+
+	var dtoUsers []dto.User
+	for _, u := range users {
+		dtoUsers = append(dtoUsers, dtoMappers.UserToDto(u))
+	}
+
+	response.Success(c, 200, dtoUsers)
+}
+
+func (h *UserHandler) GetLikedFolklore(c *gin.Context) {
+	logger.Info("GetLikedFolklore request")
+
+	id, err := middleware.GetCurrentUserID(c)
 	if err != nil {
+		logger.Error("GetLikedFolklore failed - no user ID",
+			zap.Error(err),
+		)
+		response.HandleDomainError(c, errs.ErrInternal)
+		return
+	}
+
+	folk, err := h.GetLikedFolkloreUC.Execute(c.Request.Context(), *id)
+
+	if len(folk) == 0 {
+		logger.Warn("GetLikedFolklore - no records found",
+			zap.Int("user_id", int(*id)),
+		)
+		response.HandleDomainError(c, errs.ErrNotFound)
+		return
+	}
+
+	if err != nil {
+		logger.Error("GetLikedFolklore failed",
+			zap.Int("user_id", int(*id)),
+			zap.Error(err),
+		)
 		response.HandleDomainError(c, err)
 		return
 	}
-	userDto := dtoMappers.UserToDto(*user)
-	response.Success(c, 200, userDto, gin.H{"accessToken": accessToken})
-}
-func (h *UserHandler) OauthLogin(c *gin.Context, provider string) {
-	log.Printf("[OAUTH-LOGIN] Incoming %s login request", provider)
 
-	req := c.Request.WithContext(
-		context.WithValue(c.Request.Context(), "provider", provider),
+	logger.Info("GetLikedFolklore success",
+		zap.Int("user_id", int(*id)),
+		zap.Int("count", len(folk)),
 	)
-	c.Request = req
 
-	gothic.BeginAuthHandler(c.Writer, c.Request)
+	response.Success(c, 200, folk)
 }
 
-func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
-	redirectError := func(msg string) {
-		redirectURL := fmt.Sprintf("%s/login?oauth=error&error=%s", h.cfg.Server.FrontendUrl, msg)
-		c.Redirect(http.StatusTemporaryRedirect, redirectURL)
-	}
+func (h *UserHandler) GetUserByID(c *gin.Context) {
+	logger.Info("GetUserByID request")
 
-	req := c.Request.WithContext(
-		context.WithValue(c.Request.Context(), "provider", provider),
-	)
-	c.Request = req
-
-	userAuth, err := gothic.CompleteUserAuth(c.Writer, c.Request)
+	id, err := utils.GetIdFromParams(c)
 	if err != nil {
-		redirectError("Failed to complete auth for provider")
+		logger.Warn("GetUserByID failed - invalid ID",
+			zap.Error(err),
+		)
+		response.HandleDomainError(c, err)
 		return
 	}
 
-	if userAuth.Email == "" {
-		redirectError(fmt.Sprintf("No email provided by %s", provider))
-		return
-	}
-	user, err := h.GetByEmailUC.Execute(c.Request.Context(), userAuth.Email)
-	if errors.Is(err, errs.ErrNotFound) {
-		baseUsername := userAuth.NickName
-		if baseUsername == "" {
-			parts := strings.Split(userAuth.Email, "@")
-			if len(parts) > 0 {
-				baseUsername = parts[0]
-			} else {
-				baseUsername = "user"
-			}
-		}
-		username, err := GenerateUniqueUsername(c.Request.Context(), baseUsername, h)
-		if err != nil {
-			redirectError(fmt.Sprintf("Problems with Username %s", provider))
-			return
-		}
-		user = &models.User{
-			Username:     username,
-			Email:        userAuth.Email,
-			Password:     "",
-			Avatar:       userAuth.AvatarURL,
-			Role:         "user",
-			AuthProvider: provider,
-		}
-
-		user, err = h.CreateUC.Execute(c.Request.Context(), *user)
-		if err != nil {
-			redirectError("Failed to create user")
-			return
-		}
-	} else if err != nil {
-		redirectError("Internal server error")
-		return
-	} else {
-		log.Printf("[OAUTH-CALLBACK] Existing user found: id=%d, email=%s, provider=%s",
-			user.ID, user.Email, user.AuthProvider)
-	}
-
-	if user.AuthProvider != provider {
-		redirectError("User already signed in with another provider")
-		return
-	}
-
-	log.Printf("[OAUTH-CALLBACK] Provider verified for user id=%d: %s", user.ID, provider)
-
-	_, err = h.issueTokensAndSetCookie(c, user)
+	user, err := h.GetByIdUC.Execute(c, *id)
 	if err != nil {
-		log.Printf("[OAUTH-CALLBACK] Failed to create tokens for user id=%d: %v", user.ID, err)
-		redirectError("Failed to create tokens for user")
+		logger.Error("GetUserByID failed",
+			zap.Int("user_id", int(*id)),
+			zap.Error(err),
+		)
+		response.HandleDomainError(c, err)
 		return
 	}
-	log.Printf("[OAUTH-CALLBACK] Tokens generated successfully for user id=%d", user.ID)
 
-	redirectURL := fmt.Sprintf("%s/login?%s",
-		h.cfg.Server.FrontendUrl,
-		url.Values{"oauth": []string{provider}}.Encode(),
+	logger.Info("GetUserByID success",
+		zap.Int("user_id", int(*id)),
 	)
-	log.Printf("[OAUTH-CALLBACK] Redirecting user id=%d to %s", user.ID, redirectURL)
-	c.Redirect(http.StatusTemporaryRedirect, redirectURL)
+
+	response.Success(c, 200, user)
 }
 
-func (h *UserHandler) issueTokensAndSetCookie(c *gin.Context, user *models.User) (string, error) {
-	meta := models2.TokenMeta{
-		Device:    DeviceWeb,
-		IpAddress: c.ClientIP(),
-		UserAgent: c.Request.UserAgent(),
-	}
-	userClaims := models2.UserClaims{
-		UserID:   int(user.ID),
-		Username: user.Username,
-		Email:    user.Email,
-		Role:     user.Role,
-	}
-	issueRes, err := h.IssueTokenUC.Execute(c.Request.Context(), meta, userClaims)
+func (h *UserHandler) LevelUp(c *gin.Context) {
+	logger.Info("LevelUp request started")
+
+	id, err := middleware.GetCurrentUserID(c)
 	if err != nil {
-		return "", err
+		logger.Error("LevelUp failed - cannot get user ID",
+			zap.Error(err),
+		)
+		response.HandleDomainError(c, errs.ErrInternal)
+		return
 	}
-	maxAgeSeconds := int(time.Until(issueRes.RefreshExp).Seconds())
-	http.SetCookie(c.Writer, &http.Cookie{
-		Name:     refreshCookieKey,
-		Value:    issueRes.RefreshToken,
-		Path:     "/",
-		MaxAge:   maxAgeSeconds,
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
+
+	xpParam := c.Param("xp")
+	xp, err := strconv.Atoi(xpParam)
+
+	if err != nil {
+		logger.Error("LevelUp failed - invalid XP param",
+			zap.String("xp_param", xpParam),
+			zap.Error(err),
+		)
+		log.Printf("[FOLKLORE][LevelUp] Error: %+v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "internal server error"})
+		return
+	}
+
+	logger.Info("LevelUp executing",
+		zap.Int("user_id", int(*id)),
+		zap.Int("xp_added", xp),
+	)
+
+	lvlRet := h.LvlUpUC.Execute(c.Request.Context(), *id, xp)
+
+	if lvlRet.Err != nil {
+		logger.Error("LevelUp failed during execution",
+			zap.Int("user_id", int(*id)),
+			zap.Error(lvlRet.Err),
+		)
+		response.HandleDomainError(c, errs.ErrInternal)
+		return
+	}
+
+	logger.Info("LevelUp success",
+		zap.Int("user_id", int(*id)),
+		zap.Bool("is_level_up", lvlRet.IsLvlUp),
+		zap.Int("prev_xp", lvlRet.PrevXp),
+		zap.Int("prev_level", lvlRet.PrevLevel),
+	)
+
+	response.Success(c, 200, lvlRet.User, gin.H{
+		"isLvlUp":   lvlRet.IsLvlUp,
+		"prevXp":    lvlRet.PrevXp,
+		"prevLevel": lvlRet.PrevLevel,
 	})
-	return issueRes.AccessToken, nil
 }

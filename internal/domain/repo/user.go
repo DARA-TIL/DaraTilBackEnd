@@ -12,5 +12,5 @@ type UserRepo interface {
 	GetByID(ctx context.Context, id int) (*models.User, error)
 	Update(ctx context.Context, id int, upd models.UserUpdatableFields) (*models.User, error)
 	GetAll(ctx context.Context) ([]models.User, error)
-	LvlUp(ctx context.Context, userId, xpAdded int) (int, int, bool, *models.User, error) //prevLvl,prevXp,isLvlUp,UserCur, err
+	LvlUp(ctx context.Context, userId, xpAdded int) models.LvlRet //prevLvl,prevXp,isLvlUp,UserCur, err
 }

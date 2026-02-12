@@ -1,18 +1,22 @@
 package app
 
 import (
+	"DaraTilBackendV2/internal/application/usecases/folkloreUC"
 	"DaraTilBackendV2/internal/application/usecases/jwtTokenUC"
 	"DaraTilBackendV2/internal/application/usecases/userUC"
 	"DaraTilBackendV2/internal/config"
+	"DaraTilBackendV2/internal/infrastructure/ai/gemini"
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/postgres"
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/repository"
+	"DaraTilBackendV2/internal/presentation/http/service/folklore"
 	"DaraTilBackendV2/internal/presentation/http/service/jwt"
 	"DaraTilBackendV2/internal/presentation/http/service/user"
 )
 
 type Container struct {
-	UserHandler *user.UserHandler
-	JwtHandler  *jwt.JwtTokenHandler
+	UserHandler     *user.UserHandler
+	JwtHandler      *jwt.JwtTokenHandler
+	FolkloreHandler *folklore.FolkloreHandler
 }
 
 func NewContainer(cfg *config.Config) *Container {
@@ -24,6 +28,10 @@ func NewContainer(cfg *config.Config) *Container {
 	// Repos
 	userRepo := repository.NewUserRepository(db)
 	jwtRepo := repository.NewJwtRepository(db)
+	folkloreRepo := repository.NewFolkloreRepository(db)
+
+	//AI
+	geminiAI := gemini.NewGeminiAI(cfg)
 
 	// User UCs
 	createUserUC := userUC.NewCreateUserUC(userRepo)
@@ -39,6 +47,16 @@ func NewContainer(cfg *config.Config) *Container {
 	issueTokenUC := jwtTokenUC.NewIssueTokenUC(*createTokenUC, cfg)
 	findTokenUC := jwtTokenUC.NewFindTokenUC(jwtRepo)
 	revokeJwtUC := jwtTokenUC.NewRevokeJwtUC(jwtRepo)
+
+	//folklore Ucs
+	createFolkloreUC := folkloreUC.NewCreateFolkloreUC(folkloreRepo, geminiAI)
+	deleteFolkloreUC := folkloreUC.NewDeleteFolkloreUC(folkloreRepo)
+	getAllFolkloreUC := folkloreUC.NewGetAllFolkloreUC(folkloreRepo)
+	getByIdFolkloreUC := folkloreUC.NewGetByFolkloreIDUC(folkloreRepo)
+	getByQueryFolkloreUC := folkloreUC.NewGetFolkloreByQueryUC(folkloreRepo)
+	getLikedFolkloreUC := folkloreUC.NewGetLikedFolkloreUC(folkloreRepo)
+	toggleLikeFolkloreUC := folkloreUC.NewToggleLikeUC(folkloreRepo)
+	updateFolkloreUC := folkloreUC.NewUpdateFolkloreUC(folkloreRepo, geminiAI)
 
 	// Handlers
 	jwtHandler := jwt.NewJwtTokenHandler(
@@ -61,8 +79,20 @@ func NewContainer(cfg *config.Config) *Container {
 		cfg,
 	)
 
+	folkloreHandler := folklore.NewFolkloreHandler(
+		createFolkloreUC,
+		updateFolkloreUC,
+		getByIdFolkloreUC,
+		deleteFolkloreUC,
+		getByQueryFolkloreUC,
+		getAllFolkloreUC,
+		toggleLikeFolkloreUC,
+		getLikedFolkloreUC,
+	)
+
 	return &Container{
-		UserHandler: userHandler,
-		JwtHandler:  jwtHandler,
+		UserHandler:     userHandler,
+		JwtHandler:      jwtHandler,
+		FolkloreHandler: folkloreHandler,
 	}
 }

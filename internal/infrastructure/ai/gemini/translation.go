@@ -15,7 +15,7 @@ type AiGemini struct {
 	client *genai.Client
 }
 
-func NewGeminiAI(cfg config.Config) *AiGemini {
+func NewGeminiAI(cfg *config.Config) *AiGemini {
 	client, err := genai.NewClient(context.Background(), &genai.ClientConfig{
 		APIKey:  cfg.Gemini.GeminiApiKey,
 		Backend: genai.BackendGeminiAPI,
