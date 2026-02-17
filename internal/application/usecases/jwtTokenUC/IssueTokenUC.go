@@ -11,11 +11,11 @@ import (
 )
 
 type IssueTokenUC struct {
-	CreateUc CreateTokenUC
+	CreateUc CreateUC
 	cfg      *config.Config
 }
 
-func NewIssueTokenUC(createUC CreateTokenUC, cfg *config.Config) *IssueTokenUC {
+func NewIssueTokenUC(createUC CreateUC, cfg *config.Config) *IssueTokenUC {
 	return &IssueTokenUC{
 		CreateUc: createUC,
 		cfg:      cfg,

@@ -7,19 +7,19 @@ import (
 	"fmt"
 )
 
-type UpdateFolkloreUC struct {
+type UpdateUC struct {
 	repo       repo.FolkloreRepo
 	translator repo.Translator
 }
 
-func NewUpdateFolkloreUC(repo repo.FolkloreRepo, translator repo.Translator) *UpdateFolkloreUC {
-	return &UpdateFolkloreUC{
+func NewUpdateUC(repo repo.FolkloreRepo, translator repo.Translator) *UpdateUC {
+	return &UpdateUC{
 		repo:       repo,
 		translator: translator,
 	}
 }
 
-func (uc *UpdateFolkloreUC) Execute(ctx context.Context, folkloreID int, fields models.UpdatableFolkloreFields) (*models.Folklore, error) {
+func (uc *UpdateUC) Execute(ctx context.Context, folkloreID int, fields models.UpdatableFolkloreFields) (*models.Folklore, error) {
 	if fields.Name != nil && fields.Content != nil {
 		query := fmt.Sprintf("name" + *fields.Name + "\ncontent:" + *fields.Content)
 		translation, err := uc.translator.Translate(context.Background(), query)

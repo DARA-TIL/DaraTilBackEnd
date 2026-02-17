@@ -5,16 +5,16 @@ import (
 	"context"
 )
 
-type DeleteFolkloreUC struct {
+type DeleteUC struct {
 	repo repo.FolkloreRepo
 }
 
-func NewDeleteFolkloreUC(repo repo.FolkloreRepo) *DeleteFolkloreUC {
-	return &DeleteFolkloreUC{
+func NewDeleteUC(repo repo.FolkloreRepo) *DeleteUC {
+	return &DeleteUC{
 		repo: repo,
 	}
 }
 
-func (uc *DeleteFolkloreUC) Execute(ctx context.Context, folkloreID int) error {
+func (uc *DeleteUC) Execute(ctx context.Context, folkloreID int) error {
 	return uc.repo.Delete(ctx, folkloreID)
 }

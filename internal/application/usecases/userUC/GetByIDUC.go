@@ -6,15 +6,15 @@ import (
 	"context"
 )
 
-type GetUserByIdUC struct {
+type GetByIdUC struct {
 	repo repo.UserRepo
 }
 
-func NewGetUserByIdUC(repo repo.UserRepo) *GetUserByIdUC {
-	return &GetUserByIdUC{
+func NewGetByIdUC(repo repo.UserRepo) *GetByIdUC {
+	return &GetByIdUC{
 		repo: repo,
 	}
 }
-func (uc *GetUserByIdUC) Execute(ctx context.Context, id int) (*models.User, error) {
+func (uc *GetByIdUC) Execute(ctx context.Context, id int) (*models.User, error) {
 	return uc.repo.GetByID(ctx, id)
 }

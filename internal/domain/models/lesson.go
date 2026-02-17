@@ -1,7 +1,7 @@
 package models
 
 type Lesson struct {
-	ID            uint
+	ID            int
 	Name          string
 	Description   string
 	ImageUrl      string
@@ -12,11 +12,27 @@ type Lesson struct {
 }
 
 type LessonBlock struct {
-	ID          uint
+	ID          int
 	Name        string
 	ContentType string
 	ContentUrl  string
 	ContentText string
-	LessonID    uint
+	LessonID    int
 	Position    int
+}
+type UpdateLessonFields struct {
+	Name          *string
+	Description   *string
+	ImageUrl      *string
+	Author        *string
+	Reward        *int
+	RequiredLevel *int
+}
+type UpdateLessonBLockFields struct {
+	Name        *string
+	ContentType *string
+	ContentUrl  *string
+	ContentText *string
+	Position    *int
+	LessonID    *int
 }

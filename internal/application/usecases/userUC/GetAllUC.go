@@ -6,14 +6,14 @@ import (
 	"context"
 )
 
-type GetAllUsersUC struct {
+type GetAllUC struct {
 	repo repo.UserRepo
 }
 
-func NewGetAllUsersUC(repo repo.UserRepo) *GetAllUsersUC {
-	return &GetAllUsersUC{repo: repo}
+func NewGetAllUC(repo repo.UserRepo) *GetAllUC {
+	return &GetAllUC{repo: repo}
 }
 
-func (uc *GetAllUsersUC) Execute(ctx context.Context) ([]models.User, error) {
+func (uc *GetAllUC) Execute(ctx context.Context) ([]models.User, error) {
 	return uc.repo.GetAll(ctx)
 }

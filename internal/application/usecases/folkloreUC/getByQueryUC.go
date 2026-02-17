@@ -6,14 +6,14 @@ import (
 	"context"
 )
 
-type GetFolkloreByQueryUC struct {
+type GetByQueryUC struct {
 	repo repo.FolkloreRepo
 }
 
-func NewGetFolkloreByQueryUC(repo repo.FolkloreRepo) *GetFolkloreByQueryUC {
-	return &GetFolkloreByQueryUC{repo: repo}
+func NewGetByQueryUC(repo repo.FolkloreRepo) *GetByQueryUC {
+	return &GetByQueryUC{repo: repo}
 }
 
-func (uc *GetFolkloreByQueryUC) Execute(ctx context.Context, q models.FolkloreFilter) ([]models.Folklore, error) {
+func (uc *GetByQueryUC) Execute(ctx context.Context, q models.FolkloreFilter) ([]models.Folklore, error) {
 	return uc.repo.GetByQuery(ctx, q)
 }

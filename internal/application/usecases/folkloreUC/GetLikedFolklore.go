@@ -6,16 +6,16 @@ import (
 	"context"
 )
 
-type GetLikedFolkloreUC struct {
+type GetLikedUC struct {
 	repo repo.FolkloreRepo
 }
 
-func NewGetLikedFolkloreUC(repo repo.FolkloreRepo) *GetLikedFolkloreUC {
-	return &GetLikedFolkloreUC{
+func NewGetLikedFolkloreUC(repo repo.FolkloreRepo) *GetLikedUC {
+	return &GetLikedUC{
 		repo: repo,
 	}
 }
 
-func (uc *GetLikedFolkloreUC) Execute(ctx context.Context, userID int) ([]models.Folklore, error) {
+func (uc *GetLikedUC) Execute(ctx context.Context, userID int) ([]models.Folklore, error) {
 	return uc.repo.GetLikedFolklore(ctx, userID)
 }

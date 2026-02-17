@@ -20,15 +20,15 @@ import (
 )
 
 type JwtTokenHandler struct {
-	CreateUC   *jwtTokenUC.CreateTokenUC
-	FindUC     *jwtTokenUC.FindTokenUC
+	CreateUC   *jwtTokenUC.CreateUC
+	FindUC     *jwtTokenUC.FindUC
 	RevokeUC   *jwtTokenUC.RevokeJwtUC
-	FindByIdUC *userUC.GetUserByIdUC
+	FindByIdUC *userUC.GetByIdUC
 	cfg        *config.Config
 }
 
-func NewJwtTokenHandler(createUc *jwtTokenUC.CreateTokenUC, findUc *jwtTokenUC.FindTokenUC,
-	revokeUc *jwtTokenUC.RevokeJwtUC, findByIdUC *userUC.GetUserByIdUC, cfg *config.Config) *JwtTokenHandler {
+func NewJwtTokenHandler(createUc *jwtTokenUC.CreateUC, findUc *jwtTokenUC.FindUC,
+	revokeUc *jwtTokenUC.RevokeJwtUC, findByIdUC *userUC.GetByIdUC, cfg *config.Config) *JwtTokenHandler {
 	return &JwtTokenHandler{
 		CreateUC:   createUc,
 		FindUC:     findUc,

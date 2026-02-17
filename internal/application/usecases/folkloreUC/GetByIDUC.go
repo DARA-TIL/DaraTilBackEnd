@@ -6,15 +6,15 @@ import (
 	"context"
 )
 
-type GetFolkloreByIDUC struct {
+type GetByIDUC struct {
 	repo repo.FolkloreRepo
 }
 
-func NewGetByFolkloreIDUC(repo repo.FolkloreRepo) *GetFolkloreByIDUC {
-	return &GetFolkloreByIDUC{
+func NewGetByFolkloreIDUC(repo repo.FolkloreRepo) *GetByIDUC {
+	return &GetByIDUC{
 		repo: repo,
 	}
 }
-func (uc *GetFolkloreByIDUC) Execute(ctx context.Context, folkloreID int) (*models.Folklore, error) {
+func (uc *GetByIDUC) Execute(ctx context.Context, folkloreID int) (*models.Folklore, error) {
 	return uc.repo.GetByID(ctx, folkloreID)
 }

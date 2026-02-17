@@ -5,6 +5,7 @@ import (
 	"DaraTilBackendV2/internal/infrastructure/logger"
 	"DaraTilBackendV2/internal/presentation/http/middleware"
 	"DaraTilBackendV2/internal/presentation/http/service/folklore"
+	"DaraTilBackendV2/internal/presentation/http/service/lesson"
 	"DaraTilBackendV2/internal/presentation/http/service/user"
 	"time"
 
@@ -63,6 +64,11 @@ func (a *App) setupRoutes() {
 	folk := api.Group("/folklore")
 	folk.Use(middleware.AuthMiddleware(a.cfg))
 	folklore.RegisterRoutes(folk, a.container.FolkloreHandler)
+
+	//Lesson
+	lessonRoute := api.Group("/lesson")
+	lessonRoute.Use(middleware.AuthMiddleware(a.cfg))
+	lesson.RegisterRoutes(lessonRoute, a.container.LessonHandler)
 }
 
 func (a *App) Run() {

@@ -9,16 +9,16 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UpdateUserUC struct {
+type UpdateUC struct {
 	repo repo.UserRepo
 }
 
-func NewUpdateUserUC(repo repo.UserRepo) *UpdateUserUC {
-	return &UpdateUserUC{
+func NewUpdateUC(repo repo.UserRepo) *UpdateUC {
+	return &UpdateUC{
 		repo: repo,
 	}
 }
-func (uc *UpdateUserUC) Execute(ctx context.Context, id int, fields models.UserUpdatableFields) (*models.User, error) {
+func (uc *UpdateUC) Execute(ctx context.Context, id int, fields models.UserUpdatableFields) (*models.User, error) {
 	if fields.Password != nil {
 		hashed, err := bcrypt.GenerateFromPassword([]byte(*fields.Password), bcrypt.DefaultCost)
 		if err != nil {

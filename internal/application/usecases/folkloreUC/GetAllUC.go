@@ -6,16 +6,16 @@ import (
 	"context"
 )
 
-type GetAllFolkloreUC struct {
+type GetAllUC struct {
 	repo repo.FolkloreRepo
 }
 
-func NewGetAllFolkloreUC(repo repo.FolkloreRepo) *GetAllFolkloreUC {
-	return &GetAllFolkloreUC{
+func NewGetAllUC(repo repo.FolkloreRepo) *GetAllUC {
+	return &GetAllUC{
 		repo: repo,
 	}
 }
 
-func (uc *GetAllFolkloreUC) Execute(ctx context.Context) ([]models.Folklore, error) {
+func (uc *GetAllUC) Execute(ctx context.Context) ([]models.Folklore, error) {
 	return uc.repo.GetAll(ctx)
 }

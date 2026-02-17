@@ -16,25 +16,25 @@ import (
 )
 
 type FolkloreHandler struct {
-	CreateUC     *folkloreUC.CreateFolkloreUC
-	UpdateUC     *folkloreUC.UpdateFolkloreUC
-	GetByIdUC    *folkloreUC.GetFolkloreByIDUC
-	DeleteUC     *folkloreUC.DeleteFolkloreUC
-	GetByQueryUC *folkloreUC.GetFolkloreByQueryUC
-	GetAllUC     *folkloreUC.GetAllFolkloreUC
+	CreateUC     *folkloreUC.CreateUC
+	UpdateUC     *folkloreUC.UpdateUC
+	GetByIdUC    *folkloreUC.GetByIDUC
+	DeleteUC     *folkloreUC.DeleteUC
+	GetByQueryUC *folkloreUC.GetByQueryUC
+	GetAllUC     *folkloreUC.GetAllUC
 	ToggleLikeUC *folkloreUC.ToggleLikeUC
-	GetLikedUC   *folkloreUC.GetLikedFolkloreUC
+	GetLikedUC   *folkloreUC.GetLikedUC
 }
 
 func NewFolkloreHandler(
-	createUC *folkloreUC.CreateFolkloreUC,
-	updateUC *folkloreUC.UpdateFolkloreUC,
-	getByIdUC *folkloreUC.GetFolkloreByIDUC,
-	deleteUC *folkloreUC.DeleteFolkloreUC,
-	queryUC *folkloreUC.GetFolkloreByQueryUC,
-	getAllUC *folkloreUC.GetAllFolkloreUC,
+	createUC *folkloreUC.CreateUC,
+	updateUC *folkloreUC.UpdateUC,
+	getByIdUC *folkloreUC.GetByIDUC,
+	deleteUC *folkloreUC.DeleteUC,
+	queryUC *folkloreUC.GetByQueryUC,
+	getAllUC *folkloreUC.GetAllUC,
 	toggleLikeUC *folkloreUC.ToggleLikeUC,
-	getLikedUC *folkloreUC.GetLikedFolkloreUC,
+	getLikedUC *folkloreUC.GetLikedUC,
 ) *FolkloreHandler {
 
 	return &FolkloreHandler{
@@ -85,7 +85,7 @@ func (h *FolkloreHandler) Update(c *gin.Context) {
 	}
 
 	var body dto.UpdatableFolkloreFieldsDTO
-	updFields := dtoMappers.DtoUpdatableToDomain(body)
+	updFields := dtoMappers.DtoUpdatableFolkloreToDomain(body)
 
 	folk, err := h.UpdateUC.Execute(c.Request.Context(), *idInt, updFields)
 	if err != nil {

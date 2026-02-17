@@ -7,19 +7,19 @@ import (
 	"fmt"
 )
 
-type CreateFolkloreUC struct {
+type CreateUC struct {
 	repo       repo.FolkloreRepo
 	translator repo.Translator
 }
 
-func NewCreateFolkloreUC(repo repo.FolkloreRepo, tr repo.Translator) *CreateFolkloreUC {
-	return &CreateFolkloreUC{
+func NewCreateUC(repo repo.FolkloreRepo, tr repo.Translator) *CreateUC {
+	return &CreateUC{
 		repo:       repo,
 		translator: tr,
 	}
 }
 
-func (uc *CreateFolkloreUC) Execute(ctx context.Context, folklore models.Folklore) (*models.Folklore, error) {
+func (uc *CreateUC) Execute(ctx context.Context, folklore models.Folklore) (*models.Folklore, error) {
 	query := fmt.Sprintf("name" + folklore.Name + "\ncontent:" + folklore.Content)
 	translation, err := uc.translator.Translate(context.Background(), query)
 	if err != nil {

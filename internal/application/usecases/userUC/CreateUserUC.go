@@ -9,15 +9,15 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type CreateUserUC struct {
+type CreateUC struct {
 	repo repo.UserRepo
 }
 
-func NewCreateUserUC(repo repo.UserRepo) *CreateUserUC {
-	return &CreateUserUC{repo: repo}
+func NewCreateUC(repo repo.UserRepo) *CreateUC {
+	return &CreateUC{repo: repo}
 }
 
-func (uc *CreateUserUC) Execute(ctx context.Context, user models.User) (*models.User, error) {
+func (uc *CreateUC) Execute(ctx context.Context, user models.User) (*models.User, error) {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, domErr.ErrInternal

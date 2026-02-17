@@ -6,15 +6,15 @@ import (
 	"context"
 )
 
-type GetUserByEmailUC struct {
+type GetByEmailUC struct {
 	repo repo.UserRepo
 }
 
-func NewGetUserByEmailUC(repo repo.UserRepo) *GetUserByEmailUC {
-	return &GetUserByEmailUC{
+func NewGetByEmailUC(repo repo.UserRepo) *GetByEmailUC {
+	return &GetByEmailUC{
 		repo: repo,
 	}
 }
-func (uc *GetUserByEmailUC) Execute(ctx context.Context, email string) (*models.User, error) {
+func (uc *GetByEmailUC) Execute(ctx context.Context, email string) (*models.User, error) {
 	return uc.repo.GetByEmail(ctx, email)
 }

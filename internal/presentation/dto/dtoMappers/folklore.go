@@ -65,7 +65,7 @@ func translationsToDto(translations []models.FolkloreTranslation) []dto.Folklore
 	return translationsDto
 }
 
-func DtoUpdatableToDomain(upd dto.UpdatableFolkloreFieldsDTO) models.UpdatableFolkloreFields {
+func DtoUpdatableFolkloreToDomain(upd dto.UpdatableFolkloreFieldsDTO) models.UpdatableFolkloreFields {
 	return models.UpdatableFolkloreFields{
 		Type:     upd.Type,
 		Author:   upd.Author,
@@ -76,7 +76,7 @@ func DtoUpdatableToDomain(upd dto.UpdatableFolkloreFieldsDTO) models.UpdatableFo
 		ImageUrl: upd.ImageUrl,
 	}
 }
-func UpdatableToDto(upd models.UpdatableFolkloreFields) dto.UpdatableFolkloreFieldsDTO {
+func UpdatableFolkloreToDto(upd models.UpdatableFolkloreFields) dto.UpdatableFolkloreFieldsDTO {
 	return dto.UpdatableFolkloreFieldsDTO{
 		Type:     upd.Type,
 		Author:   upd.Author,

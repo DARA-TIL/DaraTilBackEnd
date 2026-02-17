@@ -22,25 +22,25 @@ import (
 )
 
 type UserHandler struct {
-	CreateUC           *userUC.CreateUserUC
-	GetAllUC           *userUC.GetAllUsersUC
-	GetByEmailUC       *userUC.GetUserByEmailUC
-	GetByIdUC          *userUC.GetUserByIdUC
+	CreateUC           *userUC.CreateUC
+	GetAllUC           *userUC.GetAllUC
+	GetByEmailUC       *userUC.GetByEmailUC
+	GetByIdUC          *userUC.GetByIdUC
 	LvlUpUC            *userUC.LvlUpUC
-	UpdateUC           *userUC.UpdateUserUC
+	UpdateUC           *userUC.UpdateUC
 	IssueTokenUC       *jwtTokenUC.IssueTokenUC
 	GetByUsernameUC    *userUC.GetByUsernameUC
-	GetLikedFolkloreUC *folkloreUC.GetLikedFolkloreUC
+	GetLikedFolkloreUC *folkloreUC.GetLikedUC
 	cfg                *config.Config
 }
 
 func NewUserHandler(
-	createUC *userUC.CreateUserUC,
-	getAllUC *userUC.GetAllUsersUC,
-	getByEmailUC *userUC.GetUserByEmailUC,
-	getByIdUC *userUC.GetUserByIdUC,
+	createUC *userUC.CreateUC,
+	getAllUC *userUC.GetAllUC,
+	getByEmailUC *userUC.GetByEmailUC,
+	getByIdUC *userUC.GetByIdUC,
 	lvlUpUC *userUC.LvlUpUC,
-	updateUC *userUC.UpdateUserUC,
+	updateUC *userUC.UpdateUC,
 	issueTokenUC *jwtTokenUC.IssueTokenUC,
 	getByUsernameUC *userUC.GetByUsernameUC,
 	cfg *config.Config,
