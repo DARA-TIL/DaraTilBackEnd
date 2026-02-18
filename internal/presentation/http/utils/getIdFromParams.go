@@ -7,14 +7,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetIdFromParams(c *gin.Context) (*int, error) {
+func GetIdFromParams(c *gin.Context) (*uint, error) {
 	id := c.Param("id")
 	if id == "" {
 		return nil, domErr.ErrInvalidInput
 	}
-	idInt, err := strconv.Atoi(id)
+	idUint64, err := strconv.ParseUint(id, 10, 64)
 	if err != nil {
 		return nil, domErr.ErrInvalidInput
 	}
-	return &idInt, nil
+	idUint := uint(idUint64)
+	return &idUint, nil
 }

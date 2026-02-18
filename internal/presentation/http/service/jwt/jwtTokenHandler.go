@@ -40,7 +40,7 @@ func NewJwtTokenHandler(createUc *jwtTokenUC.CreateUC, findUc *jwtTokenUC.FindUC
 
 func (h *JwtTokenHandler) CreateAndStoreToken(c *gin.Context, userClaims dto.UserClaims) (*dto.TokenPair, error) {
 	logger.Info("Creating token pair",
-		zap.Int("user_id", userClaims.UserID),
+		zap.Uint("user_id", userClaims.UserID),
 		zap.String("ip", c.ClientIP()),
 	)
 
@@ -48,7 +48,7 @@ func (h *JwtTokenHandler) CreateAndStoreToken(c *gin.Context, userClaims dto.Use
 	tokens, err := utils.GenerateTokenPair(userClaimsDom, h.cfg)
 	if err != nil {
 		logger.Error("Failed to generate token pair",
-			zap.Int("user_id", userClaims.UserID),
+			zap.Uint("user_id", userClaims.UserID),
 			zap.Error(err),
 		)
 		return nil, err
@@ -58,7 +58,7 @@ func (h *JwtTokenHandler) CreateAndStoreToken(c *gin.Context, userClaims dto.Use
 	refreshExp := now.Add(time.Hour * time.Duration(h.cfg.Jwt.JwtRefreshExpiresHours))
 
 	tokenModel := models.Token{
-		UserID:           int(userClaims.UserID),
+		UserID:           userClaims.UserID,
 		RefreshTokenHash: utils.HashToken(tokens.RefreshToken),
 		Device:           "Web",
 		IpAddress:        c.ClientIP(),
@@ -71,14 +71,14 @@ func (h *JwtTokenHandler) CreateAndStoreToken(c *gin.Context, userClaims dto.Use
 	_, err = h.CreateUC.Execute(c.Request.Context(), tokenModel)
 	if err != nil {
 		logger.Error("Failed to store refresh token in DB",
-			zap.Int("user_id", userClaims.UserID),
+			zap.Uint("user_id", userClaims.UserID),
 			zap.Error(err),
 		)
 		return nil, err
 	}
 
 	logger.Info("Refresh token stored successfully",
-		zap.Int("user_id", userClaims.UserID),
+		zap.Uint("user_id", userClaims.UserID),
 	)
 
 	maxAgeSeconds := int(time.Until(refreshExp).Seconds())
@@ -139,13 +139,13 @@ func (h *JwtTokenHandler) RefreshToken(c *gin.Context) {
 	}
 
 	logger.Info("Refresh token validated",
-		zap.Int("user_id", claims.UserID),
+		zap.Uint("user_id", claims.UserID),
 	)
 
 	storedToken, err := h.FindUC.Execute(c.Request.Context(), claims.UserID, utils.HashToken(refreshToken))
 	if err != nil {
 		logger.Error("Refresh token not found in DB",
-			zap.Int("user_id", claims.UserID),
+			zap.Uint("user_id", claims.UserID),
 			zap.Error(err),
 		)
 		response.HandleDomainError(c, err)
@@ -154,7 +154,7 @@ func (h *JwtTokenHandler) RefreshToken(c *gin.Context) {
 
 	if time.Now().After(storedToken.Expires) {
 		logger.Warn("Refresh token expired",
-			zap.Int("user_id", claims.UserID),
+			zap.Uint("user_id", claims.UserID),
 		)
 		response.Fail(c, http.StatusUnauthorized, "Session has been expired")
 		return
@@ -163,7 +163,7 @@ func (h *JwtTokenHandler) RefreshToken(c *gin.Context) {
 	err = h.RevokeUC.Execute(c.Request.Context(), claims.UserID, utils.HashToken(refreshToken))
 	if err != nil {
 		logger.Error("Failed to revoke old refresh token",
-			zap.Int("user_id", claims.UserID),
+			zap.Uint("user_id", claims.UserID),
 			zap.Error(err),
 		)
 		response.HandleDomainError(c, err)
@@ -171,7 +171,7 @@ func (h *JwtTokenHandler) RefreshToken(c *gin.Context) {
 	}
 
 	logger.Info("Old refresh token revoked",
-		zap.Int("user_id", claims.UserID),
+		zap.Uint("user_id", claims.UserID),
 	)
 
 	userClaims := dto.UserClaims{
@@ -184,7 +184,7 @@ func (h *JwtTokenHandler) RefreshToken(c *gin.Context) {
 	tokens, err := h.CreateAndStoreToken(c, userClaims)
 	if err != nil {
 		logger.Error("Failed to create new token pair",
-			zap.Int("user_id", claims.UserID),
+			zap.Uint("user_id", claims.UserID),
 			zap.Error(err),
 		)
 		response.HandleDomainError(c, err)
@@ -192,7 +192,7 @@ func (h *JwtTokenHandler) RefreshToken(c *gin.Context) {
 	}
 
 	logger.Info("New access token issued",
-		zap.Int("user_id", claims.UserID),
+		zap.Uint("user_id", claims.UserID),
 	)
 
 	response.Success(c, http.StatusOK, "success", gin.H{
@@ -240,12 +240,12 @@ func (h *JwtTokenHandler) Logout(c *gin.Context) {
 	}
 
 	logger.Info("Revoking refresh token",
-		zap.Int("user_id", claims.UserID),
+		zap.Uint("user_id", claims.UserID),
 	)
 
 	if err := h.RevokeUC.Execute(c.Request.Context(), claims.UserID, utils.HashToken(refreshToken)); err != nil {
 		logger.Error("Failed to revoke refresh token during logout",
-			zap.Int("user_id", claims.UserID),
+			zap.Uint("user_id", claims.UserID),
 			zap.Error(err),
 		)
 		response.HandleDomainError(c, err)
@@ -254,7 +254,7 @@ func (h *JwtTokenHandler) Logout(c *gin.Context) {
 
 	deleteCookie()
 	logger.Info("Logout successful",
-		zap.Int("user_id", claims.UserID),
+		zap.Uint("user_id", claims.UserID),
 	)
 	c.Status(http.StatusNoContent)
 }
@@ -272,7 +272,7 @@ func (h *JwtTokenHandler) GetMe(c *gin.Context) {
 	user, err := h.FindByIdUC.Execute(c.Request.Context(), claims.UserID)
 	if err != nil {
 		logger.Error("Failed to fetch user in GetMe",
-			zap.Int("user_id", claims.UserID),
+			zap.Uint("user_id", claims.UserID),
 			zap.Error(err),
 		)
 		response.HandleDomainError(c, err)
@@ -280,7 +280,7 @@ func (h *JwtTokenHandler) GetMe(c *gin.Context) {
 	}
 
 	logger.Info("GetMe successful",
-		zap.Int("user_id", claims.UserID),
+		zap.Uint("user_id", claims.UserID),
 	)
 
 	c.JSON(http.StatusOK, gin.H{"user": user})

@@ -44,7 +44,7 @@ func (l LessonRepository) GetAll(ctx context.Context) ([]models.Lesson, error) {
 	return lessons, nil
 }
 
-func (l LessonRepository) GetByID(ctx context.Context, id int) (*models.Lesson, error) {
+func (l LessonRepository) GetByID(ctx context.Context, id uint) (*models.Lesson, error) {
 	var lesson gormModels.Lesson
 	if err := l.db.WithContext(ctx).Preload("Blocks").First(&lesson, id).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
@@ -53,7 +53,7 @@ func (l LessonRepository) GetByID(ctx context.Context, id int) (*models.Lesson, 
 	return &domLesson, nil
 }
 
-func (l LessonRepository) Update(ctx context.Context, id int, upd map[string]any) (*models.Lesson, error) {
+func (l LessonRepository) Update(ctx context.Context, id uint, upd map[string]any) (*models.Lesson, error) {
 	if err := l.db.Model(&gormModels.Lesson{}).Where("id = ?", id).Updates(upd).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
@@ -65,7 +65,7 @@ func (l LessonRepository) Update(ctx context.Context, id int, upd map[string]any
 	return &domLesson, nil
 }
 
-func (l LessonRepository) Delete(ctx context.Context, id int) error {
+func (l LessonRepository) Delete(ctx context.Context, id uint) error {
 	if err := l.db.WithContext(ctx).Delete(&gormModels.Lesson{}, id).Error; err != nil {
 		return errhandlers.DBErrHandler(err)
 	}
@@ -91,7 +91,7 @@ func (l LessonRepository) CreateBlock(ctx context.Context, block models.LessonBl
 	return &block, nil
 }
 
-func (l LessonRepository) UpdateBlock(ctx context.Context, id int, upd map[string]any, position, lessonId *int) (*models.LessonBlock, error) {
+func (l LessonRepository) UpdateBlock(ctx context.Context, id uint, upd map[string]any, position *int, lessonId *uint) (*models.LessonBlock, error) {
 	err := l.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if position != nil && lessonId != nil {
 			if err := swapPositions(tx, id, *position, *lessonId); err != nil {
@@ -119,7 +119,7 @@ func (l LessonRepository) UpdateBlock(ctx context.Context, id int, upd map[strin
 	return &block, nil
 }
 
-func (l LessonRepository) DeleteBlock(ctx context.Context, id int) error {
+func (l LessonRepository) DeleteBlock(ctx context.Context, id uint) error {
 	err := l.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var block gormModels.LessonBlock
 		if err := tx.Where("id = ?", id).First(&block).Error; err != nil {
@@ -128,7 +128,7 @@ func (l LessonRepository) DeleteBlock(ctx context.Context, id int) error {
 		if err := tx.Unscoped().Where("id = ?", id).Delete(&gormModels.LessonBlock{}).Error; err != nil {
 			return errhandlers.DBErrHandler(err)
 		}
-		err := NormalizePositions(tx, int(block.LessonID))
+		err := NormalizePositions(tx, block.LessonID)
 		if err != nil {
 			return errhandlers.DBErrHandler(err)
 		}
@@ -139,7 +139,7 @@ func (l LessonRepository) DeleteBlock(ctx context.Context, id int) error {
 	}
 	return nil
 }
-func NormalizePositions(tx *gorm.DB, lessonID int) error {
+func NormalizePositions(tx *gorm.DB, lessonID uint) error {
 	logger.Info("NormalizePositions started")
 
 	var blocks []gormModels.LessonBlock
@@ -173,7 +173,7 @@ func NormalizePositions(tx *gorm.DB, lessonID int) error {
 	return nil
 }
 
-func swapPositions(tx *gorm.DB, id, position int, lessonID int) error {
+func swapPositions(tx *gorm.DB, id uint, position int, lessonID uint) error {
 	var updBlock gormModels.LessonBlock
 	if err := tx.Model(&gormModels.LessonBlock{}).Where("id = ?", id).First(&updBlock).Error; err != nil {
 		return err

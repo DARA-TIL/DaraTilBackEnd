@@ -38,7 +38,7 @@ func LessonBlocksToGormModel(blocks []models.LessonBlock) []gormModels.LessonBlo
 
 func GormLessonToDomainModel(lesson gormModels.Lesson) models.Lesson {
 	return models.Lesson{
-		ID:            int(lesson.ID),
+		ID:            lesson.ID,
 		Name:          lesson.Name,
 		Description:   lesson.Description,
 		ImageUrl:      lesson.ImageUrl,
@@ -54,7 +54,7 @@ func GormLessonBlocksToDomainModel(blocks []gormModels.LessonBlock) []models.Les
 
 	for _, block := range blocks {
 		domainBlock := models.LessonBlock{
-			ID:          int(block.ID),
+			ID:          block.ID,
 			Name:        block.Name,
 			ContentType: block.ContentType,
 			ContentUrl:  block.ContentUrl,
@@ -80,7 +80,7 @@ func LessonBlockToGormModel(block models.LessonBlock) gormModels.LessonBlock {
 }
 func GormLessonBlockToDomainModel(block gormModels.LessonBlock) models.LessonBlock {
 	return models.LessonBlock{
-		ID:          int(block.ID),
+		ID:          block.ID,
 		Name:        block.Name,
 		ContentType: block.ContentType,
 		ContentUrl:  block.ContentUrl,

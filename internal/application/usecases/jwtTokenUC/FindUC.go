@@ -13,6 +13,6 @@ type FindUC struct {
 func NewFindUC(repo repo.JwtTokensRepo) *FindUC {
 	return &FindUC{repo: repo}
 }
-func (uc *FindUC) Execute(ctx context.Context, userId int, refreshToken string) (*models.Token, error) {
+func (uc *FindUC) Execute(ctx context.Context, userId uint, refreshToken string) (*models.Token, error) {
 	return uc.repo.Find(ctx, userId, refreshToken)
 }

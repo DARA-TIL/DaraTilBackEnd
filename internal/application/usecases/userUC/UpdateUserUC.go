@@ -18,7 +18,7 @@ func NewUpdateUC(repo repo.UserRepo) *UpdateUC {
 		repo: repo,
 	}
 }
-func (uc *UpdateUC) Execute(ctx context.Context, id int, fields models.UserUpdatableFields) (*models.User, error) {
+func (uc *UpdateUC) Execute(ctx context.Context, id uint, fields models.UserUpdatableFields) (*models.User, error) {
 	if fields.Password != nil {
 		hashed, err := bcrypt.GenerateFromPassword([]byte(*fields.Password), bcrypt.DefaultCost)
 		if err != nil {

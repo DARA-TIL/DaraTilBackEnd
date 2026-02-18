@@ -19,7 +19,7 @@ func NewUpdateUC(repo repo.FolkloreRepo, translator repo.Translator) *UpdateUC {
 	}
 }
 
-func (uc *UpdateUC) Execute(ctx context.Context, folkloreID int, fields models.UpdatableFolkloreFields) (*models.Folklore, error) {
+func (uc *UpdateUC) Execute(ctx context.Context, folkloreID uint, fields models.UpdatableFolkloreFields) (*models.Folklore, error) {
 	if fields.Name != nil && fields.Content != nil {
 		query := fmt.Sprintf("name" + *fields.Name + "\ncontent:" + *fields.Content)
 		translation, err := uc.translator.Translate(context.Background(), query)

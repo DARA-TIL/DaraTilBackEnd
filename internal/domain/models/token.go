@@ -6,7 +6,7 @@ import (
 
 type Token struct {
 	ID               uint
-	UserID           int
+	UserID           uint
 	RefreshTokenHash string
 	Device           string
 	IpAddress        string

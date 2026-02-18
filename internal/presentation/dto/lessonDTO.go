@@ -1,7 +1,7 @@
 package dto
 
 type LessonDTO struct {
-	ID            int              `json:"id"`
+	ID            uint             `json:"id"`
 	Name          string           `json:"name"`
 	Description   string           `json:"description"`
 	ImageUrl      string           `json:"imageUrl"`
@@ -12,12 +12,12 @@ type LessonDTO struct {
 }
 
 type LessonBlockDTO struct {
-	ID          int    `json:"id"`
+	ID          uint   `json:"id"`
 	Name        string `json:"name"`
 	ContentType string `json:"contentType"`
 	ContentUrl  string `json:"contentUrl"`
 	ContentText string `json:"contentText"`
-	LessonID    int    `json:"lessonId"`
+	LessonID    uint   `json:"lessonId"`
 	Position    int    `json:"position"`
 }
 
@@ -36,5 +36,5 @@ type UpdateLessonBlockDTO struct {
 	ContentUrl  *string `json:"contentUrl,omitempty"`
 	ContentText *string `json:"contentText,omitempty"`
 	Position    *int    `json:"position,omitempty"`
-	LessonID    *int    `json:"lessonID"`
+	LessonID    *uint   `json:"lessonID"`
 }

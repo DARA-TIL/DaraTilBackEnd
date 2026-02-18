@@ -142,6 +142,15 @@ func (h *UserHandler) OauthLogin(c *gin.Context, provider string) {
 }
 
 func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
+	state := c.Query("state")
+	var redUrl string
+	if state == "mobile" {
+		redUrl = h.cfg.Server.MobileUrl
+	} else if state == "web" {
+		redUrl = h.cfg.Server.FrontendUrl
+	} else {
+		redUrl = h.cfg.Server.FrontendUrl
+	}
 	logger.Info("OAuth callback received",
 		zap.String("provider", provider),
 	)
@@ -151,7 +160,7 @@ func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 			zap.String("provider", provider),
 			zap.String("reason", msg),
 		)
-		redirectURL := fmt.Sprintf("%s/login?oauth=error&error=%s", h.cfg.Server.FrontendUrl, msg)
+		redirectURL := fmt.Sprintf("%s/login?oauth=error&error=%s", redUrl, msg)
 		c.Redirect(http.StatusTemporaryRedirect, redirectURL)
 	}
 
@@ -244,7 +253,7 @@ func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 	}
 
 	redirectURL := fmt.Sprintf("%s/login?%s",
-		h.cfg.Server.FrontendUrl,
+		redUrl,
 		url.Values{"oauth": []string{provider}}.Encode(),
 	)
 
@@ -263,7 +272,7 @@ func (h *UserHandler) issueTokensAndSetCookie(c *gin.Context, user *models.User)
 	}
 
 	userClaims := models2.UserClaims{
-		UserID:   int(user.ID),
+		UserID:   user.ID,
 		Username: user.Username,
 		Email:    user.Email,
 		Role:     user.Role,

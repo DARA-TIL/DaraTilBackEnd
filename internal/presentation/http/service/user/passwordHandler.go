@@ -315,7 +315,7 @@ func (h *UserHandler) ConfirmPasswordChange(c *gin.Context) {
 		return
 	}
 
-	_, err = h.UpdateUC.Execute(c.Request.Context(), int(user.ID), upd)
+	_, err = h.UpdateUC.Execute(c.Request.Context(), user.ID, upd)
 	if err != nil {
 		logger.Error("Password update failed",
 			zap.String("email", session.Email),

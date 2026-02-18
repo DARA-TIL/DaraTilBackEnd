@@ -12,14 +12,14 @@ type TokenPair struct {
 }
 
 type UserClaims struct {
-	UserID   int
+	UserID   uint
 	Username string
 	Email    string
 	Role     string
 }
 
 type CustomClaims struct {
-	UserID   int
+	UserID   uint
 	Username string
 	Email    string
 	Role     string

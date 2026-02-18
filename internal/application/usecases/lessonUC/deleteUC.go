@@ -12,6 +12,6 @@ type DeleteUC struct {
 func NewDeleteUC(repo repo.LessonRepo) *DeleteUC {
 	return &DeleteUC{repo: repo}
 }
-func (u *DeleteUC) Execute(ctx context.Context, id int) error {
+func (u *DeleteUC) Execute(ctx context.Context, id uint) error {
 	return u.repo.Delete(ctx, id)
 }

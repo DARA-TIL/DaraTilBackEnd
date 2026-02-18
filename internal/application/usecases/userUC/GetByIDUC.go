@@ -15,6 +15,6 @@ func NewGetByIdUC(repo repo.UserRepo) *GetByIdUC {
 		repo: repo,
 	}
 }
-func (uc *GetByIdUC) Execute(ctx context.Context, id int) (*models.User, error) {
+func (uc *GetByIdUC) Execute(ctx context.Context, id uint) (*models.User, error) {
 	return uc.repo.GetByID(ctx, id)
 }

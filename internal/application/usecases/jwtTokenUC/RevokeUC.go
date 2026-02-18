@@ -12,6 +12,6 @@ type RevokeJwtUC struct {
 func NewRevokeJwtUC(repo repo.JwtTokensRepo) *RevokeJwtUC {
 	return &RevokeJwtUC{repo: repo}
 }
-func (uc *RevokeJwtUC) Execute(ctx context.Context, userID int, refreshToken string) error {
+func (uc *RevokeJwtUC) Execute(ctx context.Context, userID uint, refreshToken string) error {
 	return uc.repo.Revoke(ctx, userID, refreshToken)
 }

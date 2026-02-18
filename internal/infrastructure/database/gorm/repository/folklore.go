@@ -37,7 +37,7 @@ func (f *FolkloreRepository) Create(ctx context.Context, folklore models.Folklor
 	return &folklore, nil
 }
 
-func (f *FolkloreRepository) GetByID(ctx context.Context, id int) (*models.Folklore, error) {
+func (f *FolkloreRepository) GetByID(ctx context.Context, id uint) (*models.Folklore, error) {
 	var folklore gormModels.Folklore
 	if err := f.db.WithContext(ctx).Preload("Translations").First(&folklore, id).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
@@ -59,7 +59,7 @@ func (f *FolkloreRepository) GetAll(ctx context.Context) ([]models.Folklore, err
 	return domainFolklore, nil
 }
 
-func (f *FolkloreRepository) Update(ctx context.Context, id int, fields models.UpdatableFolkloreFields) (*models.Folklore, error) {
+func (f *FolkloreRepository) Update(ctx context.Context, id uint, fields models.UpdatableFolkloreFields) (*models.Folklore, error) {
 	updates := make(map[string]any)
 	if fields.Name != nil {
 		updates["name"] = *fields.Name
@@ -107,20 +107,20 @@ func (f *FolkloreRepository) Update(ctx context.Context, id int, fields models.U
 	return f.GetByID(ctx, id)
 }
 
-func (f *FolkloreRepository) Delete(ctx context.Context, id int) error {
+func (f *FolkloreRepository) Delete(ctx context.Context, id uint) error {
 	if err := f.db.WithContext(ctx).Delete(&gormModels.Folklore{}, id).Error; err != nil {
 		return errhandlers.DBErrHandler(err)
 	}
 	return nil
 }
 
-func (f *FolkloreRepository) ToggleLike(ctx context.Context, folkloreID, userID int) (*models.Folklore, bool, error) {
+func (f *FolkloreRepository) ToggleLike(ctx context.Context, folkloreID, userID uint) (*models.Folklore, bool, error) {
 	var like gormModels.FolkloreLike
 	err := f.db.WithContext(ctx).Where("folklore_id = ? AND user_id = ?", folkloreID, userID).First(&like).Error
 	liked := false
 	newLike := gormModels.FolkloreLike{
-		UserID:     uint(userID),
-		FolkloreID: uint(folkloreID),
+		UserID:     userID,
+		FolkloreID: folkloreID,
 	}
 	switch {
 	case errors.Is(err, gorm.ErrRecordNotFound):
@@ -191,7 +191,7 @@ func (f *FolkloreRepository) GetByQuery(ctx context.Context, query models.Folklo
 	return domainFolklore, nil
 }
 
-func (f *FolkloreRepository) GetLikedFolklore(ctx context.Context, userID int) ([]models.Folklore, error) {
+func (f *FolkloreRepository) GetLikedFolklore(ctx context.Context, userID uint) ([]models.Folklore, error) {
 	var folklore []models.Folklore
 	if err := f.db.WithContext(ctx).
 		Joins("JOIN folklore_likes ON folklore_likes.folklore_id = folklores.id").

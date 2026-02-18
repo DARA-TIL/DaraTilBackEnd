@@ -19,6 +19,6 @@ type LessonBlock struct {
 	ContentType string `gorm:"not null"`
 	ContentUrl  string
 	ContentText string
-	LessonID    int `gorm:"not null"`
-	Position    int `gorm:"not null"`
+	LessonID    uint `gorm:"not null"`
+	Position    int  `gorm:"not null"`
 }

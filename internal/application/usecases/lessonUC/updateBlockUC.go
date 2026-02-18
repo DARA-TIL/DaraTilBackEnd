@@ -14,7 +14,7 @@ type UpdateBlockUC struct {
 func NewUpdateBlockUC(repo repo.LessonRepo) *UpdateBlockUC {
 	return &UpdateBlockUC{repo: repo}
 }
-func (u UpdateBlockUC) Execute(ctx context.Context, id int, updFields models.UpdateLessonBLockFields) (*models.LessonBlock, error) {
+func (u UpdateBlockUC) Execute(ctx context.Context, id uint, updFields models.UpdateLessonBLockFields) (*models.LessonBlock, error) {
 	upd := utils.UpdateLessonBlockFields(updFields)
 	return u.repo.UpdateBlock(ctx, id, upd, updFields.Position, updFields.LessonID)
 }

@@ -54,7 +54,7 @@ func (u *UserRepository) GetByEmail(ctx context.Context, email string) (*models.
 	return &user, nil
 }
 
-func (u *UserRepository) GetByID(ctx context.Context, id int) (*models.User, error) {
+func (u *UserRepository) GetByID(ctx context.Context, id uint) (*models.User, error) {
 	var userGorm gormModels.User
 	if err := u.db.WithContext(ctx).Preload("Progress").Where("id = ?", id).First(&userGorm).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
@@ -63,7 +63,7 @@ func (u *UserRepository) GetByID(ctx context.Context, id int) (*models.User, err
 	return &user, nil
 }
 
-func (u *UserRepository) Update(ctx context.Context, id int, upd models.UserUpdatableFields) (*models.User, error) {
+func (u *UserRepository) Update(ctx context.Context, id uint, upd models.UserUpdatableFields) (*models.User, error) {
 	updates := make(map[string]any)
 	if upd.Password != nil {
 		updates["password"] = *upd.Password
@@ -95,7 +95,7 @@ func (u *UserRepository) GetAll(ctx context.Context) ([]models.User, error) {
 	return domUsers, nil
 }
 
-func (u *UserRepository) LvlUp(ctx context.Context, userId, xpAdded int) models.LvlRet {
+func (u *UserRepository) LvlUp(ctx context.Context, userId uint, xpAdded int) models.LvlRet {
 	var prevLevel, prevXp int
 	var isLvlUp bool
 	var user gormModels.User

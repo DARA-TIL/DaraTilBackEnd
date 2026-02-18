@@ -14,6 +14,6 @@ func NewGetByIDUC(repo repo.LessonRepo) *GetByIDUC {
 	return &GetByIDUC{repo: repo}
 }
 
-func (u *GetByIDUC) Execute(ctx context.Context, id int) (*models.Lesson, error) {
+func (u *GetByIDUC) Execute(ctx context.Context, id uint) (*models.Lesson, error) {
 	return u.repo.GetByID(ctx, id)
 }

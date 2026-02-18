@@ -179,7 +179,7 @@ func (h *FolkloreHandler) ToggleLike(c *gin.Context) {
 		return
 	}
 
-	folk, isLiked, err := h.ToggleLikeUC.Execute(c.Request.Context(), *id, int(*userID))
+	folk, isLiked, err := h.ToggleLikeUC.Execute(c.Request.Context(), *id, *userID)
 	if err != nil {
 		logger.Error("Failed to toggle like")
 		response.HandleDomainError(c, err)

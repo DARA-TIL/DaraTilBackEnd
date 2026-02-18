@@ -11,14 +11,14 @@ type TokenPair struct {
 }
 
 type UserClaims struct {
-	UserID   int    `json:"userId"`
+	UserID   uint   `json:"userId"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Role     string `json:"role"`
 }
 
 type CustomClaims struct {
-	UserID   int    `json:"userId"`
+	UserID   uint   `json:"userId"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Role     string `json:"role"`

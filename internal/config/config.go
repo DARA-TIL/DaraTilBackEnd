@@ -24,6 +24,7 @@ type Config struct {
 type ServerConfig struct {
 	Port        string `envconfig:"PORT"`
 	FrontendUrl string `envconfig:"FRONTEND_URL"`
+	MobileUrl   string `envconfig:"MOBILE_URL"`
 	BaseUrl     string `envconfig:"BASE_URL"`
 }
 type DatabaseConfig struct {

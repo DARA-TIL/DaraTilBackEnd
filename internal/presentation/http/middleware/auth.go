@@ -107,7 +107,7 @@ func RequireRole(requiredRoles ...string) gin.HandlerFunc {
 	}
 }
 
-func GetCurrentUserID(c *gin.Context) (*int, error) {
+func GetCurrentUserID(c *gin.Context) (*uint, error) {
 	claims, ok := GetUserClaims(c)
 	if !ok {
 		return nil, domErr.ErrUnauthorized
