@@ -23,32 +23,26 @@ func (t TestRepository) Create(ctx context.Context, test models.Test) (*models.T
 	if err := t.db.WithContext(ctx).Create(&gormTest).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
+	test = gormMappers.GormTestToDomain(gormTest)
 	return &test, nil
 }
 
-func (t TestRepository) Update(ctx context.Context, upd models.TestUpdate) (*models.Test, error) {
-	updates := make(map[string]any)
-	if upd.Reward != nil {
-		updates["reward"] = *upd.Reward
-	}
-	if upd.QuestionsUpd != nil {
-		for _, updQ := range upd.QuestionsUpd {
-			_, err := t.UpdateQuestion(ctx, updQ)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-	if err := t.db.WithContext(ctx).Model(&gormModels.Test{}).Where("id = ?", upd.ID).Updates(updates).Error; err != nil {
+func (t TestRepository) CreateQuestion(ctx context.Context, question models.Question) (*models.Question, error) {
+	gormQuestion := gormMappers.QuestionToGorm(question)
+	if err := t.db.WithContext(ctx).Create(&gormQuestion).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
-	var test gormModels.Test
-	err := t.db.WithContext(ctx).Preload("Questions.Options").First(test, upd.ID).Error
-	if err != nil {
+	question = gormMappers.GormQuestionToDomain(gormQuestion)
+	return &question, nil
+}
+
+func (t TestRepository) CreateOption(ctx context.Context, option models.QuestionOption) (*models.QuestionOption, error) {
+	gormOption := gormMappers.QuestionOptionToGorm(option)
+	if err := t.db.WithContext(ctx).Create(&gormOption).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
-	testDom := gormMappers.GormTestToDomain(test)
-	return &testDom, nil
+	option = gormMappers.GormQuestionOptionToDomain(gormOption)
+	return &option, nil
 }
 
 func (t TestRepository) GetById(ctx context.Context, id uint) (*models.Test, error) {
@@ -97,30 +91,89 @@ func (t TestRepository) DeleteOption(ctx context.Context, id uint) error {
 	}
 	return nil
 }
-
-func (t TestRepository) UpdateQuestion(ctx context.Context, upd models.QuestionUpdate) (*models.Question, error) {
+func (t TestRepository) Update(ctx context.Context, upd models.TestUpdate) (*models.Test, error) {
 	updates := make(map[string]any)
-	if upd.Text != nil {
-		updates["text"] = *upd.Text
-	}
-	if upd.QuestionOptionsUpd != nil {
-		for _, updOption := range upd.QuestionOptionsUpd {
-			_, err := t.UpdateQuestionOption(ctx, updOption)
-			if err != nil {
-				return nil, err
+	err := t.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if upd.QuestionsUpd != nil {
+			for _, question := range upd.QuestionsUpd {
+				_, err := UpdateQuestionTransaction(tx, question)
+				if err != nil {
+					return err
+				}
+				if question.QuestionOptionsUpd != nil {
+					for _, option := range question.QuestionOptionsUpd {
+						_, err := UpdateOptionTransaction(tx, option)
+						if err != nil {
+							return err
+						}
+					}
+				}
 			}
 		}
-	}
-	if err := t.db.WithContext(ctx).Model(&gormModels.Question{}).Where("id = ?", upd.ID).Updates(updates).Error; err != nil {
-		return nil, errhandlers.DBErrHandler(err)
-	}
-	var q gormModels.Question
-	err := t.db.WithContext(ctx).Preload("Options").First(q, upd.ID).Error
+		if upd.Reward != nil {
+			updates["reward"] = *upd.Reward
+			err := tx.Model(&gormModels.Test{}).Where("id = ?", *upd.ID).Updates(updates).Error
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 	if err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
-	qoDom := gormMappers.GormQuestionToDomain(q)
-	return &qoDom, nil
+	testGorm, err := t.GetById(ctx, *upd.ID)
+	if err != nil {
+		return nil, errhandlers.DBErrHandler(err)
+	}
+	return testGorm, nil
+}
+func (t TestRepository) UpdateQuestion(ctx context.Context, upd models.QuestionUpdate) (*models.Question, error) {
+	updates := make(map[string]any)
+	err := t.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if upd.QuestionOptionsUpd != nil {
+			for _, option := range upd.QuestionOptionsUpd {
+				_, err := UpdateOptionTransaction(tx, option)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		if upd.Text != nil {
+			updates["text"] = *upd.Text
+		}
+		if err := tx.Model(&gormModels.Question{}).Where("id = ?", *upd.ID).Updates(updates).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, errhandlers.DBErrHandler(err)
+	}
+	var qGorm gormModels.Question
+	err = t.db.Model(&gormModels.Question{}).Where("id = ?", *upd.ID).First(&qGorm).Error
+	if err != nil {
+		return nil, errhandlers.DBErrHandler(err)
+	}
+	q := gormMappers.GormQuestionToDomain(qGorm)
+	return &q, nil
+}
+
+func UpdateQuestionTransaction(tx *gorm.DB, upd models.QuestionUpdate) (*models.Question, error) {
+	updates := map[string]any{}
+	if upd.Text != nil {
+		updates["text"] = *upd.Text
+	}
+	if err := tx.Model(gormModels.Question{}).Where("id = ?", *upd.ID).Updates(updates).Error; err != nil {
+		return nil, err
+	}
+	var q gormModels.Question
+	err := tx.Preload("Options").First(&q, *upd.ID).Error
+	if err != nil {
+		return nil, err
+	}
+	qDom := gormMappers.GormQuestionToDomain(q)
+	return &qDom, nil
 }
 
 func (t TestRepository) UpdateQuestionOption(ctx context.Context, upd models.QuestionOptionsUpdate) (*models.QuestionOption, error) {
@@ -131,14 +184,34 @@ func (t TestRepository) UpdateQuestionOption(ctx context.Context, upd models.Que
 	if upd.IsCorrect != nil {
 		updates["is_correct"] = *upd.IsCorrect
 	}
-	if err := t.db.WithContext(ctx).Model(&gormModels.QuestionOption{}).Where("id = ?", upd.ID).Updates(updates).Error; err != nil {
+	if err := t.db.WithContext(ctx).Model(&gormModels.QuestionOption{}).Where("id = ?", *upd.ID).Updates(updates).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
 	var qo gormModels.QuestionOption
-	err := t.db.WithContext(ctx).First(qo, upd.ID).Error
+	err := t.db.WithContext(ctx).First(&qo, *upd.ID).Error
 	if err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
 	qoDom := gormMappers.GormQuestionOptionToDomain(qo)
 	return &qoDom, nil
+}
+
+func UpdateOptionTransaction(tx *gorm.DB, upd models.QuestionOptionsUpdate) (*models.QuestionOption, error) {
+	updates := make(map[string]any)
+	if upd.Text != nil {
+		updates["text"] = *upd.Text
+	}
+	if upd.IsCorrect != nil {
+		updates["is_correct"] = *upd.IsCorrect
+	}
+	if err := tx.Model(gormModels.QuestionOption{}).Where("id = ?", *upd.ID).Updates(updates).Error; err != nil {
+		return nil, err
+	}
+	var o gormModels.QuestionOption
+	err := tx.First(&o, *upd.ID).Error
+	if err != nil {
+		return nil, err
+	}
+	oDom := gormMappers.GormQuestionOptionToDomain(o)
+	return &oDom, nil
 }

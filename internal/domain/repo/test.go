@@ -7,6 +7,8 @@ import (
 
 type TestRepo interface {
 	Create(ctx context.Context, test models.Test) (*models.Test, error)
+	CreateQuestion(ctx context.Context, question models.Question) (*models.Question, error)
+	CreateOption(ctx context.Context, option models.QuestionOption) (*models.QuestionOption, error)
 	Update(ctx context.Context, upd models.TestUpdate) (*models.Test, error)
 	GetById(ctx context.Context, id uint) (*models.Test, error)
 	GetByLessonId(ctx context.Context, id uint) (*models.Test, error)

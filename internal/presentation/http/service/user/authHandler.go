@@ -68,7 +68,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 		zap.String("email", userCr.Email),
 	)
 
-	accessToken, err := h.issueTokensAndSetCookie(c, userCr)
+	accessToken, _, err := h.issueTokensAndSetCookie(c, userCr)
 	if err != nil {
 		logger.Error("Failed to issue tokens after register",
 			zap.Int("user_id", int(userCr.ID)),
@@ -115,7 +115,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 		zap.Int("user_id", int(user.ID)),
 	)
 
-	accessToken, err := h.issueTokensAndSetCookie(c, user)
+	accessToken, _, err := h.issueTokensAndSetCookie(c, user)
 	if err != nil {
 		logger.Error("Failed to issue tokens after login",
 			zap.Int("user_id", int(user.ID)),
@@ -132,7 +132,10 @@ func (h *UserHandler) OauthLogin(c *gin.Context, provider string) {
 	logger.Info("OAuth login started",
 		zap.String("provider", provider),
 	)
-
+	client := c.Query("client")
+	session, _ := gothic.Store.Get(c.Request, gothic.SessionName)
+	session.Values["client"] = client
+	session.Save(c.Request, c.Writer)
 	req := c.Request.WithContext(
 		context.WithValue(c.Request.Context(), "provider", provider),
 	)
@@ -142,7 +145,8 @@ func (h *UserHandler) OauthLogin(c *gin.Context, provider string) {
 }
 
 func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
-	state := c.Query("state")
+	session, _ := gothic.Store.Get(c.Request, gothic.SessionName)
+	state := session.Values["client"].(string)
 	var redUrl string
 	if state == "mobile" {
 		redUrl = h.cfg.Server.MobileUrl
@@ -151,6 +155,8 @@ func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 	} else {
 		redUrl = h.cfg.Server.FrontendUrl
 	}
+	delete(session.Values, "client")
+	session.Save(c.Request, c.Writer)
 	logger.Info("OAuth callback received",
 		zap.String("provider", provider),
 	)
@@ -243,7 +249,7 @@ func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 		zap.String("provider", provider),
 	)
 
-	_, err = h.issueTokensAndSetCookie(c, user)
+	accessToken, refreshToken, err := h.issueTokensAndSetCookie(c, user)
 	if err != nil {
 		logger.Error("Failed to issue tokens after OAuth",
 			zap.Int("user_id", int(user.ID)),
@@ -251,16 +257,25 @@ func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 		)
 		return
 	}
-
-	redirectURL := fmt.Sprintf("%s/login?%s",
-		redUrl,
-		url.Values{"oauth": []string{provider}}.Encode(),
-	)
+	var redirectURL string
+	if state == "web" {
+		redirectURL = fmt.Sprintf("%s/login?%s",
+			redUrl,
+			url.Values{"oauth": []string{provider}}.Encode(),
+		)
+	} else if state == "mobile" {
+		redirectURL = fmt.Sprintf(
+			"%s?accessToken=%s&refreshToken=%s",
+			h.cfg.Server.MobileUrl,
+			accessToken,
+			refreshToken,
+		)
+	}
 
 	c.Redirect(http.StatusTemporaryRedirect, redirectURL)
 }
 
-func (h *UserHandler) issueTokensAndSetCookie(c *gin.Context, user *models.User) (string, error) {
+func (h *UserHandler) issueTokensAndSetCookie(c *gin.Context, user *models.User) (string, string, error) {
 	logger.Info("Issuing token pair",
 		zap.Int("user_id", int(user.ID)),
 	)
@@ -284,7 +299,7 @@ func (h *UserHandler) issueTokensAndSetCookie(c *gin.Context, user *models.User)
 			zap.Int("user_id", int(user.ID)),
 			zap.Error(err),
 		)
-		return "", err
+		return "", "", err
 	}
 
 	logger.Info("Refresh token created",
@@ -302,5 +317,5 @@ func (h *UserHandler) issueTokensAndSetCookie(c *gin.Context, user *models.User)
 		SameSite: http.SameSiteNoneMode,
 	})
 
-	return issueRes.AccessToken, nil
+	return issueRes.AccessToken, issueRes.RefreshToken, nil
 }
