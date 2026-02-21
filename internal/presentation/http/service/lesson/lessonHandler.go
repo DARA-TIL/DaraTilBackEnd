@@ -11,6 +11,9 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/middleware"
 	"DaraTilBackendV2/internal/presentation/http/response"
 	"DaraTilBackendV2/internal/presentation/http/utils"
+	"errors"
+	"log"
+	"math"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -23,20 +26,21 @@ const (
 )
 
 type LessonHandler struct {
-	createUC             *lessonUC.CreateUC
-	createBlockUC        *lessonUC.CreateBlockUC
-	deleteUC             *lessonUC.DeleteUC
-	deleteBlockUC        *lessonUC.DeleteBlockUC
-	getAllUC             *lessonUC.GetAllUC
-	getByIDUC            *lessonUC.GetByIDUC
-	updateUC             *lessonUC.UpdateUC
-	updateBlockUC        *lessonUC.UpdateBlockUC
-	checkAnswersUC       *testUC.CheckAnswersUC
-	finishLessonUC       *lessonUC.FinishLessonUC
-	getFinishedLessonsUC *lessonUC.GetFinishedLessonsUC
-	getLessonResultsUC   *lessonUC.GetLessonResultsUC
-	lvlUpUC              *userUC.LvlUpUC
-	getUserByIDUC        *userUC.GetByIdUC
+	createUC                 *lessonUC.CreateUC
+	createBlockUC            *lessonUC.CreateBlockUC
+	deleteUC                 *lessonUC.DeleteUC
+	deleteBlockUC            *lessonUC.DeleteBlockUC
+	getAllUC                 *lessonUC.GetAllUC
+	getByIDUC                *lessonUC.GetByIDUC
+	updateUC                 *lessonUC.UpdateUC
+	updateBlockUC            *lessonUC.UpdateBlockUC
+	checkAnswersUC           *testUC.CheckAnswersUC
+	finishLessonUC           *lessonUC.FinishLessonUC
+	getFinishedLessonsUC     *lessonUC.GetFinishedLessonsUC
+	getLessonResultsUC       *lessonUC.GetLessonResultsUC
+	lvlUpUC                  *userUC.LvlUpUC
+	getUserByIDUC            *userUC.GetByIdUC
+	getBestResultForLessonUC *lessonUC.GetBestResultForLessonUC
 }
 
 func NewLessonHandler(
@@ -54,22 +58,24 @@ func NewLessonHandler(
 	getLessonResultsUC *lessonUC.GetLessonResultsUC,
 	getUserByIDUC *userUC.GetByIdUC,
 	lvlUpUC *userUC.LvlUpUC,
+	getBestResultForLessonUC *lessonUC.GetBestResultForLessonUC,
 ) *LessonHandler {
 	return &LessonHandler{
-		createUC:             createUC,
-		createBlockUC:        createBlockUC,
-		deleteUC:             deleteUC,
-		deleteBlockUC:        deleteBlockUC,
-		getAllUC:             getAllUC,
-		getByIDUC:            getByIDUC,
-		updateUC:             updateUC,
-		updateBlockUC:        updateBlockUC,
-		checkAnswersUC:       checkAnswersUC,
-		finishLessonUC:       finishLessonUC,
-		getFinishedLessonsUC: getFinishedLessonsUC,
-		getLessonResultsUC:   getLessonResultsUC,
-		getUserByIDUC:        getUserByIDUC,
-		lvlUpUC:              lvlUpUC,
+		createUC:                 createUC,
+		createBlockUC:            createBlockUC,
+		deleteUC:                 deleteUC,
+		deleteBlockUC:            deleteBlockUC,
+		getAllUC:                 getAllUC,
+		getByIDUC:                getByIDUC,
+		updateUC:                 updateUC,
+		updateBlockUC:            updateBlockUC,
+		checkAnswersUC:           checkAnswersUC,
+		finishLessonUC:           finishLessonUC,
+		getFinishedLessonsUC:     getFinishedLessonsUC,
+		getLessonResultsUC:       getLessonResultsUC,
+		getUserByIDUC:            getUserByIDUC,
+		lvlUpUC:                  lvlUpUC,
+		getBestResultForLessonUC: getBestResultForLessonUC,
 	}
 }
 
@@ -367,16 +373,16 @@ func (h *LessonHandler) FinishLesson(c *gin.Context) {
 		return
 	}
 	logger.Info("User answers successfully parsed")
-
 	userID, err := middleware.GetCurrentUserID(c)
 	if err != nil {
 		logger.Error("Unauthorized access in FinishLesson")
 		response.HandleDomainError(c, errs.ErrUnauthorized)
 		return
 	}
+	log.Print("USER ID: ", *userID)
 	logger.Info("User ID successfully extracted")
-
 	userAns := dtoMappers.DTOUserAnswersToDomain(body)
+	userAns.UserID = *userID
 	logger.Info("User answers mapped to domain model")
 
 	res, err := h.checkAnswersUC.Execute(c.Request.Context(), userAns)
@@ -386,6 +392,15 @@ func (h *LessonHandler) FinishLesson(c *gin.Context) {
 		return
 	}
 	logger.Info("User answers checked successfully")
+	var prevResXp float64
+	bestRes, err := h.getBestResultForLessonUC.Execute(c.Request.Context(), *userID, userAns.LessonID)
+	if errors.Is(err, errs.ErrNotFound) {
+		prevResXp = 0
+	} else if err != nil {
+		logger.Error("Failed to get lesson best result")
+		response.HandleDomainError(c, err)
+		return
+	}
 
 	finLes, err := h.finishLessonUC.Execute(c.Request.Context(), *res)
 	if err != nil {
@@ -397,7 +412,7 @@ func (h *LessonHandler) FinishLesson(c *gin.Context) {
 
 	if !finLes.Pass {
 		logger.Info("Lesson not passed, returning result without level up")
-		response.Success(c, http.StatusOK, finLes)
+		response.Success(c, http.StatusOK, finLes, gin.H{"progress": nil})
 		return
 	}
 	logger.Info("Lesson passed, proceeding with reward and level up")
@@ -409,18 +424,44 @@ func (h *LessonHandler) FinishLesson(c *gin.Context) {
 		return
 	}
 	logger.Info("Lesson successfully fetched for reward processing")
+	if bestRes != nil && bestRes.Result >= finLes.Result {
+		logger.Info("User already Finished with better results")
+		finResp := dto.FinishLessonResponse{
+			IsImproved:     false,
+			IsLvlUp:        false,
+			PrevBestResult: bestRes.Result,
+		}
+		response.Success(c, 200, finLes, gin.H{"progress": finResp})
+		return
+	} else if bestRes != nil && bestRes.Result < finLes.Result {
+		prevResXp = float64(lesson.Reward) * (float64(bestRes.Result) / 100.0)
+		logger.Info("User finished with better results: giving more xp")
+	}
 
-	lvlUp := h.lvlUpUC.Execute(c.Request.Context(), *userID, lesson.Reward)
+	mult := float64(finLes.Result) / 100.0
+	reward := float64(lesson.Reward)*mult - prevResXp
+	if reward < 0 {
+		reward = 0
+	}
+	xpReward := int(math.Round(reward))
+
+	lvlUp := h.lvlUpUC.Execute(c.Request.Context(), *userID, xpReward)
 	if lvlUp.Err != nil {
 		logger.Error("Level up processing failed")
 		response.HandleDomainError(c, lvlUp.Err)
 		return
 	}
 	logger.Info("Level up processing completed successfully")
-
-	response.Success(c, 200, lvlUp.User, gin.H{
-		"isLvlUp":   lvlUp.IsLvlUp,
-		"prevXp":    lvlUp.PrevXp,
-		"prevLevel": lvlUp.PrevLevel,
-	})
+	finResp := dto.FinishLessonResponse{
+		IsImproved:     true,
+		IsLvlUp:        lvlUp.IsLvlUp,
+		XpGained:       xpReward,
+		MaxXp:          lesson.Reward,
+		PrevXp:         lvlUp.PrevXp,
+		PrevLevel:      lvlUp.PrevLevel,
+		CurrentXp:      lvlUp.User.Progress.XpTotal,
+		XpForNextLevel: lvlUp.User.Progress.XpForNextLevel,
+		CurrentLevel:   lvlUp.User.Progress.Level,
+	}
+	response.Success(c, 200, finLes, gin.H{"progress": finResp})
 }

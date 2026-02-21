@@ -82,6 +82,7 @@ func NewContainer(cfg *config.Config) *Container {
 	finishLessonUC := lessonUC.NewFinishLessonUC(lessonRepo)
 	getFinishedLessonsUC := lessonUC.NewGetFinishedLessonsUC(lessonRepo)
 	getLessonResultsUC := lessonUC.NewGetLessonResultsUC(lessonRepo)
+	getBestResultForLessonUC := lessonUC.NewGetBestResultForLessonUC(lessonRepo)
 
 	//TestUCS
 	createTestUC := testUC.NewCreateUC(testRepo)
@@ -147,6 +148,7 @@ func NewContainer(cfg *config.Config) *Container {
 		getLessonResultsUC,
 		getUserByIDUC,
 		lvlUpUC,
+		getBestResultForLessonUC,
 	)
 	testHandler := test.NewTestHandler(
 		createTestUC,

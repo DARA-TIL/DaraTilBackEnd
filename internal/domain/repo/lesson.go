@@ -14,6 +14,7 @@ type LessonRepo interface {
 	FinishLesson(ctx context.Context, lesson models.LessonResult) (*models.LessonResult, error)
 	GetFinishedLessons(ctx context.Context, userID uint) ([]models.LessonResult, error)
 	GetLessonResults(ctx context.Context, userID, LessonID uint) ([]models.LessonResult, error)
+	GetBestResultForLesson(ctx context.Context, userID, lessonID uint) (*models.LessonResult, error)
 	//blocks
 	CreateBlock(ctx context.Context, block models.LessonBlock) (*models.LessonBlock, error)
 	UpdateBlock(ctx context.Context, id uint, upd map[string]any, position *int, lessonId *uint) (*models.LessonBlock, error)

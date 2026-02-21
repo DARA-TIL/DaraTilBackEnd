@@ -3,9 +3,12 @@ package middleware
 import (
 	"DaraTilBackendV2/internal/config"
 	"DaraTilBackendV2/internal/domain/domErr"
+	"DaraTilBackendV2/internal/infrastructure/logger"
 	"DaraTilBackendV2/internal/presentation/dto"
 	"DaraTilBackendV2/internal/presentation/http/response"
 	"errors"
+	"fmt"
+	"log"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -56,7 +59,8 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
+		inf := fmt.Sprintf("User: %v", claims.Username)
+		logger.Info(inf)
 		c.Set(ContextUserKey, claims)
 		c.Next()
 	}
@@ -112,6 +116,6 @@ func GetCurrentUserID(c *gin.Context) (*uint, error) {
 	if !ok {
 		return nil, domErr.ErrUnauthorized
 	}
-
+	log.Print("returning userID from context:", claims.UserID)
 	return &claims.UserID, nil
 }

@@ -8,6 +8,8 @@ import (
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/gormModels/gormMappers"
 	"DaraTilBackendV2/internal/infrastructure/logger"
 	"context"
+	"errors"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -33,7 +35,7 @@ func (l LessonRepository) Create(ctx context.Context, lesson models.Lesson) (*mo
 
 func (l LessonRepository) GetAll(ctx context.Context) ([]models.Lesson, error) {
 	var gormLessons []gormModels.Lesson
-	if err := l.db.WithContext(ctx).Preload("Blocks").Find(&gormLessons).Error; err != nil {
+	if err := l.db.WithContext(ctx).Order("required_level").Preload("Blocks").Find(&gormLessons).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
 	var lessons []models.Lesson
@@ -46,7 +48,10 @@ func (l LessonRepository) GetAll(ctx context.Context) ([]models.Lesson, error) {
 
 func (l LessonRepository) GetByID(ctx context.Context, id uint) (*models.Lesson, error) {
 	var lesson gormModels.Lesson
-	if err := l.db.WithContext(ctx).Preload("Blocks").First(&lesson, id).Error; err != nil {
+	if err := l.db.WithContext(ctx).Preload("Blocks").
+		Preload("Test").
+		Preload("Test.Questions").
+		Preload("Test.Questions.Options").First(&lesson, id).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
 	domLesson := gormMappers.GormLessonToDomainModel(lesson)
@@ -141,6 +146,7 @@ func (l LessonRepository) DeleteBlock(ctx context.Context, id uint) error {
 }
 
 func (l LessonRepository) FinishLesson(ctx context.Context, lessonRes models.LessonResult) (*models.LessonResult, error) {
+	lessonRes.PassTime = time.Now()
 	gormLF := gormMappers.LessonResultToGorm(lessonRes)
 	if err := l.db.WithContext(ctx).Create(&gormLF).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
@@ -172,7 +178,7 @@ func (l LessonRepository) GetFinishedLessons(ctx context.Context, userID uint) (
 }
 func (l LessonRepository) GetLessonResults(ctx context.Context, userID, LessonID uint) ([]models.LessonResult, error) {
 	var results []gormModels.LessonResult
-	if err := l.db.WithContext(ctx).Where("user_id = ? AND lesson_id = ?", userID, LessonID).Find(&results).Error; err != nil {
+	if err := l.db.WithContext(ctx).Order("pass_time").Where("user_id = ? AND lesson_id = ?", userID, LessonID).Find(&results).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
 	var finLes []models.LessonResult
@@ -180,6 +186,24 @@ func (l LessonRepository) GetLessonResults(ctx context.Context, userID, LessonID
 		finLes = append(finLes, gormMappers.GormLessonResultToDomain(lesson))
 	}
 	return finLes, nil
+}
+
+func (l LessonRepository) GetBestResultForLesson(ctx context.Context, userID, lessonID uint) (*models.LessonResult, error) {
+	var result gormModels.LessonResult
+	err := l.db.WithContext(ctx).
+		Where("user_id = ? AND lesson_id = ? AND pass = ?", userID, lessonID, true).
+		Order("result DESC").
+		Limit(1).
+		First(&result).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errs.ErrNotFound
+		}
+		return nil, errhandlers.DBErrHandler(err)
+	}
+	resultDom := gormMappers.GormLessonResultToDomain(result)
+	return &resultDom, nil
 }
 
 func NormalizePositions(tx *gorm.DB, lessonID uint) error {
