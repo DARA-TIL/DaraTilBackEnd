@@ -1,0 +1,1980 @@
+basePath: /api
+definitions:
+  dto.FolkloreDTO:
+    properties:
+      author:
+        type: string
+      content:
+        type: string
+      id:
+        type: integer
+      imageUrl:
+        type: string
+      likesCount:
+        type: integer
+      mediaUrl:
+        type: string
+      name:
+        type: string
+      region:
+        type: string
+      translations:
+        items:
+          $ref: '#/definitions/dto.FolkloreTranslationDTO'
+        type: array
+      type:
+        type: string
+    type: object
+  dto.FolkloreTranslationDTO:
+    properties:
+      content:
+        type: string
+      explanation:
+        type: string
+      folkloreID:
+        type: integer
+      id:
+        type: integer
+      language:
+        type: string
+      name:
+        type: string
+    type: object
+  dto.LessonBlockDTO:
+    properties:
+      contentText:
+        type: string
+      contentType:
+        type: string
+      contentUrl:
+        type: string
+      id:
+        type: integer
+      lessonId:
+        type: integer
+      name:
+        type: string
+      position:
+        type: integer
+    type: object
+  dto.LessonDTO:
+    properties:
+      author:
+        type: string
+      bestResult:
+        $ref: '#/definitions/dto.LessonResult'
+      blocks:
+        items:
+          $ref: '#/definitions/dto.LessonBlockDTO'
+        type: array
+      description:
+        type: string
+      id:
+        type: integer
+      imageUrl:
+        type: string
+      lessonStatus:
+        type: string
+      name:
+        type: string
+      requiredLevel:
+        type: integer
+      results:
+        items:
+          $ref: '#/definitions/dto.LessonResult'
+        type: array
+      reward:
+        type: integer
+    type: object
+  dto.LessonResult:
+    properties:
+      id:
+        type: integer
+      lessonId:
+        type: integer
+      pass:
+        type: boolean
+      passTime:
+        type: string
+      result:
+        type: integer
+      testId:
+        type: integer
+      userId:
+        type: integer
+    type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.Question:
+    properties:
+      id:
+        type: integer
+      options:
+        items:
+          $ref: '#/definitions/dto.QuestionOption'
+        type: array
+      testId:
+        type: integer
+      text:
+        type: string
+    type: object
+  dto.QuestionOption:
+    properties:
+      id:
+        type: integer
+      isCorrect:
+        type: boolean
+      questionId:
+        type: integer
+      text:
+        type: string
+    type: object
+  dto.QuestionOptionsUpdate:
+    properties:
+      id:
+        type: integer
+      isCorrect:
+        type: boolean
+      text:
+        type: string
+    type: object
+  dto.QuestionUpdate:
+    properties:
+      id:
+        type: integer
+      questionOptionsUpd:
+        items:
+          $ref: '#/definitions/dto.QuestionOptionsUpdate'
+        type: array
+      text:
+        type: string
+    type: object
+  dto.RegisterRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      role:
+        type: string
+      username:
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  dto.Test:
+    properties:
+      id:
+        type: integer
+      lessonId:
+        type: integer
+      questions:
+        items:
+          $ref: '#/definitions/dto.Question'
+        type: array
+    type: object
+  dto.TestUpdate:
+    properties:
+      id:
+        type: integer
+      questionsUpd:
+        items:
+          $ref: '#/definitions/dto.QuestionUpdate'
+        type: array
+      reward:
+        type: integer
+    type: object
+  dto.UpdatableFolkloreFieldsDTO:
+    properties:
+      author:
+        type: string
+      content:
+        type: string
+      imageUrl:
+        type: string
+      mediaUrl:
+        type: string
+      name:
+        type: string
+      region:
+        type: string
+      translations:
+        items:
+          $ref: '#/definitions/dto.FolkloreTranslationDTO'
+        type: array
+      type:
+        type: string
+    type: object
+  dto.UpdateLessonBlockDTO:
+    properties:
+      contentText:
+        type: string
+      contentType:
+        type: string
+      contentUrl:
+        type: string
+      lessonID:
+        type: integer
+      name:
+        type: string
+      position:
+        type: integer
+    type: object
+  dto.UpdateLessonDTO:
+    properties:
+      author:
+        type: string
+      description:
+        type: string
+      imageUrl:
+        type: string
+      name:
+        type: string
+      requiredLevel:
+        type: integer
+      reward:
+        type: integer
+    type: object
+  dto.User:
+    properties:
+      authProvider:
+        type: string
+      avatar:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+      progress:
+        $ref: '#/definitions/dto.UserProgress'
+      role:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.UserAnswers:
+    properties:
+      lessonId:
+        type: integer
+      testId:
+        type: integer
+      userAns:
+        additionalProperties:
+          type: integer
+        type: object
+      userId:
+        type: integer
+    type: object
+  dto.UserProgress:
+    properties:
+      XpForNextLevel:
+        type: integer
+      XpTotal:
+        type: integer
+      id:
+        type: integer
+      level:
+        type: integer
+      userID:
+        type: integer
+    type: object
+  dto.UserUpdatableFields:
+    properties:
+      avatar:
+        minLength: 6
+        type: string
+      password:
+        minLength: 6
+        type: string
+      role:
+        minLength: 3
+        type: string
+      username:
+        minLength: 3
+        type: string
+    required:
+    - avatar
+    - password
+    - role
+    - username
+    type: object
+  jwt.RefreshRequest:
+    properties:
+      refreshToken:
+        type: string
+    type: object
+  user.ConfirmPasswordChangeRequest:
+    properties:
+      password:
+        example: NewStrongPass123!
+        type: string
+    type: object
+  user.VerifyPasswordResetCodeRequest:
+    properties:
+      code:
+        example: "123456"
+        type: string
+    type: object
+host: daratilback.onrender.com
+info:
+  contact: {}
+  description: Api server for DaraTil PLatform
+  title: DaraTil Backend
+  version: "0.2"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return access token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.User'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Login user
+      tags:
+      - Auth
+  /auth/logout:
+    post:
+      description: Revokes current refresh token (if present) and clears the "refreshToken"
+        cookie.
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Logout user
+      tags:
+      - Auth
+  /auth/me:
+    get:
+      description: Get authenticated user profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns user
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get current user
+      tags:
+      - Auth
+  /auth/refresh:
+    get:
+      consumes:
+      - application/json
+      description: Validates refresh token (cookie "refreshToken" or JSON body) and
+        issues a new access token. Also rotates refresh token and sets a new "refreshToken"
+        HttpOnly cookie.
+      parameters:
+      - description: Refresh token (optional if cookie refreshToken exists)
+        in: body
+        name: refresh
+        schema:
+          $ref: '#/definitions/jwt.RefreshRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns user and new accessToken
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Session has been expired
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Refresh access token
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create new user account and return access token
+      parameters:
+      - description: Register payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Register user
+      tags:
+      - Auth
+  /folklore/create:
+    post:
+      consumes:
+      - application/json
+      description: Create new folklore entry (admin only)
+      parameters:
+      - description: Folklore data
+        in: body
+        name: folklore
+        required: true
+        schema:
+          $ref: '#/definitions/dto.FolkloreDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FolkloreDTO'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create folklore
+      tags:
+      - Folklore
+  /folklore/delete/{id}:
+    delete:
+      description: Delete folklore by ID (admin only)
+      parameters:
+      - description: Folklore ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete folklore
+      tags:
+      - Folklore
+  /folklore/getAll:
+    get:
+      description: Retrieve all folklore entries
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.FolkloreDTO'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all folklore
+      tags:
+      - Folklore
+  /folklore/getById/{id}:
+    get:
+      description: Get folklore details by ID
+      parameters:
+      - description: Folklore ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FolkloreDTO'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get folklore by ID
+      tags:
+      - Folklore
+  /folklore/like/{id}:
+    post:
+      description: Like or unlike folklore entry
+      parameters:
+      - description: Folklore ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FolkloreDTO'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Toggle like for folklore
+      tags:
+      - Folklore
+  /folklore/liked:
+    get:
+      description: Retrieve folklore liked by current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.FolkloreDTO'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get liked folklore
+      tags:
+      - Folklore
+  /folklore/search:
+    get:
+      description: Search folklore with filters
+      parameters:
+      - description: Title filter
+        in: query
+        name: title
+        type: string
+      - description: Region filter
+        in: query
+        name: region
+        type: string
+      - description: Type filter
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.FolkloreDTO'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Search folklore
+      tags:
+      - Folklore
+  /folklore/update/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Update folklore by ID (admin only)
+      parameters:
+      - description: Folklore ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated fields
+        in: body
+        name: folklore
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatableFolkloreFieldsDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FolkloreDTO'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update folklore
+      tags:
+      - Folklore
+  /lesson/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new lesson.
+      parameters:
+      - description: Lesson payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LessonDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created lesson
+          schema:
+            $ref: '#/definitions/dto.LessonDTO'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create lesson
+      tags:
+      - Lesson
+  /lesson/createBlock:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new lesson block.
+      parameters:
+      - description: Lesson block payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LessonBlockDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created block
+          schema:
+            $ref: '#/definitions/dto.LessonBlockDTO'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create lesson block
+      tags:
+      - Lesson
+  /lesson/delete/{id}:
+    delete:
+      description: Deletes lesson by ID.
+      parameters:
+      - description: Lesson ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete lesson
+      tags:
+      - Lesson
+  /lesson/deleteBlock/{id}:
+    delete:
+      description: Deletes lesson block by ID.
+      parameters:
+      - description: Lesson block ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete lesson block
+      tags:
+      - Lesson
+  /lesson/finish:
+    post:
+      consumes:
+      - application/json
+      description: Checks answers, stores lesson result, and if passed awards XP (may
+        level up). Returns progress info in response.
+      parameters:
+      - description: User answers payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserAnswers'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lesson result and progress info
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Finish lesson (submit answers)
+      tags:
+      - Lesson
+  /lesson/getAll:
+    get:
+      description: Returns all lessons with lessonStatus (locked/available/passed)
+        and bestResult for current user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lessons list
+          schema:
+            items:
+              $ref: '#/definitions/dto.LessonDTO'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all lessons for current user
+      tags:
+      - Lesson
+  /lesson/getById/{id}:
+    get:
+      description: Returns lesson by ID with user results. Returns 423 if user's level
+        is not enough.
+      parameters:
+      - description: Lesson ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lesson with results
+          schema:
+            $ref: '#/definitions/dto.LessonDTO'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "423":
+          description: User level is not enough for this lesson
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get lesson by ID
+      tags:
+      - Lesson
+  /lesson/update/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Updates lesson fields by ID.
+      parameters:
+      - description: Lesson ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Lesson update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateLessonDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated lesson
+          schema:
+            $ref: '#/definitions/dto.LessonDTO'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update lesson
+      tags:
+      - Lesson
+  /lesson/updateBlock/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Updates lesson block by ID. If position is provided, lessonId is
+        required.
+      parameters:
+      - description: Lesson block ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Lesson block update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateLessonBlockDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated block
+          schema:
+            $ref: '#/definitions/dto.LessonBlockDTO'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "422":
+          description: lesson block position and lesson id is required
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update lesson block
+      tags:
+      - Lesson
+  /test/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a test with questions/options payload.
+      parameters:
+      - description: Test payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Test'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created test
+          schema:
+            $ref: '#/definitions/dto.Test'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create test
+      tags:
+      - Test
+  /test/delete/{id}:
+    delete:
+      description: Deletes a test by ID.
+      parameters:
+      - description: Test ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete test
+      tags:
+      - Test
+  /test/get/{id}:
+    get:
+      description: Returns test with questions and options by test ID.
+      parameters:
+      - description: Test ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Test
+          schema:
+            $ref: '#/definitions/dto.Test'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get test by ID
+      tags:
+      - Test
+  /test/lesson/{id}:
+    get:
+      description: Returns test attached to a lesson by lesson ID.
+      parameters:
+      - description: Lesson ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Test
+          schema:
+            $ref: '#/definitions/dto.Test'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get test by lesson ID
+      tags:
+      - Test
+  /test/option/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates an option for a question.
+      parameters:
+      - description: Option payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.QuestionOption'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created option
+          schema:
+            $ref: '#/definitions/dto.QuestionOption'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create question option
+      tags:
+      - Test
+  /test/option/delete/{id}:
+    delete:
+      description: Deletes an option by ID.
+      parameters:
+      - description: Option ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete question option
+      tags:
+      - Test
+  /test/option/update:
+    put:
+      consumes:
+      - application/json
+      description: Updates option fields like text and isCorrect (partial update via
+        nullable fields).
+      parameters:
+      - description: Option update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.QuestionOptionsUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated option
+          schema:
+            $ref: '#/definitions/dto.QuestionOption'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update question option
+      tags:
+      - Test
+  /test/question/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a question for a test.
+      parameters:
+      - description: Question payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Question'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created question
+          schema:
+            $ref: '#/definitions/dto.Question'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create question
+      tags:
+      - Test
+  /test/question/delete/{id}:
+    delete:
+      description: Deletes a question by ID.
+      parameters:
+      - description: Question ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete question
+      tags:
+      - Test
+  /test/question/update:
+    put:
+      consumes:
+      - application/json
+      description: Updates question fields and optionally nested options (partial
+        update via nullable fields).
+      parameters:
+      - description: Question update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.QuestionUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated question
+          schema:
+            $ref: '#/definitions/dto.Question'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update question
+      tags:
+      - Test
+  /test/update:
+    put:
+      consumes:
+      - application/json
+      description: Updates test reward and nested questions/options (partial update
+        via nullable fields).
+      parameters:
+      - description: Test update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TestUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated test
+          schema:
+            $ref: '#/definitions/dto.Test'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update test
+      tags:
+      - Test
+  /user/changePassword/{email}:
+    post:
+      description: Generates a 6-digit reset code, sends it to the user's email, and
+        sets a "password_reset" HttpOnly cookie valid for 10 minutes.
+      parameters:
+      - description: User email
+        in: path
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns email
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Request password reset
+      tags:
+      - User
+  /user/confirmPasswordReset:
+    post:
+      consumes:
+      - application/json
+      description: Updates the user's password if reset session is not expired and
+        the code was verified. Clears the "password_reset" cookie after success.
+      parameters:
+      - description: New password payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.ConfirmPasswordChangeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password changed
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Code is not verified
+          schema:
+            additionalProperties: true
+            type: object
+        "408":
+          description: Password reset timeout
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Confirm password change
+      tags:
+      - User
+  /user/get/{id}:
+    get:
+      description: Returns user by ID.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - User
+  /user/getAll:
+    get:
+      description: Returns list of all users.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Users list
+          schema:
+            items:
+              $ref: '#/definitions/dto.User'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all users
+      tags:
+      - User
+  /user/getLikedFolklore:
+    get:
+      description: Returns folklore items liked by the current user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Liked folklore list
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get liked folklore
+      tags:
+      - User
+  /user/levelUp/{xp}:
+    post:
+      description: Adds XP to the current authenticated user and returns whether level-up
+        happened and previous XP/level.
+      parameters:
+      - description: XP to add
+        in: path
+        name: xp
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User and level up info (isLvlUp, prevXp, prevLevel)
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add XP to current user (admin only)
+      tags:
+      - User
+  /user/update:
+    post:
+      consumes:
+      - application/json
+      description: Updates current user's profile fields (password is ignored even
+        if provided).
+      parameters:
+      - description: Updatable user fields
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserUpdatableFields'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated user
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update current user
+      tags:
+      - User
+  /user/update/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Admin updates any user's fields (including password if provided).
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updatable user fields
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserUpdatableFields'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated user
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update user by admin
+      tags:
+      - User
+  /user/verifyPasswordReset:
+    post:
+      consumes:
+      - application/json
+      description: Verifies the 6-digit code using the "password_reset" cookie. If
+        valid, marks the reset session as verified and updates the cookie (10 minutes).
+      parameters:
+      - description: Reset code payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.VerifyPasswordResetCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: code verified
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "406":
+          description: Incorrect code
+          schema:
+            additionalProperties: true
+            type: object
+        "408":
+          description: Password reset timeout
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Verify password reset code
+      tags:
+      - User
+schemes:
+- https
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
