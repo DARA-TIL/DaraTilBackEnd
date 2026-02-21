@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"DaraTilBackendV2/internal/config"
-	gormModels2 "DaraTilBackendV2/internal/infrastructure/database/gorm/gormModels"
+	"DaraTilBackendV2/internal/infrastructure/database/gorm/gormModels"
 	"log"
 
 	"gorm.io/driver/postgres"
@@ -34,17 +34,18 @@ func NewPostgresRepository(cfg *config.Config) *PostgresRepository {
 
 func AutoMigration(db *gorm.DB) error {
 	err := db.AutoMigrate(
-		&gormModels2.User{},
-		&gormModels2.Folklore{},
-		&gormModels2.Token{},
-		&gormModels2.FolkloreLike{},
-		&gormModels2.FolkloreTranslation{},
-		&gormModels2.UserProgress{},
-		&gormModels2.Lesson{},
-		&gormModels2.LessonBlock{},
-		&gormModels2.Test{},
-		&gormModels2.Question{},
-		&gormModels2.QuestionOption{},
+		&gormModels.User{},
+		&gormModels.UserProgress{},
+		&gormModels.Folklore{},
+		&gormModels.FolkloreTranslation{},
+		&gormModels.Lesson{},
+		&gormModels.LessonBlock{},
+		&gormModels.Test{},
+		&gormModels.Question{},
+		&gormModels.QuestionOption{},
+		&gormModels.LessonResult{},
+		&gormModels.FolkloreLike{},
+		&gormModels.Token{},
 	)
 	return err
 }

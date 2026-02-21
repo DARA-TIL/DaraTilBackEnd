@@ -18,7 +18,6 @@ type Question struct {
 
 type Test struct {
 	gorm.Model
-	LessonID  uint       `gorm:"not null"`
+	LessonID  uint       `gorm:"not null;uniqueIndex"`
 	Questions []Question `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Reward    int        `gorm:"not null"`
 }

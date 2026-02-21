@@ -102,3 +102,35 @@ func LessonBlocksDTOToDomain(dto []dto.LessonBlockDTO) []models.LessonBlock {
 	}
 	return result
 }
+
+func DTOLessonResultToDomain(testRes dto.LessonResult) models.LessonResult {
+	return models.LessonResult{
+		ID:       testRes.ID,
+		UserID:   testRes.UserID,
+		LessonID: testRes.LessonID,
+		TestID:   testRes.TestID,
+		Result:   testRes.Result,
+		Pass:     testRes.Pass,
+		PassTime: testRes.PassTime,
+	}
+}
+func LessonResultToDTO(testRes models.LessonResult) dto.LessonResult {
+	return dto.LessonResult{
+		ID:       testRes.ID,
+		UserID:   testRes.UserID,
+		TestID:   testRes.TestID,
+		LessonID: testRes.LessonID,
+		Result:   testRes.Result,
+		Pass:     testRes.Pass,
+		PassTime: testRes.PassTime,
+	}
+}
+
+func DTOUserAnswersToDomain(ans dto.UserAnswers) models.Answers {
+	return models.Answers{
+		TestID:   ans.TestID,
+		LessonID: ans.LessonID,
+		UserID:   ans.UserID,
+		UserAns:  ans.UserAns,
+	}
+}

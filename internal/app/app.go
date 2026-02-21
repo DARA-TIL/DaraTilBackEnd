@@ -6,6 +6,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/middleware"
 	"DaraTilBackendV2/internal/presentation/http/service/folklore"
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
+	"DaraTilBackendV2/internal/presentation/http/service/test"
 	"DaraTilBackendV2/internal/presentation/http/service/user"
 	"time"
 
@@ -69,6 +70,12 @@ func (a *App) setupRoutes() {
 	lessonRoute := api.Group("/lesson")
 	lessonRoute.Use(middleware.AuthMiddleware(a.cfg))
 	lesson.RegisterRoutes(lessonRoute, a.container.LessonHandler)
+
+	//Test
+	testRoute := api.Group("test")
+	testRoute.Use(middleware.AuthMiddleware(a.cfg))
+	test.RegisterProtectedTestRoutes(testRoute, a.container.TestHandler)
+
 }
 
 func (a *App) Run() {

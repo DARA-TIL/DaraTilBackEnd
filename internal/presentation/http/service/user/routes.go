@@ -52,7 +52,7 @@ func RegisterProtectedRoutes(r *gin.RouterGroup, h *UserHandler) {
 	r.GET("/getLikedFolklore", h.GetLikedFolklore)
 	r.POST("/update", h.UpdateMe)
 	r.POST("/update/:id", middleware.RequireRole("admin"), h.UpdateByAdmin)
+	r.POST("/levelUp/:xp", middleware.RequireRole("admin"), h.LevelUp)
 	r.GET("/getAll", h.GetAllUsers)
 	r.GET("get/:id", h.GetUserByID)
-	r.POST("/levelUp/:xp", h.LevelUp)
 }

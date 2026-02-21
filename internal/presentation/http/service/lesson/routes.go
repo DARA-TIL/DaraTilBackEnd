@@ -9,6 +9,8 @@ func RegisterRoutes(router *gin.RouterGroup, h *LessonHandler) {
 	router.PATCH("/update/:id", h.UpdateLesson)
 	router.DELETE("/delete/:id", h.DeleteLesson)
 
+	router.POST("/finish", h.FinishLesson)
+
 	// Lesson Blocks
 	router.POST("/createBlock", h.CreateBlock)
 	router.PATCH("/updateBlock/:id", h.UpdateBlock)

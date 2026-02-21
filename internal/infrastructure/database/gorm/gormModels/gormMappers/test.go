@@ -14,7 +14,6 @@ func GormTestToDomain(test gormModels.Test) models.Test {
 		ID:        test.ID,
 		LessonID:  test.LessonID,
 		Questions: qs,
-		Reward:    test.Reward,
 	}
 }
 func GormQuestionToDomain(question gormModels.Question) models.Question {
@@ -47,7 +46,6 @@ func TestToGorm(test models.Test) gormModels.Test {
 	return gormModels.Test{
 		LessonID:  test.LessonID,
 		Questions: qs,
-		Reward:    test.Reward,
 	}
 }
 func QuestionToGorm(question models.Question) gormModels.Question {

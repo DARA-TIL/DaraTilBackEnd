@@ -18,11 +18,9 @@ type Test struct {
 	ID        uint
 	LessonID  uint
 	Questions []Question
-	Reward    int
 }
 type TestUpdate struct {
 	ID           *uint
-	Reward       *uint
 	QuestionsUpd []QuestionUpdate
 }
 type QuestionUpdate struct {
@@ -34,4 +32,10 @@ type QuestionOptionsUpdate struct {
 	ID        *uint
 	IsCorrect *bool
 	Text      *string
+}
+type Answers struct {
+	TestID   uint
+	LessonID uint
+	UserID   uint
+	UserAns  map[uint]uint
 }

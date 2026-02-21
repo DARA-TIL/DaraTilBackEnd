@@ -18,4 +18,5 @@ type TestRepo interface {
 	DeleteOption(ctx context.Context, id uint) error
 	UpdateQuestion(ctx context.Context, upd models.QuestionUpdate) (*models.Question, error)
 	UpdateQuestionOption(ctx context.Context, upd models.QuestionOptionsUpdate) (*models.QuestionOption, error)
+	GetCorrectAnswers(ctx context.Context, testID uint) (map[uint]uint, error)
 }

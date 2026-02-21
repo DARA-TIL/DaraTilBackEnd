@@ -1,5 +1,9 @@
 package dto
 
+import (
+	"time"
+)
+
 type LessonDTO struct {
 	ID            uint             `json:"id"`
 	Name          string           `json:"name"`
@@ -8,7 +12,10 @@ type LessonDTO struct {
 	Author        string           `json:"author"`
 	Reward        int              `json:"reward"`
 	RequiredLevel int              `json:"requiredLevel"`
+	LessonStatus  string           `json:"lessonStatus"`
 	Blocks        []LessonBlockDTO `json:"blocks"`
+	Results       []LessonResult   `json:"results"`
+	BestResult    *LessonResult    `json:"bestResult,omitempty"`
 }
 
 type LessonBlockDTO struct {
@@ -37,4 +44,13 @@ type UpdateLessonBlockDTO struct {
 	ContentText *string `json:"contentText,omitempty"`
 	Position    *int    `json:"position,omitempty"`
 	LessonID    *uint   `json:"lessonID"`
+}
+type LessonResult struct {
+	ID       uint `json:"id"`
+	UserID   uint `json:"userId"`
+	TestID   uint `json:"testId"`
+	LessonID uint `json:"lessonId"`
+	Result   uint `json:"result"`
+	Pass     bool `json:"pass"`
+	PassTime time.Time
 }

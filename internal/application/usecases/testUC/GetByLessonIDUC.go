@@ -15,5 +15,5 @@ func NewGetByLessonIDUC(repo repo.TestRepo) *GetByLessonIDUC {
 }
 
 func (uc *GetByLessonIDUC) Execute(ctx context.Context, id uint) (*models.Test, error) {
-	return uc.repo.GetById(ctx, id)
+	return uc.repo.GetByLessonId(ctx, id)
 }

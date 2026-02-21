@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type Lesson struct {
 	ID            uint
 	Name          string
@@ -35,4 +37,13 @@ type UpdateLessonBLockFields struct {
 	ContentText *string
 	Position    *int
 	LessonID    *uint
+}
+type LessonResult struct {
+	ID       uint
+	UserID   uint
+	TestID   uint
+	LessonID uint
+	Result   uint
+	Pass     bool
+	PassTime time.Time
 }

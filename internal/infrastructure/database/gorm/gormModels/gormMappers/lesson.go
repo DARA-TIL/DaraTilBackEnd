@@ -89,3 +89,25 @@ func GormLessonBlockToDomainModel(block gormModels.LessonBlock) models.LessonBlo
 		Position:    block.Position,
 	}
 }
+
+func GormLessonResultToDomain(testRes gormModels.LessonResult) models.LessonResult {
+	return models.LessonResult{
+		ID:       testRes.ID,
+		UserID:   testRes.UserID,
+		LessonID: testRes.LessonID,
+		TestID:   testRes.TestID,
+		Result:   testRes.Result,
+		Pass:     testRes.Pass,
+		PassTime: testRes.PassTime,
+	}
+}
+func LessonResultToGorm(testRes models.LessonResult) gormModels.LessonResult {
+	return gormModels.LessonResult{
+		UserID:   testRes.UserID,
+		TestID:   testRes.TestID,
+		LessonID: testRes.LessonID,
+		Result:   testRes.Result,
+		Pass:     testRes.Pass,
+		PassTime: testRes.PassTime,
+	}
+}

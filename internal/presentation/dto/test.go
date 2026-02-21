@@ -4,6 +4,7 @@ type QuestionOption struct {
 	ID         uint   `json:"id,omitempty"`
 	QuestionID uint   `json:"questionId,omitempty"`
 	Text       string `json:"text,omitempty"`
+	IsCorrect  bool   `json:"isCorrect,omitempty"`
 }
 type Question struct {
 	ID      uint             `json:"id,omitempty"`
@@ -15,7 +16,6 @@ type Test struct {
 	ID        uint       `json:"id,omitempty"`
 	LessonID  uint       `json:"lessonId,omitempty"`
 	Questions []Question `json:"questions,omitempty"`
-	Reward    int        `json:"reward,omitempty"`
 }
 type TestUpdate struct {
 	ID           *uint            `json:"id,omitempty"`
@@ -33,6 +33,9 @@ type QuestionOptionsUpdate struct {
 	Text      *string `json:"text,omitempty"`
 }
 
-type Answers struct {
-	QOIds []uint `json:"qoIds,omitempty"`
+type UserAnswers struct {
+	TestID   uint          `json:"testId,omitempty"`
+	LessonID uint          `json:"lessonId,omitempty"`
+	UserID   uint          `json:"userId,omitempty"`
+	UserAns  map[uint]uint `json:"userAns,omitempty"`
 }

@@ -13,6 +13,7 @@ func DtoQuestionOptionToDomain(opt dto.QuestionOption) models.QuestionOption {
 	return models.QuestionOption{
 		ID:         opt.ID,
 		QuestionID: opt.QuestionID,
+		IsCorrect:  opt.IsCorrect,
 		Text:       opt.Text,
 	}
 }
@@ -70,7 +71,6 @@ func DtoTestToDomain(t dto.Test) models.Test {
 	return models.Test{
 		ID:        t.ID,
 		LessonID:  t.LessonID,
-		Reward:    t.Reward,
 		Questions: questions,
 	}
 }
@@ -84,7 +84,6 @@ func TestToDto(t models.Test) dto.Test {
 	return dto.Test{
 		ID:        t.ID,
 		LessonID:  t.LessonID,
-		Reward:    t.Reward,
 		Questions: questions,
 	}
 }
@@ -129,7 +128,6 @@ func DtoTestUpdateToDomain(u dto.TestUpdate) models.TestUpdate {
 	}
 	return models.TestUpdate{
 		ID:           u.ID,
-		Reward:       u.Reward,
 		QuestionsUpd: questions,
 	}
 }

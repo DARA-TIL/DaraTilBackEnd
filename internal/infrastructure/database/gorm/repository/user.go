@@ -120,6 +120,9 @@ func (u *UserRepository) LvlUp(ctx context.Context, userId uint, xpAdded int) mo
 		if err := tx.WithContext(ctx).Save(&progress).Error; err != nil {
 			return errhandlers.DBErrHandler(err)
 		}
+		if err := tx.WithContext(ctx).Preload("Progress").First(&user, userId).Error; err != nil {
+			return errhandlers.DBErrHandler(err)
+		}
 		return nil
 	})
 	if err != nil {

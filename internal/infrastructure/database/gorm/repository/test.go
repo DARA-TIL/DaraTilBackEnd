@@ -92,7 +92,6 @@ func (t TestRepository) DeleteOption(ctx context.Context, id uint) error {
 	return nil
 }
 func (t TestRepository) Update(ctx context.Context, upd models.TestUpdate) (*models.Test, error) {
-	updates := make(map[string]any)
 	err := t.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if upd.QuestionsUpd != nil {
 			for _, question := range upd.QuestionsUpd {
@@ -108,13 +107,6 @@ func (t TestRepository) Update(ctx context.Context, upd models.TestUpdate) (*mod
 						}
 					}
 				}
-			}
-		}
-		if upd.Reward != nil {
-			updates["reward"] = *upd.Reward
-			err := tx.Model(&gormModels.Test{}).Where("id = ?", *upd.ID).Updates(updates).Error
-			if err != nil {
-				return err
 			}
 		}
 		return nil
@@ -194,6 +186,24 @@ func (t TestRepository) UpdateQuestionOption(ctx context.Context, upd models.Que
 	}
 	qoDom := gormMappers.GormQuestionOptionToDomain(qo)
 	return &qoDom, nil
+}
+
+func (t TestRepository) GetCorrectAnswers(ctx context.Context, testID uint) (map[uint]uint, error) {
+	var test gormModels.Test
+	correctAnswers := make(map[uint]uint)
+	err := t.db.WithContext(ctx).Preload("Questions.Options").First(&test, testID).Error
+	if err != nil {
+		return nil, errhandlers.DBErrHandler(err)
+	}
+	for _, question := range test.Questions {
+		for _, option := range question.Options {
+			if option.IsCorrect {
+				correctAnswers[question.ID] = option.ID
+				break
+			}
+		}
+	}
+	return correctAnswers, nil
 }
 
 func UpdateOptionTransaction(tx *gorm.DB, upd models.QuestionOptionsUpdate) (*models.QuestionOption, error) {

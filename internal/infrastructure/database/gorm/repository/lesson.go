@@ -139,6 +139,49 @@ func (l LessonRepository) DeleteBlock(ctx context.Context, id uint) error {
 	}
 	return nil
 }
+
+func (l LessonRepository) FinishLesson(ctx context.Context, lessonRes models.LessonResult) (*models.LessonResult, error) {
+	gormLF := gormMappers.LessonResultToGorm(lessonRes)
+	if err := l.db.WithContext(ctx).Create(&gormLF).Error; err != nil {
+		return nil, errhandlers.DBErrHandler(err)
+	}
+	lessonRes = gormMappers.GormLessonResultToDomain(gormLF)
+	return &lessonRes, nil
+}
+func (l LessonRepository) GetFinishedLessons(ctx context.Context, userID uint) ([]models.LessonResult, error) {
+	subQuery := l.db.
+		Model(&gormModels.LessonResult{}).
+		Select("lesson_id, MAX(result) as max_result").
+		Where("user_id = ?", userID).
+		Group("lesson_id")
+
+	var bestResults []gormModels.LessonResult
+	err := l.db.WithContext(ctx).
+		Model(&gormModels.LessonResult{}).
+		Joins("JOIN (?) as best ON lesson_results.lesson_id = best.lesson_id AND lesson_results.result = best.max_result", subQuery).
+		Where("lesson_results.user_id = ?", userID).
+		Find(&bestResults).Error
+	if err != nil {
+		return nil, errhandlers.DBErrHandler(err)
+	}
+	var finLes []models.LessonResult
+	for _, lesson := range bestResults {
+		finLes = append(finLes, gormMappers.GormLessonResultToDomain(lesson))
+	}
+	return finLes, nil
+}
+func (l LessonRepository) GetLessonResults(ctx context.Context, userID, LessonID uint) ([]models.LessonResult, error) {
+	var results []gormModels.LessonResult
+	if err := l.db.WithContext(ctx).Where("user_id = ? AND lesson_id = ?", userID, LessonID).Find(&results).Error; err != nil {
+		return nil, errhandlers.DBErrHandler(err)
+	}
+	var finLes []models.LessonResult
+	for _, lesson := range results {
+		finLes = append(finLes, gormMappers.GormLessonResultToDomain(lesson))
+	}
+	return finLes, nil
+}
+
 func NormalizePositions(tx *gorm.DB, lessonID uint) error {
 	logger.Info("NormalizePositions started")
 
