@@ -7,6 +7,16 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// @title DaraTil Backend
+// @version 0.2
+// @description Api server for DaraTil PLatform
+
+// @host daratilback.onrender.com
+// @BasePath /api
+// @schemes https
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	_ = godotenv.Load()
 	cfg, err := config.LoadConfig()

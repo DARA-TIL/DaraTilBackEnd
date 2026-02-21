@@ -79,6 +79,19 @@ func NewLessonHandler(
 	}
 }
 
+// CreateLesson godoc
+// @Summary Create lesson
+// @Description Creates a new lesson.
+// @Tags Lesson
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.LessonDTO true "Lesson payload"
+// @Success 201 {object} dto.LessonDTO "Created lesson"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /lesson/create [post]
 func (h *LessonHandler) CreateLesson(c *gin.Context) {
 	logger.Info("Create lesson request started")
 
@@ -103,6 +116,16 @@ func (h *LessonHandler) CreateLesson(c *gin.Context) {
 	response.Success(c, http.StatusCreated, lessonDto)
 }
 
+// GetLessons godoc
+// @Summary Get all lessons for current user
+// @Description Returns all lessons with lessonStatus (locked/available/passed) and bestResult for current user.
+// @Tags Lesson
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {array} dto.LessonDTO "Lessons list"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /lesson/getAll [get]
 func (h *LessonHandler) GetLessons(c *gin.Context) {
 	logger.Info("Get all lessons request started")
 
@@ -175,6 +198,20 @@ func (h *LessonHandler) GetLessons(c *gin.Context) {
 	response.Success(c, http.StatusOK, lessonsDto)
 }
 
+// GetLessonByID godoc
+// @Summary Get lesson by ID
+// @Description Returns lesson by ID with user results. Returns 423 if user's level is not enough.
+// @Tags Lesson
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Lesson ID"
+// @Success 200 {object} dto.LessonDTO "Lesson with results"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 423 {object} map[string]interface{} "User level is not enough for this lesson"
+// @Failure 404 {object} map[string]interface{} "Not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /lesson/getById/{id} [get]
 func (h *LessonHandler) GetLessonByID(c *gin.Context) {
 	logger.Info("Get lesson by ID request started")
 
@@ -232,6 +269,21 @@ func (h *LessonHandler) GetLessonByID(c *gin.Context) {
 	response.Success(c, http.StatusOK, dtoLesson)
 }
 
+// UpdateLesson godoc
+// @Summary Update lesson
+// @Description Updates lesson fields by ID.
+// @Tags Lesson
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Lesson ID"
+// @Param request body dto.UpdateLessonDTO true "Lesson update payload"
+// @Success 200 {object} dto.LessonDTO "Updated lesson"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /lesson/update/{id} [patch]
 func (h *LessonHandler) UpdateLesson(c *gin.Context) {
 	logger.Info("Update lesson request started")
 
@@ -262,6 +314,19 @@ func (h *LessonHandler) UpdateLesson(c *gin.Context) {
 	response.Success(c, http.StatusOK, lessonDto)
 }
 
+// DeleteLesson godoc
+// @Summary Delete lesson
+// @Description Deletes lesson by ID.
+// @Tags Lesson
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Lesson ID"
+// @Success 204 "No Content"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /lesson/delete/{id} [delete]
 func (h *LessonHandler) DeleteLesson(c *gin.Context) {
 	logger.Info("Delete lesson request started")
 
@@ -283,6 +348,19 @@ func (h *LessonHandler) DeleteLesson(c *gin.Context) {
 	response.Success(c, http.StatusNoContent, "Lesson deleted successfully")
 }
 
+// CreateBlock godoc
+// @Summary Create lesson block
+// @Description Creates a new lesson block.
+// @Tags Lesson
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.LessonBlockDTO true "Lesson block payload"
+// @Success 201 {object} dto.LessonBlockDTO "Created block"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /lesson/createBlock [post]
 func (h *LessonHandler) CreateBlock(c *gin.Context) {
 	logger.Info("Create lesson block request started")
 
@@ -306,6 +384,19 @@ func (h *LessonHandler) CreateBlock(c *gin.Context) {
 	response.Success(c, http.StatusCreated, blockDto)
 }
 
+// DeleteBlock godoc
+// @Summary Delete lesson block
+// @Description Deletes lesson block by ID.
+// @Tags Lesson
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Lesson block ID"
+// @Success 204 "No Content"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /lesson/deleteBlock/{id} [delete]
 func (h *LessonHandler) DeleteBlock(c *gin.Context) {
 	logger.Info("Delete lesson block request started")
 
@@ -327,6 +418,22 @@ func (h *LessonHandler) DeleteBlock(c *gin.Context) {
 	response.Success(c, http.StatusNoContent, "Block deleted successfully")
 }
 
+// UpdateBlock godoc
+// @Summary Update lesson block
+// @Description Updates lesson block by ID. If position is provided, lessonId is required.
+// @Tags Lesson
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Lesson block ID"
+// @Param request body dto.UpdateLessonBlockDTO true "Lesson block update payload"
+// @Success 200 {object} dto.LessonBlockDTO "Updated block"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 422 {object} map[string]interface{} "lesson block position and lesson id is required"
+// @Failure 404 {object} map[string]interface{} "Not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /lesson/updateBlock/{id} [patch]
 func (h *LessonHandler) UpdateBlock(c *gin.Context) {
 	logger.Info("Update lesson block request started")
 
@@ -362,6 +469,20 @@ func (h *LessonHandler) UpdateBlock(c *gin.Context) {
 	response.Success(c, http.StatusOK, blockDto)
 }
 
+// FinishLesson godoc
+// @Summary Finish lesson (submit answers)
+// @Description Checks answers, stores lesson result, and if passed awards XP (may level up). Returns progress info in response.
+// @Tags Lesson
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.UserAnswers true "User answers payload"
+// @Success 200 {object} map[string]interface{} "Lesson result and progress info"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /lesson/finish [post]
 func (h *LessonHandler) FinishLesson(c *gin.Context) {
 	logger.Info("Finish lesson request started")
 

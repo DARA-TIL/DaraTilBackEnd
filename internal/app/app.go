@@ -1,6 +1,7 @@
 package app
 
 import (
+	_ "DaraTilBackendV2/docs"
 	"DaraTilBackendV2/internal/config"
 	"DaraTilBackendV2/internal/infrastructure/logger"
 	"DaraTilBackendV2/internal/presentation/http/middleware"
@@ -12,6 +13,8 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	"github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
 )
 
@@ -72,10 +75,11 @@ func (a *App) setupRoutes() {
 	lesson.RegisterRoutes(lessonRoute, a.container.LessonHandler)
 
 	//Test
-	testRoute := api.Group("test")
+	testRoute := api.Group("/test")
 	testRoute.Use(middleware.AuthMiddleware(a.cfg))
 	test.RegisterProtectedTestRoutes(testRoute, a.container.TestHandler)
 
+	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
 
 func (a *App) Run() {

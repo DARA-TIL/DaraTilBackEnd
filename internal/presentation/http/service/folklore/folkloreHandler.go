@@ -49,6 +49,19 @@ func NewFolkloreHandler(
 	}
 }
 
+// Create godoc
+// @Summary Create folklore
+// @Description Create new folklore entry (admin only)
+// @Tags Folklore
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param folklore body dto.FolkloreDTO true "Folklore data"
+// @Success 200 {object} dto.FolkloreDTO
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 403 {object} map[string]interface{}
+// @Router /folklore/create [post]
 func (h *FolkloreHandler) Create(c *gin.Context) {
 	logger.Info("Create folklore request started")
 
@@ -74,6 +87,20 @@ func (h *FolkloreHandler) Create(c *gin.Context) {
 	response.Success(c, 200, folkDto)
 }
 
+// Update godoc
+// @Summary Update folklore
+// @Description Update folklore by ID (admin only)
+// @Tags Folklore
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Folklore ID"
+// @Param folklore body dto.UpdatableFolkloreFieldsDTO true "Updated fields"
+// @Success 200 {object} dto.FolkloreDTO
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 403 {object} map[string]interface{}
+// @Router /folklore/update/{id} [patch]
 func (h *FolkloreHandler) Update(c *gin.Context) {
 	logger.Info("Update folklore request started")
 
@@ -99,6 +126,17 @@ func (h *FolkloreHandler) Update(c *gin.Context) {
 	response.Success(c, 200, folkDto)
 }
 
+// GetByID godoc
+// @Summary Get folklore by ID
+// @Description Get folklore details by ID
+// @Tags Folklore
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Folklore ID"
+// @Success 200 {object} dto.FolkloreDTO
+// @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /folklore/getById/{id} [get]
 func (h *FolkloreHandler) GetByID(c *gin.Context) {
 	logger.Info("Get folklore by ID request started")
 
@@ -121,6 +159,18 @@ func (h *FolkloreHandler) GetByID(c *gin.Context) {
 	response.Success(c, 200, folkDto)
 }
 
+// Delete godoc
+// @Summary Delete folklore
+// @Description Delete folklore by ID (admin only)
+// @Tags Folklore
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Folklore ID"
+// @Success 200 {string} string
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 403 {object} map[string]interface{}
+// @Router /folklore/delete/{id} [delete]
 func (h *FolkloreHandler) Delete(c *gin.Context) {
 	logger.Info("Delete folklore request started")
 
@@ -142,6 +192,15 @@ func (h *FolkloreHandler) Delete(c *gin.Context) {
 	response.Success(c, 200, "record deleted")
 }
 
+// GetAll godoc
+// @Summary Get all folklore
+// @Description Retrieve all folklore entries
+// @Tags Folklore
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {array} dto.FolkloreDTO
+// @Failure 500 {object} map[string]interface{}
+// @Router /folklore/getAll [get]
 func (h *FolkloreHandler) GetAll(c *gin.Context) {
 	logger.Info("Get all folklore request started")
 
@@ -162,6 +221,17 @@ func (h *FolkloreHandler) GetAll(c *gin.Context) {
 	response.Success(c, 200, folkDto)
 }
 
+// ToggleLike godoc
+// @Summary Toggle like for folklore
+// @Description Like or unlike folklore entry
+// @Tags Folklore
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Folklore ID"
+// @Success 200 {object} dto.FolkloreDTO
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Router /folklore/like/{id} [post]
 func (h *FolkloreHandler) ToggleLike(c *gin.Context) {
 	logger.Info("Toggle like request started")
 
@@ -196,6 +266,15 @@ func (h *FolkloreHandler) ToggleLike(c *gin.Context) {
 	response.Success(c, 200, folkDto, gin.H{"liked": isLiked})
 }
 
+// GetLikedFolklore godoc
+// @Summary Get liked folklore
+// @Description Retrieve folklore liked by current user
+// @Tags Folklore
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {array} dto.FolkloreDTO
+// @Failure 401 {object} map[string]interface{}
+// @Router /folklore/liked [get]
 func (h *FolkloreHandler) GetLikedFolklore(c *gin.Context) {
 	logger.Info("Get liked folklore request started")
 
@@ -223,6 +302,18 @@ func (h *FolkloreHandler) GetLikedFolklore(c *gin.Context) {
 	response.Success(c, 200, folkDto)
 }
 
+// GetByQuery godoc
+// @Summary Search folklore
+// @Description Search folklore with filters
+// @Tags Folklore
+// @Produce json
+// @Security BearerAuth
+// @Param title query string false "Title filter"
+// @Param region query string false "Region filter"
+// @Param type query string false "Type filter"
+// @Success 200 {array} dto.FolkloreDTO
+// @Failure 400 {object} map[string]interface{}
+// @Router /folklore/search [get]
 func (h *FolkloreHandler) GetByQuery(c *gin.Context) {
 	logger.Info("Get folklore by query request started")
 

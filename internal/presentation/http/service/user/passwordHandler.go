@@ -26,7 +26,25 @@ type PasswordResetSession struct {
 	CreatedAt time.Time `json:"createdAt"`
 	Verified  bool      `json:"verified"`
 }
+type VerifyPasswordResetCodeRequest struct {
+	Code string `json:"code" example:"123456"`
+}
 
+type ConfirmPasswordChangeRequest struct {
+	Password string `json:"password" example:"NewStrongPass123!"`
+}
+
+// ChangePassword godoc
+// @Summary Request password reset
+// @Description Generates a 6-digit reset code, sends it to the user's email, and sets a "password_reset" HttpOnly cookie valid for 10 minutes.
+// @Tags User
+// @Produce json
+// @Param email path string true "User email"
+// @Success 200 {object} map[string]interface{} "Returns email"
+// @Failure 400 {object} map[string]interface{} "Invalid input"
+// @Failure 404 {object} map[string]interface{} "User not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /user/changePassword/{email} [post]
 func (h *UserHandler) ChangePassword(c *gin.Context) {
 	email := c.Param("email")
 
@@ -136,6 +154,19 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"email": email})
 }
 
+// VerifyPasswordResetCode godoc
+// @Summary Verify password reset code
+// @Description Verifies the 6-digit code using the "password_reset" cookie. If valid, marks the reset session as verified and updates the cookie (10 minutes).
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param request body VerifyPasswordResetCodeRequest true "Reset code payload"
+// @Success 200 {object} map[string]interface{} "code verified"
+// @Failure 400 {object} map[string]interface{} "Invalid input"
+// @Failure 406 {object} map[string]interface{} "Incorrect code"
+// @Failure 408 {object} map[string]interface{} "Password reset timeout"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /user/verifyPasswordReset [post]
 func (h *UserHandler) VerifyPasswordResetCode(c *gin.Context) {
 	logger.Info("Password reset code verification started")
 
@@ -233,6 +264,19 @@ func (h *UserHandler) VerifyPasswordResetCode(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "code verified"})
 }
 
+// ConfirmPasswordChange godoc
+// @Summary Confirm password change
+// @Description Updates the user's password if reset session is not expired and the code was verified. Clears the "password_reset" cookie after success.
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param request body ConfirmPasswordChangeRequest true "New password payload"
+// @Success 200 {object} map[string]interface{} "Password changed"
+// @Failure 400 {object} map[string]interface{} "Invalid input"
+// @Failure 403 {object} map[string]interface{} "Code is not verified"
+// @Failure 408 {object} map[string]interface{} "Password reset timeout"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /user/confirmPasswordReset [post]
 func (h *UserHandler) ConfirmPasswordChange(c *gin.Context) {
 	logger.Info("Confirm password change started")
 

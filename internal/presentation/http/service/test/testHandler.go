@@ -53,6 +53,21 @@ func NewTestHandler(
 		updateUC:               updateUC,
 	}
 }
+
+// Create godoc
+// @Summary Create test
+// @Description Creates a test with questions/options payload.
+// @Tags Test
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.Test true "Test payload"
+// @Success 201 {object} dto.Test "Created test"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /test/create [post]
 func (h *TestHandler) Create(c *gin.Context) {
 	logger.Info("Create test request started")
 
@@ -77,6 +92,20 @@ func (h *TestHandler) Create(c *gin.Context) {
 	response.Success(c, 201, testDto)
 }
 
+// CreateQuestion godoc
+// @Summary Create question
+// @Description Creates a question for a test.
+// @Tags Test
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.Question true "Question payload"
+// @Success 201 {object} dto.Question "Created question"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /test/question/create [post]
 func (h *TestHandler) CreateQuestion(c *gin.Context) {
 	logger.Info("Create question request started")
 
@@ -101,6 +130,20 @@ func (h *TestHandler) CreateQuestion(c *gin.Context) {
 	response.Success(c, 201, qDto)
 }
 
+// CreateOption godoc
+// @Summary Create question option
+// @Description Creates an option for a question.
+// @Tags Test
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.QuestionOption true "Option payload"
+// @Success 201 {object} dto.QuestionOption "Created option"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /test/option/create [post]
 func (h *TestHandler) CreateOption(c *gin.Context) {
 	logger.Info("Create option request started")
 
@@ -125,6 +168,20 @@ func (h *TestHandler) CreateOption(c *gin.Context) {
 	response.Success(c, 201, oDto)
 }
 
+// Delete godoc
+// @Summary Delete test
+// @Description Deletes a test by ID.
+// @Tags Test
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Test ID"
+// @Success 204 "No Content"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden"
+// @Failure 404 {object} map[string]interface{} "Not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /test/delete/{id} [delete]
 func (h *TestHandler) Delete(c *gin.Context) {
 	logger.Info("Delete test request started")
 
@@ -146,6 +203,20 @@ func (h *TestHandler) Delete(c *gin.Context) {
 	response.Success(c, 204, "test deleted successfully")
 }
 
+// DeleteQuestion godoc
+// @Summary Delete question
+// @Description Deletes a question by ID.
+// @Tags Test
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Question ID"
+// @Success 204 "No Content"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden"
+// @Failure 404 {object} map[string]interface{} "Not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /test/question/delete/{id} [delete]
 func (h *TestHandler) DeleteQuestion(c *gin.Context) {
 	logger.Info("Delete question request started")
 
@@ -167,6 +238,20 @@ func (h *TestHandler) DeleteQuestion(c *gin.Context) {
 	response.Success(c, 204, "question deleted successfully")
 }
 
+// DeleteOption godoc
+// @Summary Delete question option
+// @Description Deletes an option by ID.
+// @Tags Test
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Option ID"
+// @Success 204 "No Content"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden"
+// @Failure 404 {object} map[string]interface{} "Not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /test/option/delete/{id} [delete]
 func (h *TestHandler) DeleteOption(c *gin.Context) {
 	logger.Info("Delete option request started")
 
@@ -188,6 +273,19 @@ func (h *TestHandler) DeleteOption(c *gin.Context) {
 	response.Success(c, 204, "option deleted successfully")
 }
 
+// GetByID godoc
+// @Summary Get test by ID
+// @Description Returns test with questions and options by test ID.
+// @Tags Test
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Test ID"
+// @Success 200 {object} dto.Test "Test"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /test/get/{id} [get]
 func (h *TestHandler) GetByID(c *gin.Context) {
 	logger.Info("Get test by ID request started")
 
@@ -210,6 +308,19 @@ func (h *TestHandler) GetByID(c *gin.Context) {
 	response.Success(c, 200, testDto)
 }
 
+// GetByLessonID godoc
+// @Summary Get test by lesson ID
+// @Description Returns test attached to a lesson by lesson ID.
+// @Tags Test
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Lesson ID"
+// @Success 200 {object} dto.Test "Test"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /test/lesson/{id} [get]
 func (h *TestHandler) GetByLessonID(c *gin.Context) {
 	logger.Info("Get test by lesson ID request started")
 
@@ -232,6 +343,21 @@ func (h *TestHandler) GetByLessonID(c *gin.Context) {
 	response.Success(c, 200, testDto)
 }
 
+// UpdateQuestionOption godoc
+// @Summary Update question option
+// @Description Updates option fields like text and isCorrect (partial update via nullable fields).
+// @Tags Test
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.QuestionOptionsUpdate true "Option update payload"
+// @Success 200 {object} dto.QuestionOption "Updated option"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden"
+// @Failure 404 {object} map[string]interface{} "Not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /test/option/update [put]
 func (h *TestHandler) UpdateQuestionOption(c *gin.Context) {
 	logger.Info("Update question option request started")
 
@@ -256,6 +382,21 @@ func (h *TestHandler) UpdateQuestionOption(c *gin.Context) {
 	response.Success(c, 200, optDto)
 }
 
+// UpdateQuestion godoc
+// @Summary Update question
+// @Description Updates question fields and optionally nested options (partial update via nullable fields).
+// @Tags Test
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.QuestionUpdate true "Question update payload"
+// @Success 200 {object} dto.Question "Updated question"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden"
+// @Failure 404 {object} map[string]interface{} "Not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /test/question/update [put]
 func (h *TestHandler) UpdateQuestion(c *gin.Context) {
 	logger.Info("Update question request started")
 
@@ -280,6 +421,21 @@ func (h *TestHandler) UpdateQuestion(c *gin.Context) {
 	response.Success(c, 200, qDto)
 }
 
+// UpdateTest godoc
+// @Summary Update test
+// @Description Updates test reward and nested questions/options (partial update via nullable fields).
+// @Tags Test
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.TestUpdate true "Test update payload"
+// @Success 200 {object} dto.Test "Updated test"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden"
+// @Failure 404 {object} map[string]interface{} "Not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /test/update [put]
 func (h *TestHandler) UpdateTest(c *gin.Context) {
 	logger.Info("Update test request started")
 

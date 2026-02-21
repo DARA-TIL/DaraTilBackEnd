@@ -18,7 +18,7 @@ func RegisterAuthRoutes(r *gin.RouterGroup, h *UserHandler, hj *jwt.JwtTokenHand
 	//auth
 	r.POST("/login", h.Login)
 	r.POST("/register", h.Register)
-	r.GET(":provider", func(c *gin.Context) {
+	r.GET("/:provider", func(c *gin.Context) {
 		provider := c.Param("provider")
 		if !allowedProviders[provider] {
 			response.Fail(c, http.StatusBadRequest, "Invalid provider")
@@ -27,7 +27,7 @@ func RegisterAuthRoutes(r *gin.RouterGroup, h *UserHandler, hj *jwt.JwtTokenHand
 		h.OauthLogin(c, provider)
 	})
 	r.GET("/refresh", hj.RefreshToken)
-	r.GET(":provider/callback", func(c *gin.Context) {
+	r.GET("/:provider/callback", func(c *gin.Context) {
 		provider := c.Param("provider")
 		if !allowedProviders[provider] {
 			response.Fail(c, http.StatusBadRequest, "Invalid provider")
@@ -54,5 +54,5 @@ func RegisterProtectedRoutes(r *gin.RouterGroup, h *UserHandler) {
 	r.POST("/update/:id", middleware.RequireRole("admin"), h.UpdateByAdmin)
 	r.POST("/levelUp/:xp", middleware.RequireRole("admin"), h.LevelUp)
 	r.GET("/getAll", h.GetAllUsers)
-	r.GET("get/:id", h.GetUserByID)
+	r.GET("/get/:id", h.GetUserByID)
 }

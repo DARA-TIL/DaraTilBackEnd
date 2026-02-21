@@ -27,6 +27,16 @@ const (
 	DeviceWeb        = "Web"
 )
 
+// Register godoc
+// @Summary Register user
+// @Description Create new user account and return access token
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param request body dto.RegisterRequest true "Register payload"
+// @Success 201 {object} dto.User
+// @Failure 400 {object} map[string]interface{}
+// @Router /auth/register [post]
 func (h *UserHandler) Register(c *gin.Context) {
 	logger.Info("Register request started")
 
@@ -82,6 +92,16 @@ func (h *UserHandler) Register(c *gin.Context) {
 	response.Success(c, 201, userDto, gin.H{"accessToken": accessToken})
 }
 
+// Login godoc
+// @Summary Login user
+// @Description Authenticate user and return access token
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param request body dto.LoginRequest true "Login credentials"
+// @Success 200 {object} dto.User
+// @Failure 401 {object} map[string]interface{}
+// @Router /auth/login [post]
 func (h *UserHandler) Login(c *gin.Context) {
 	logger.Info("Login request started")
 

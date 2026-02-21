@@ -58,6 +58,19 @@ func NewUserHandler(
 	}
 }
 
+// UpdateMe godoc
+// @Summary Update current user
+// @Description Updates current user's profile fields (password is ignored even if provided).
+// @Tags User
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.UserUpdatableFields true "Updatable user fields"
+// @Success 200 {object} map[string]interface{} "Updated user"
+// @Failure 400 {object} map[string]interface{} "Invalid input"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /user/update [post]
 func (h *UserHandler) UpdateMe(c *gin.Context) {
 	logger.Info("UpdateMe request started",
 		zap.String("ip", c.ClientIP()),
@@ -113,6 +126,22 @@ func (h *UserHandler) UpdateMe(c *gin.Context) {
 	response.Success(c, 200, dtoMappers.UserToDto(*user))
 }
 
+// UpdateByAdmin godoc
+// @Summary Update user by admin
+// @Description Admin updates any user's fields (including password if provided).
+// @Tags User
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "User ID"
+// @Param request body dto.UserUpdatableFields true "Updatable user fields"
+// @Success 200 {object} map[string]interface{} "Updated user"
+// @Failure 400 {object} map[string]interface{} "Invalid input"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden"
+// @Failure 404 {object} map[string]interface{} "Not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /user/update/{id} [post]
 func (h *UserHandler) UpdateByAdmin(c *gin.Context) {
 	logger.Info("Admin update user started")
 
@@ -162,6 +191,17 @@ func (h *UserHandler) UpdateByAdmin(c *gin.Context) {
 	response.Success(c, 200, dtoMappers.UserToDto(*user))
 }
 
+// GetAllUsers godoc
+// @Summary Get all users
+// @Description Returns list of all users.
+// @Tags User
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {array} dto.User "Users list"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /user/getAll [get]
 func (h *UserHandler) GetAllUsers(c *gin.Context) {
 	logger.Info("GetAllUsers request")
 
@@ -186,6 +226,17 @@ func (h *UserHandler) GetAllUsers(c *gin.Context) {
 	response.Success(c, 200, dtoUsers)
 }
 
+// GetLikedFolklore godoc
+// @Summary Get liked folklore
+// @Description Returns folklore items liked by the current user.
+// @Tags User
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} map[string]interface{} "Liked folklore list"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /user/getLikedFolklore [get]
 func (h *UserHandler) GetLikedFolklore(c *gin.Context) {
 	logger.Info("GetLikedFolklore request")
 
@@ -225,6 +276,19 @@ func (h *UserHandler) GetLikedFolklore(c *gin.Context) {
 	response.Success(c, 200, folk)
 }
 
+// GetUserByID godoc
+// @Summary Get user by ID
+// @Description Returns user by ID.
+// @Tags User
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "User ID"
+// @Success 200 {object} map[string]interface{} "User"
+// @Failure 400 {object} map[string]interface{} "Invalid input"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /user/get/{id} [get]
 func (h *UserHandler) GetUserByID(c *gin.Context) {
 	logger.Info("GetUserByID request")
 
@@ -254,6 +318,19 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 	response.Success(c, 200, user)
 }
 
+// LevelUp godoc
+// @Summary Add XP to current user (admin only)
+// @Description Adds XP to the current authenticated user and returns whether level-up happened and previous XP/level.
+// @Tags User
+// @Produce json
+// @Security BearerAuth
+// @Param xp path int true "XP to add"
+// @Success 200 {object} map[string]interface{} "User and level up info (isLvlUp, prevXp, prevLevel)"
+// @Failure 400 {object} map[string]interface{} "Invalid input"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /user/levelUp/{xp} [post]
 func (h *UserHandler) LevelUp(c *gin.Context) {
 	logger.Info("LevelUp request started")
 

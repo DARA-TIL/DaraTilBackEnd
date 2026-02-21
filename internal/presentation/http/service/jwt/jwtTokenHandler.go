@@ -100,6 +100,17 @@ type RefreshRequest struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
+// RefreshToken godoc
+// @Summary Refresh access token
+// @Description Validates refresh token (cookie "refreshToken" or JSON body) and issues a new access token. Also rotates refresh token and sets a new "refreshToken" HttpOnly cookie.
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param refresh body RefreshRequest false "Refresh token (optional if cookie refreshToken exists)"
+// @Success 200 {object} map[string]interface{} "Returns user and new accessToken"
+// @Failure 401 {object} map[string]interface{} "Session has been expired"
+// @Failure 400 {object} map[string]interface{} "Invalid request"
+// @Router /auth/refresh [get]
 func (h *JwtTokenHandler) RefreshToken(c *gin.Context) {
 	logger.Info("Refresh token request started")
 
@@ -201,6 +212,15 @@ func (h *JwtTokenHandler) RefreshToken(c *gin.Context) {
 	})
 }
 
+// Logout godoc
+// @Summary Logout user
+// @Description Revokes current refresh token (if present) and clears the "refreshToken" cookie.
+// @Tags Auth
+// @Produce json
+// @Security BearerAuth
+// @Success 204 "No Content"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Router /auth/logout [post]
 func (h *JwtTokenHandler) Logout(c *gin.Context) {
 	logger.Info("Logout request started")
 
@@ -259,6 +279,15 @@ func (h *JwtTokenHandler) Logout(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// GetMe godoc
+// @Summary Get current user
+// @Description Get authenticated user profile
+// @Tags Auth
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} map[string]interface{} "Returns user"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Router /auth/me [get]
 func (h *JwtTokenHandler) GetMe(c *gin.Context) {
 	logger.Info("GetMe request started")
 
