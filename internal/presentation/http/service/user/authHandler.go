@@ -188,18 +188,18 @@ func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 	}
 	stateEncoded := c.Query("state")
 	if stateEncoded == "" {
-		redirectError("Missing state", errors.New("Missing state"))
+		redirectError("Missing state", errors.New("missing state"))
 		return
 	}
 	stateBytes, err := base64.URLEncoding.DecodeString(stateEncoded)
 	if err != nil {
-		redirectError("Invalid state encoding", errors.New("Invalid state encoding"))
+		redirectError("Invalid state encoding", errors.New("invalid state encoding"))
 		return
 	}
 
 	var state OAuthState
 	if err := json.Unmarshal(stateBytes, &state); err != nil {
-		redirectError("Invalid state format", errors.New("Invalid state format"))
+		redirectError("Invalid state format", errors.New("invalid state format"))
 		return
 	}
 	client := state.Client
@@ -285,7 +285,7 @@ func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 			zap.String("actual", provider),
 		)
 		logger.Info("Oauth Error, User Already signed in")
-		redirectError("User already signed in with another provider", err)
+		redirectError("User already signed in with another provider", errors.New("user already signed in with another provider"))
 		return
 	}
 
