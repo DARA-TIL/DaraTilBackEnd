@@ -5,6 +5,8 @@ import (
 	"DaraTilBackendV2/internal/presentation/dto"
 )
 
+const LessonAvailable = "available"
+
 func LessonToDTO(lesson models.Lesson) dto.LessonDTO {
 	return dto.LessonDTO{
 		ID:            lesson.ID,
@@ -15,6 +17,7 @@ func LessonToDTO(lesson models.Lesson) dto.LessonDTO {
 		Reward:        lesson.Reward,
 		RequiredLevel: lesson.RequiredLevel,
 		Blocks:        LessonBlocksToDTO(lesson.Blocks),
+		LessonStatus:  LessonAvailable,
 	}
 }
 

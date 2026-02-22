@@ -89,7 +89,6 @@ func (h *UserHandler) UpdateMe(c *gin.Context) {
 		logger.Warn("UpdateMe attempt to change password ignored")
 		body.Password = nil
 	}
-
 	id, err := middleware.GetCurrentUserID(c)
 	if err != nil {
 		logger.Error("UpdateMe failed - cannot get user ID",
@@ -314,8 +313,8 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 	logger.Info("GetUserByID success",
 		zap.Int("user_id", int(*id)),
 	)
-
-	response.Success(c, 200, user)
+	userDTO := dtoMappers.UserToDto(*user)
+	response.Success(c, 200, userDTO)
 }
 
 // LevelUp godoc

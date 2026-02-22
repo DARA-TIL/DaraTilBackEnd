@@ -112,6 +112,10 @@ func (h *FolkloreHandler) Update(c *gin.Context) {
 	}
 
 	var body dto.UpdatableFolkloreFieldsDTO
+	if err := c.ShouldBindJSON(&body); err != nil {
+		response.HandleDomainError(c, domErr.ErrInvalidInput)
+		return
+	}
 	updFields := dtoMappers.DtoUpdatableFolkloreToDomain(body)
 
 	folk, err := h.UpdateUC.Execute(c.Request.Context(), *idInt, updFields)

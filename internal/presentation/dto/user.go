@@ -31,8 +31,8 @@ type UserProgress struct {
 	XpForNextLevel int  `json:"XpForNextLevel"`
 }
 type UserUpdatableFields struct {
-	Username *string `json:"username" binding:"required,min=3"`
-	Avatar   *string `json:"avatar" binding:"required,min=6"`
-	Role     *string `json:"role" binding:"required,min=3"`
-	Password *string `json:"password" binding:"required,min=6"`
+	Username *string `json:"username"`
+	Avatar   *string `json:"avatar"`
+	Role     *string `json:"role"`
+	Password *string `json:"password"`
 }

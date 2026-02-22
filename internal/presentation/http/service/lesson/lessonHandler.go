@@ -129,13 +129,13 @@ func (h *LessonHandler) CreateLesson(c *gin.Context) {
 func (h *LessonHandler) GetLessons(c *gin.Context) {
 	logger.Info("Get all lessons request started")
 
-	userID, err := middleware.GetCurrentUserID(c)
-	if err != nil {
+	userClaims, exists := middleware.GetUserClaims(c)
+	if exists == false {
 		logger.Error("Unauthorized access while getting lessons")
 		response.HandleDomainError(c, errs.ErrUnauthorized)
 		return
 	}
-	logger.Info("User ID successfully extracted")
+	logger.Info("User Claims successfully extracted")
 
 	lessons, err := h.getAllUC.Execute(c.Request.Context())
 	if err != nil {
@@ -145,15 +145,7 @@ func (h *LessonHandler) GetLessons(c *gin.Context) {
 	}
 	logger.Info("Lessons successfully fetched")
 
-	user, err := h.getUserByIDUC.Execute(c.Request.Context(), *userID)
-	if err != nil {
-		logger.Error("Failed to get user by ID")
-		response.HandleDomainError(c, err)
-		return
-	}
-	logger.Info("User successfully fetched")
-
-	lesRes, err := h.getFinishedLessonsUC.Execute(c.Request.Context(), *userID)
+	lesRes, err := h.getFinishedLessonsUC.Execute(c.Request.Context(), userClaims.UserID)
 	if err != nil {
 		logger.Error("Failed to get finished lessons")
 		response.HandleDomainError(c, err)
@@ -171,26 +163,36 @@ func (h *LessonHandler) GetLessons(c *gin.Context) {
 	lessonsDto := dtoMappers.LessonsToDTO(lessons)
 	logger.Info("Lessons mapped to DTO")
 
-	for i := range lessonsDto {
-
-		if res, ok := lesResMap[lessonsDto[i].ID]; ok {
-			r := res
-			lessonsDto[i].BestResult = &r
-			logger.Info("Best result assigned to lesson")
+	if userClaims.Role != "admin" {
+		logger.Info("User is not admin, getting lesson availability")
+		user, err := h.getUserByIDUC.Execute(c.Request.Context(), userClaims.UserID)
+		if err != nil {
+			logger.Error("Failed to get user by ID")
+			response.HandleDomainError(c, err)
+			return
 		}
+		logger.Info("User successfully fetched")
+		for i := range lessonsDto {
 
-		if lessonsDto[i].RequiredLevel > user.Progress.Level {
-			lessonsDto[i].LessonStatus = LessonLocked
-			logger.Info("Lesson status set to LOCKED")
-			continue
-		}
+			if res, ok := lesResMap[lessonsDto[i].ID]; ok {
+				r := res
+				lessonsDto[i].BestResult = &r
+				logger.Info("Best result assigned to lesson")
+			}
 
-		if res, ok := lesResMap[lessonsDto[i].ID]; ok && res.Pass {
-			lessonsDto[i].LessonStatus = LessonPassed
-			logger.Info("Lesson status set to PASSED")
-		} else {
-			lessonsDto[i].LessonStatus = LessonAvailable
-			logger.Info("Lesson status set to AVAILABLE")
+			if lessonsDto[i].RequiredLevel > user.Progress.Level {
+				lessonsDto[i].LessonStatus = LessonLocked
+				logger.Info("Lesson status set to LOCKED")
+				continue
+			}
+
+			if res, ok := lesResMap[lessonsDto[i].ID]; ok && res.Pass {
+				lessonsDto[i].LessonStatus = LessonPassed
+				logger.Info("Lesson status set to PASSED")
+			} else {
+				lessonsDto[i].LessonStatus = LessonAvailable
+				logger.Info("Lesson status set to AVAILABLE")
+			}
 		}
 	}
 
@@ -223,18 +225,14 @@ func (h *LessonHandler) GetLessonByID(c *gin.Context) {
 	}
 	logger.Info("Lesson ID successfully parsed from params")
 
-	userID, err := middleware.GetCurrentUserID(c)
-	if err != nil {
+	userClaims, exists := middleware.GetUserClaims(c)
+	if exists == false {
 		logger.Error("Unauthorized access while getting lesson by ID")
 		response.HandleDomainError(c, errs.ErrUnauthorized)
 		return
 	}
-	logger.Info("User ID successfully extracted")
-	user, err := h.getUserByIDUC.Execute(c.Request.Context(), *userID)
-	if err != nil {
-		logger.Error("Failed to get user by ID")
-		response.HandleDomainError(c, err)
-	}
+	logger.Info("User Claims successfully extracted")
+
 	lesson, err := h.getByIDUC.Execute(c.Request.Context(), *id)
 	if err != nil {
 		logger.Error("Failed to get lesson by ID")
@@ -243,12 +241,21 @@ func (h *LessonHandler) GetLessonByID(c *gin.Context) {
 	}
 	logger.Info("Lesson entity successfully fetched")
 
-	if user.Progress.Level < lesson.RequiredLevel {
-		response.Fail(c, http.StatusLocked, "User level is not enough for this lesson")
-		logger.Info("User doesnt have enough level for this lesson")
-		return
+	if userClaims.Role != "admin" {
+		logger.Info("User is not admin. Checking level.")
+		user, err := h.getUserByIDUC.Execute(c.Request.Context(), userClaims.UserID)
+		if err != nil {
+			logger.Error("Failed to get user by ID")
+			response.HandleDomainError(c, err)
+			return
+		}
+		if user.Progress.Level < lesson.RequiredLevel {
+			response.Fail(c, http.StatusLocked, "User level is not enough for this lesson")
+			logger.Info("User doesnt have enough level for this lesson")
+			return
+		}
 	}
-	res, err := h.getLessonResultsUC.Execute(c.Request.Context(), *userID, *id)
+	res, err := h.getLessonResultsUC.Execute(c.Request.Context(), userClaims.UserID, *id)
 	if err != nil {
 		logger.Error("Failed to get lesson results for user")
 		response.HandleDomainError(c, err)
