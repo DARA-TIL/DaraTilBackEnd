@@ -9,6 +9,8 @@ import (
 	"DaraTilBackendV2/internal/presentation/dto/dtoMappers"
 	"DaraTilBackendV2/internal/presentation/http/response"
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -148,39 +150,34 @@ func (h *UserHandler) Login(c *gin.Context) {
 	userDto := dtoMappers.UserToDto(*user)
 	response.Success(c, 200, userDto, gin.H{"accessToken": accessToken})
 }
+
+type OAuthState struct {
+	Client string `json:"client"`
+}
+
 func (h *UserHandler) OauthLogin(c *gin.Context, provider string) {
 	logger.Info("OAuth login started",
 		zap.String("provider", provider),
 	)
 	client := c.Query("client")
-	session, _ := gothic.Store.Get(c.Request, gothic.SessionName)
-	session.Values["client"] = client
-	session.Save(c.Request, c.Writer)
+	if client == "" {
+		client = "web"
+	}
+	stateStruct := OAuthState{Client: client}
+	stateBytes, _ := json.Marshal(stateStruct)
+	stateEncoded := base64.URLEncoding.EncodeToString(stateBytes)
 	req := c.Request.WithContext(
 		context.WithValue(c.Request.Context(), "provider", provider),
 	)
+	q := req.URL.Query()
+	q.Set("state", stateEncoded)
+	req.URL.RawQuery = q.Encode()
 	c.Request = req
-
 	gothic.BeginAuthHandler(c.Writer, c.Request)
 }
 
 func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
-	session, _ := gothic.Store.Get(c.Request, gothic.SessionName)
-	state := session.Values["client"].(string)
 	var redUrl string
-	if state == "mobile" {
-		redUrl = h.cfg.Server.MobileUrl
-	} else if state == "web" {
-		redUrl = h.cfg.Server.FrontendUrl
-	} else {
-		redUrl = h.cfg.Server.FrontendUrl
-	}
-	delete(session.Values, "client")
-	session.Save(c.Request, c.Writer)
-	logger.Info("OAuth callback received",
-		zap.String("provider", provider),
-	)
-
 	redirectError := func(msg string) {
 		logger.Warn("OAuth callback error",
 			zap.String("provider", provider),
@@ -188,6 +185,31 @@ func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 		)
 		redirectURL := fmt.Sprintf("%s/login?oauth=error&error=%s", redUrl, msg)
 		c.Redirect(http.StatusTemporaryRedirect, redirectURL)
+	}
+	stateEncoded := c.Query("state")
+	if stateEncoded == "" {
+		redirectError("Missing state")
+		return
+	}
+	stateBytes, err := base64.URLEncoding.DecodeString(stateEncoded)
+	if err != nil {
+		redirectError("Invalid state encoding")
+		return
+	}
+
+	var state OAuthState
+	if err := json.Unmarshal(stateBytes, &state); err != nil {
+		redirectError("Invalid state format")
+		return
+	}
+	client := state.Client
+	if client == "mobile" {
+		logger.Info("mobile Oauth Processing")
+		redUrl = h.cfg.Server.MobileUrl
+	} else if client == "web" {
+		redUrl = h.cfg.Server.FrontendUrl
+	} else {
+		redUrl = h.cfg.Server.FrontendUrl
 	}
 
 	req := c.Request.WithContext(
@@ -246,10 +268,12 @@ func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 
 		user, err = h.CreateUC.Execute(c.Request.Context(), *user)
 		if err != nil {
+			logger.Info("error fetching user: " + err.Error())
 			redirectError("Failed to create user")
 			return
 		}
 	} else if err != nil {
+		logger.Info("error while fetching user: " + err.Error())
 		redirectError("Internal server error")
 		return
 	}
@@ -260,6 +284,7 @@ func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 			zap.String("expected", user.AuthProvider),
 			zap.String("actual", provider),
 		)
+		logger.Info("Oauth Error, User Already signed in")
 		redirectError("User already signed in with another provider")
 		return
 	}
@@ -278,12 +303,12 @@ func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 		return
 	}
 	var redirectURL string
-	if state == "web" {
+	if client == "web" {
 		redirectURL = fmt.Sprintf("%s/login?%s",
 			redUrl,
 			url.Values{"oauth": []string{provider}}.Encode(),
 		)
-	} else if state == "mobile" {
+	} else if client == "mobile" {
 		redirectURL = fmt.Sprintf(
 			"%s?accessToken=%s&refreshToken=%s",
 			h.cfg.Server.MobileUrl,
@@ -291,7 +316,8 @@ func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 			refreshToken,
 		)
 	}
-
+	msg := "Oauth successful: redirecting to " + redirectURL
+	logger.Info(msg)
 	c.Redirect(http.StatusTemporaryRedirect, redirectURL)
 }
 

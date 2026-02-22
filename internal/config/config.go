@@ -2,6 +2,7 @@ package config
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/gorilla/sessions"
 	"github.com/kelseyhightower/envconfig"
@@ -91,8 +92,12 @@ func (c *Config) SetupSessionStore() {
 		log.Fatal("SESSION_SECRET is not set")
 	}
 	store := sessions.NewCookieStore([]byte(secret))
-	store.Options.HttpOnly = true
-	store.Options.Secure = false
-	store.Options.SameSite = 2
+	store.Options = &sessions.Options{
+		Path:     "/",
+		MaxAge:   86400 * 7,
+		HttpOnly: true,
+		Secure:   false, // ВАЖНО
+		SameSite: http.SameSiteLaxMode,
+	}
 	gothic.Store = store
 }
