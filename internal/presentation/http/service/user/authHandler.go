@@ -178,28 +178,28 @@ func (h *UserHandler) OauthLogin(c *gin.Context, provider string) {
 
 func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 	var redUrl string
-	redirectError := func(msg string) {
+	redirectError := func(msg string, err error) {
 		logger.Warn("OAuth callback error",
 			zap.String("provider", provider),
-			zap.String("reason", msg),
+			zap.String("reason", err.Error()),
 		)
 		redirectURL := fmt.Sprintf("%s/login?oauth=error&error=%s", redUrl, msg)
 		c.Redirect(http.StatusTemporaryRedirect, redirectURL)
 	}
 	stateEncoded := c.Query("state")
 	if stateEncoded == "" {
-		redirectError("Missing state")
+		redirectError("Missing state", errors.New("Missing state"))
 		return
 	}
 	stateBytes, err := base64.URLEncoding.DecodeString(stateEncoded)
 	if err != nil {
-		redirectError("Invalid state encoding")
+		redirectError("Invalid state encoding", errors.New("Invalid state encoding"))
 		return
 	}
 
 	var state OAuthState
 	if err := json.Unmarshal(stateBytes, &state); err != nil {
-		redirectError("Invalid state format")
+		redirectError("Invalid state format", errors.New("Invalid state format"))
 		return
 	}
 	client := state.Client
@@ -219,12 +219,12 @@ func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 
 	userAuth, err := gothic.CompleteUserAuth(c.Writer, c.Request)
 	if err != nil {
-		redirectError("Failed to complete auth for provider")
+		redirectError("Failed to complete auth for provider", err)
 		return
 	}
 
 	if userAuth.Email == "" {
-		redirectError(fmt.Sprintf("No email provided by %s", provider))
+		redirectError(fmt.Sprintf("No email provided by %s", provider), err)
 		return
 	}
 
@@ -253,7 +253,7 @@ func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 
 		username, err := GenerateUniqueUsername(c.Request.Context(), baseUsername, h)
 		if err != nil {
-			redirectError("Username generation failed")
+			redirectError("Username generation failed", err)
 			return
 		}
 
@@ -269,12 +269,12 @@ func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 		user, err = h.CreateUC.Execute(c.Request.Context(), *user)
 		if err != nil {
 			logger.Info("error fetching user: " + err.Error())
-			redirectError("Failed to create user")
+			redirectError("Failed to create user", err)
 			return
 		}
 	} else if err != nil {
 		logger.Info("error while fetching user: " + err.Error())
-		redirectError("Internal server error")
+		redirectError("Internal server error", err)
 		return
 	}
 
@@ -285,7 +285,7 @@ func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 			zap.String("actual", provider),
 		)
 		logger.Info("Oauth Error, User Already signed in")
-		redirectError("User already signed in with another provider")
+		redirectError("User already signed in with another provider", err)
 		return
 	}
 
