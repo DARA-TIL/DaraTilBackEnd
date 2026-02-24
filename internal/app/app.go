@@ -84,7 +84,6 @@ func (a *App) setupRoutes() {
 
 func (a *App) Run() {
 	logger.Init(true)
-	a.cfg.SetupSessionStore()
 	a.setupMiddleware()
 	a.setupRoutes()
 

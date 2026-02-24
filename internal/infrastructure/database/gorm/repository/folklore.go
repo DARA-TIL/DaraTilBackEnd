@@ -192,16 +192,22 @@ func (f *FolkloreRepository) GetByQuery(ctx context.Context, query models.Folklo
 }
 
 func (f *FolkloreRepository) GetLikedFolklore(ctx context.Context, userID uint) ([]models.Folklore, error) {
-	var folklore []models.Folklore
+	var folklores []gormModels.Folklore
+
 	if err := f.db.WithContext(ctx).
 		Joins("JOIN folklore_likes ON folklore_likes.folklore_id = folklores.id").
 		Where("folklore_likes.user_id = ?", userID).
-		Find(&folklore).Error; err != nil {
+		Find(&folklores).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
-
-	if len(folklore) == 0 {
+	if len(folklores) == 0 {
 		return nil, domErr.ErrNotFound
 	}
-	return folklore, nil
+	var domainFolklore []models.Folklore
+	for _, folklore := range folklores {
+		domFolk := gormMappers.GormFolkloreToDomainModel(folklore)
+		domainFolklore = append(domainFolklore, domFolk)
+	}
+
+	return domainFolklore, nil
 }

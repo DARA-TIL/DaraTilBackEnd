@@ -43,18 +43,20 @@ func NewUserHandler(
 	updateUC *userUC.UpdateUC,
 	issueTokenUC *jwtTokenUC.IssueTokenUC,
 	getByUsernameUC *userUC.GetByUsernameUC,
+	getLikedFolkloreUC *folkloreUC.GetLikedUC,
 	cfg *config.Config,
 ) *UserHandler {
 	return &UserHandler{
-		CreateUC:        createUC,
-		GetAllUC:        getAllUC,
-		GetByEmailUC:    getByEmailUC,
-		GetByIdUC:       getByIdUC,
-		LvlUpUC:         lvlUpUC,
-		UpdateUC:        updateUC,
-		IssueTokenUC:    issueTokenUC,
-		GetByUsernameUC: getByUsernameUC,
-		cfg:             cfg,
+		CreateUC:           createUC,
+		GetAllUC:           getAllUC,
+		GetByEmailUC:       getByEmailUC,
+		GetByIdUC:          getByIdUC,
+		LvlUpUC:            lvlUpUC,
+		UpdateUC:           updateUC,
+		IssueTokenUC:       issueTokenUC,
+		GetByUsernameUC:    getByUsernameUC,
+		GetLikedFolkloreUC: getLikedFolkloreUC,
+		cfg:                cfg,
 	}
 }
 

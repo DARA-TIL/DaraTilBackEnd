@@ -120,6 +120,7 @@ func NewContainer(cfg *config.Config) *Container {
 		updateUC,
 		issueTokenUC,
 		getByUsernameUC,
+		getLikedFolkloreUC,
 		cfg,
 	)
 

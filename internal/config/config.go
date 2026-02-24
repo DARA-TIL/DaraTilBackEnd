@@ -62,6 +62,7 @@ func LoadConfig() (*Config, error) {
 	}
 	cfg.SetupGithubOAuth()
 	cfg.SetupGoogleOAuth()
+	cfg.SetupSessionStore()
 	return &cfg, nil
 }
 func (c *Config) SetupGoogleOAuth() {
