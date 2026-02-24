@@ -60,11 +60,13 @@ func LoadConfig() (*Config, error) {
 	if err != nil {
 		return &cfg, err
 	}
+	cfg.SetupGithubOAuth()
+	cfg.SetupGoogleOAuth()
 	return &cfg, nil
 }
 func (c *Config) SetupGoogleOAuth() {
 	callbackURL := c.Server.BaseUrl + "/api/auth/google/callback"
-
+	log.Println("Setting up Google OAuth")
 	goth.UseProviders(
 		google.New(
 			c.Oauth.GoogleClientId,
@@ -77,6 +79,7 @@ func (c *Config) SetupGoogleOAuth() {
 
 func (c *Config) SetupGithubOAuth() {
 	callbackURL := c.Server.BaseUrl + "/api/auth/github/callback"
+	log.Println("Setting up Github OAuth")
 	goth.UseProviders(
 		github.New(
 			c.Oauth.GithubClientId,
@@ -88,6 +91,7 @@ func (c *Config) SetupGithubOAuth() {
 
 func (c *Config) SetupSessionStore() {
 	secret := c.Session.SessionSecret
+	log.Println("Setting up session store")
 	if secret == "" {
 		log.Fatal("SESSION_SECRET is not set")
 	}

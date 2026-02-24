@@ -453,41 +453,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/folklore/liked": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Retrieve folklore liked by current user",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Folklore"
-                ],
-                "summary": "Get liked folklore",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.FolkloreDTO"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
         "/folklore/search": {
             "get": {
                 "security": [
@@ -2919,28 +2884,18 @@ const docTemplate = `{
         },
         "dto.UserUpdatableFields": {
             "type": "object",
-            "required": [
-                "avatar",
-                "password",
-                "role",
-                "username"
-            ],
             "properties": {
                 "avatar": {
-                    "type": "string",
-                    "minLength": 6
+                    "type": "string"
                 },
                 "password": {
-                    "type": "string",
-                    "minLength": 6
+                    "type": "string"
                 },
                 "role": {
-                    "type": "string",
-                    "minLength": 3
+                    "type": "string"
                 },
                 "username": {
-                    "type": "string",
-                    "minLength": 3
+                    "type": "string"
                 }
             }
         },

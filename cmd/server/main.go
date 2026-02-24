@@ -3,6 +3,7 @@ package main
 import (
 	"DaraTilBackendV2/internal/app"
 	"DaraTilBackendV2/internal/config"
+	"log"
 
 	"github.com/joho/godotenv"
 )
@@ -18,13 +19,13 @@ import (
 // @in header
 // @name Authorization
 func main() {
-	_ = godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		log.Println("Error loading .env file")
+	}
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		panic(err)
+		log.Println("Failed to load config")
 	}
-	cfg.SetupGithubOAuth()
-	cfg.SetupGoogleOAuth()
 	app := app.New(cfg)
 	app.Run()
 }

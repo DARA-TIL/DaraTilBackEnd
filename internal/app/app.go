@@ -83,10 +83,10 @@ func (a *App) setupRoutes() {
 }
 
 func (a *App) Run() {
+	logger.Init(true)
 	a.cfg.SetupSessionStore()
 	a.setupMiddleware()
 	a.setupRoutes()
-	logger.Init(true)
 
 	logger.Info("App started:", zap.String("port", a.cfg.Server.Port))
 	_ = a.router.Run(":" + a.cfg.Server.Port)

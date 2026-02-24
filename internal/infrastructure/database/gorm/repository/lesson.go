@@ -6,7 +6,6 @@ import (
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/errhandlers"
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/gormModels"
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/gormModels/gormMappers"
-	"DaraTilBackendV2/internal/infrastructure/logger"
 	"context"
 	"errors"
 	"time"
@@ -207,36 +206,26 @@ func (l LessonRepository) GetBestResultForLesson(ctx context.Context, userID, le
 }
 
 func NormalizePositions(tx *gorm.DB, lessonID uint) error {
-	logger.Info("NormalizePositions started")
-
 	var blocks []gormModels.LessonBlock
 	if err := tx.Where("lesson_id = ?", lessonID).
 		Order("position asc, id asc").
 		Find(&blocks).Error; err != nil {
-
-		logger.Error("Failed to fetch lesson blocks for normalization")
 		return errhandlers.DBErrHandler(err)
 	}
-
-	logger.Info("Blocks fetched for normalization")
 
 	for i := range blocks {
 		newPos := i + 1
 
 		if blocks[i].Position != newPos {
-			logger.Info("Updating block position")
-
 			if err := tx.Model(&gormModels.LessonBlock{}).
 				Where("id = ?", blocks[i].ID).
 				Update("position", newPos).Error; err != nil {
 
-				logger.Error("Failed to update block position during normalization")
 				return errhandlers.DBErrHandler(err)
 			}
 		}
 	}
 
-	logger.Info("NormalizePositions completed successfully")
 	return nil
 }
 

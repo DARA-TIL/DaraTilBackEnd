@@ -34,7 +34,7 @@ func (ai AiGemini) Translate(ctx context.Context, query string) (*models.Transla
 			"format for the translations, without any additional text.If one of the fields is empty return it with blank\n\n" +
 			query)
 
-	config := &genai.GenerateContentConfig{
+	answerConfig := &genai.GenerateContentConfig{
 		ResponseMIMEType: "application/json",
 		ResponseJsonSchema: map[string]any{
 			"type": "object",
@@ -82,7 +82,7 @@ func (ai AiGemini) Translate(ctx context.Context, query string) (*models.Transla
 		ctx,
 		"gemini-2.5-flash",
 		genai.Text(textQuery),
-		config,
+		answerConfig,
 	)
 	if err != nil {
 		return nil, err

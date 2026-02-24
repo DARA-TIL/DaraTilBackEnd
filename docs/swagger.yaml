@@ -296,22 +296,13 @@ definitions:
   dto.UserUpdatableFields:
     properties:
       avatar:
-        minLength: 6
         type: string
       password:
-        minLength: 6
         type: string
       role:
-        minLength: 3
         type: string
       username:
-        minLength: 3
         type: string
-    required:
-    - avatar
-    - password
-    - role
-    - username
     type: object
   jwt.RefreshRequest:
     properties:
@@ -622,28 +613,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Toggle like for folklore
-      tags:
-      - Folklore
-  /folklore/liked:
-    get:
-      description: Retrieve folklore liked by current user
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/dto.FolkloreDTO'
-            type: array
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties: true
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Get liked folklore
       tags:
       - Folklore
   /folklore/search:

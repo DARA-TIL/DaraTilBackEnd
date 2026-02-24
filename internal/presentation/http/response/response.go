@@ -2,9 +2,12 @@ package response
 
 import (
 	errs "DaraTilBackendV2/internal/domain/domErr"
+	"DaraTilBackendV2/internal/infrastructure/logger"
 	"errors"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func Success(c *gin.Context, status int, data any, extra ...gin.H) {
@@ -17,6 +20,7 @@ func Success(c *gin.Context, status int, data any, extra ...gin.H) {
 			body[k] = v
 		}
 	}
+	logger.Info("Sending success response", zap.Int("status", status), zap.Any("body", body))
 	c.JSON(status, body)
 }
 

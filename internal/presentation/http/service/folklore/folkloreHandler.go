@@ -270,42 +270,6 @@ func (h *FolkloreHandler) ToggleLike(c *gin.Context) {
 	response.Success(c, 200, folkDto, gin.H{"liked": isLiked})
 }
 
-// GetLikedFolklore godoc
-// @Summary Get liked folklore
-// @Description Retrieve folklore liked by current user
-// @Tags Folklore
-// @Produce json
-// @Security BearerAuth
-// @Success 200 {array} dto.FolkloreDTO
-// @Failure 401 {object} map[string]interface{}
-// @Router /folklore/liked [get]
-func (h *FolkloreHandler) GetLikedFolklore(c *gin.Context) {
-	logger.Info("Get liked folklore request started")
-
-	id, err := middleware.GetCurrentUserID(c)
-	if err != nil {
-		logger.Warn("Unauthorized access to liked folklore")
-		response.HandleDomainError(c, domErr.ErrInternal)
-		return
-	}
-
-	folklore, err := h.GetLikedUC.Execute(c.Request.Context(), *id)
-	if err != nil {
-		logger.Error("Failed to retrieve liked folklore")
-		response.HandleDomainError(c, err)
-		return
-	}
-
-	logger.Info("Liked folklore retrieved successfully")
-
-	var folkDto []dto.FolkloreDTO
-	for _, f := range folklore {
-		fd := dtoMappers.FolkloreToDto(f)
-		folkDto = append(folkDto, fd)
-	}
-	response.Success(c, 200, folkDto)
-}
-
 // GetByQuery godoc
 // @Summary Search folklore
 // @Description Search folklore with filters
