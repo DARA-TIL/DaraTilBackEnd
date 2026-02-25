@@ -23,7 +23,7 @@ func NewLessonRepository(db *gorm.DB) *LessonRepository {
 	}
 }
 
-func (l LessonRepository) Create(ctx context.Context, lesson models.Lesson) (*models.Lesson, error) {
+func (l *LessonRepository) Create(ctx context.Context, lesson models.Lesson) (*models.Lesson, error) {
 	gormLesson := gormMappers.LessonToGormModel(lesson)
 	if err := l.db.WithContext(ctx).Create(&gormLesson).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
@@ -32,7 +32,7 @@ func (l LessonRepository) Create(ctx context.Context, lesson models.Lesson) (*mo
 	return &lesson, nil
 }
 
-func (l LessonRepository) GetAll(ctx context.Context) ([]models.Lesson, error) {
+func (l *LessonRepository) GetAll(ctx context.Context) ([]models.Lesson, error) {
 	var gormLessons []gormModels.Lesson
 	if err := l.db.WithContext(ctx).Order("required_level").Preload("Blocks").Find(&gormLessons).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
@@ -45,7 +45,7 @@ func (l LessonRepository) GetAll(ctx context.Context) ([]models.Lesson, error) {
 	return lessons, nil
 }
 
-func (l LessonRepository) GetByID(ctx context.Context, id uint) (*models.Lesson, error) {
+func (l *LessonRepository) GetByID(ctx context.Context, id uint) (*models.Lesson, error) {
 	var lesson gormModels.Lesson
 	if err := l.db.WithContext(ctx).Preload("Blocks").
 		Preload("Test").
@@ -57,7 +57,7 @@ func (l LessonRepository) GetByID(ctx context.Context, id uint) (*models.Lesson,
 	return &domLesson, nil
 }
 
-func (l LessonRepository) Update(ctx context.Context, id uint, upd map[string]any) (*models.Lesson, error) {
+func (l *LessonRepository) Update(ctx context.Context, id uint, upd map[string]any) (*models.Lesson, error) {
 	if err := l.db.Model(&gormModels.Lesson{}).Where("id = ?", id).Updates(upd).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
@@ -69,14 +69,14 @@ func (l LessonRepository) Update(ctx context.Context, id uint, upd map[string]an
 	return &domLesson, nil
 }
 
-func (l LessonRepository) Delete(ctx context.Context, id uint) error {
+func (l *LessonRepository) Delete(ctx context.Context, id uint) error {
 	if err := l.db.WithContext(ctx).Delete(&gormModels.Lesson{}, id).Error; err != nil {
 		return errhandlers.DBErrHandler(err)
 	}
 	return nil
 }
 
-func (l LessonRepository) CreateBlock(ctx context.Context, block models.LessonBlock) (*models.LessonBlock, error) {
+func (l *LessonRepository) CreateBlock(ctx context.Context, block models.LessonBlock) (*models.LessonBlock, error) {
 	blockGorm := gormMappers.LessonBlockToGormModel(block)
 	err := l.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Model(&gormModels.LessonBlock{}).Where("lesson_id = ? AND position >= ?",
@@ -95,7 +95,7 @@ func (l LessonRepository) CreateBlock(ctx context.Context, block models.LessonBl
 	return &block, nil
 }
 
-func (l LessonRepository) UpdateBlock(ctx context.Context, id uint, upd map[string]any, position *int, lessonId *uint) (*models.LessonBlock, error) {
+func (l *LessonRepository) UpdateBlock(ctx context.Context, id uint, upd map[string]any, position *int, lessonId *uint) (*models.LessonBlock, error) {
 	err := l.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if position != nil && lessonId != nil {
 			if err := swapPositions(tx, id, *position, *lessonId); err != nil {
@@ -123,7 +123,7 @@ func (l LessonRepository) UpdateBlock(ctx context.Context, id uint, upd map[stri
 	return &block, nil
 }
 
-func (l LessonRepository) DeleteBlock(ctx context.Context, id uint) error {
+func (l *LessonRepository) DeleteBlock(ctx context.Context, id uint) error {
 	err := l.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var block gormModels.LessonBlock
 		if err := tx.Where("id = ?", id).First(&block).Error; err != nil {
@@ -144,7 +144,7 @@ func (l LessonRepository) DeleteBlock(ctx context.Context, id uint) error {
 	return nil
 }
 
-func (l LessonRepository) FinishLesson(ctx context.Context, lessonRes models.LessonResult) (*models.LessonResult, error) {
+func (l *LessonRepository) FinishLesson(ctx context.Context, lessonRes models.LessonResult) (*models.LessonResult, error) {
 	lessonRes.PassTime = time.Now()
 	gormLF := gormMappers.LessonResultToGorm(lessonRes)
 	if err := l.db.WithContext(ctx).Create(&gormLF).Error; err != nil {
@@ -153,7 +153,7 @@ func (l LessonRepository) FinishLesson(ctx context.Context, lessonRes models.Les
 	lessonRes = gormMappers.GormLessonResultToDomain(gormLF)
 	return &lessonRes, nil
 }
-func (l LessonRepository) GetFinishedLessons(ctx context.Context, userID uint) ([]models.LessonResult, error) {
+func (l *LessonRepository) GetFinishedLessons(ctx context.Context, userID uint) ([]models.LessonResult, error) {
 	subQuery := l.db.
 		Model(&gormModels.LessonResult{}).
 		Select("lesson_id, MAX(result) as max_result").
@@ -175,7 +175,7 @@ func (l LessonRepository) GetFinishedLessons(ctx context.Context, userID uint) (
 	}
 	return finLes, nil
 }
-func (l LessonRepository) GetLessonResults(ctx context.Context, userID, LessonID uint) ([]models.LessonResult, error) {
+func (l *LessonRepository) GetLessonResults(ctx context.Context, userID, LessonID uint) ([]models.LessonResult, error) {
 	var results []gormModels.LessonResult
 	if err := l.db.WithContext(ctx).Order("pass_time").Where("user_id = ? AND lesson_id = ?", userID, LessonID).Find(&results).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
@@ -187,7 +187,7 @@ func (l LessonRepository) GetLessonResults(ctx context.Context, userID, LessonID
 	return finLes, nil
 }
 
-func (l LessonRepository) GetBestResultForLesson(ctx context.Context, userID, lessonID uint) (*models.LessonResult, error) {
+func (l *LessonRepository) GetBestResultForLesson(ctx context.Context, userID, lessonID uint) (*models.LessonResult, error) {
 	var result gormModels.LessonResult
 	err := l.db.WithContext(ctx).
 		Where("user_id = ? AND lesson_id = ? AND pass = ?", userID, lessonID, true).

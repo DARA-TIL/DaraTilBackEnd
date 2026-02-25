@@ -267,6 +267,21 @@ definitions:
       username:
         type: string
     type: object
+  dto.UserActivityDTO:
+    properties:
+      action:
+        type: string
+      entityID:
+        type: integer
+      entityType:
+        type: string
+      id:
+        type: integer
+      time:
+        type: string
+      userID:
+        type: integer
+    type: object
   dto.UserAnswers:
     properties:
       lessonId:
@@ -328,6 +343,33 @@ info:
   title: DaraTil Backend
   version: "0.2"
 paths:
+  /activity:
+    get:
+      description: 'Retries recent user activities: Lesson Finish, Folklore like etc.
+        For now there is only three activities:"lesson_completed", "folklore_liked",
+        "folklore_disliked"'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserActivityDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get User Activities
+      tags:
+      - Activity
   /auth/login:
     post:
       consumes:

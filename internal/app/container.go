@@ -1,6 +1,7 @@
 package app
 
 import (
+	"DaraTilBackendV2/internal/application/services"
 	"DaraTilBackendV2/internal/application/usecases/folkloreUC"
 	"DaraTilBackendV2/internal/application/usecases/jwtTokenUC"
 	"DaraTilBackendV2/internal/application/usecases/lessonUC"
@@ -15,14 +16,16 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
 	"DaraTilBackendV2/internal/presentation/http/service/test"
 	"DaraTilBackendV2/internal/presentation/http/service/user"
+	"DaraTilBackendV2/internal/presentation/http/service/userActivity"
 )
 
 type Container struct {
-	UserHandler     *user.UserHandler
-	JwtHandler      *jwt.JwtTokenHandler
-	FolkloreHandler *folklore.FolkloreHandler
-	LessonHandler   *lesson.LessonHandler
-	TestHandler     *test.TestHandler
+	UserHandler         *user.UserHandler
+	JwtHandler          *jwt.JwtTokenHandler
+	FolkloreHandler     *folklore.FolkloreHandler
+	LessonHandler       *lesson.LessonHandler
+	TestHandler         *test.TestHandler
+	userActivityHandler *userActivity.UserActivityHandler
 }
 
 func NewContainer(cfg *config.Config) *Container {
@@ -37,9 +40,13 @@ func NewContainer(cfg *config.Config) *Container {
 	folkloreRepo := repository.NewFolkloreRepository(db)
 	lessonRepo := repository.NewLessonRepository(db)
 	testRepo := repository.NewTestRepository(db)
+	userActivityRepo := repository.NewUserActivityRepository(db)
 
 	//AI
 	geminiAI := gemini.NewGeminiAI(cfg)
+
+	//UserActivityService
+	userActivityService := services.NewUserActivityService(userActivityRepo)
 
 	// User UCs
 	createUserUC := userUC.NewCreateUC(userRepo)
@@ -63,7 +70,7 @@ func NewContainer(cfg *config.Config) *Container {
 	getByIdFolkloreUC := folkloreUC.NewGetByFolkloreIDUC(folkloreRepo)
 	getByQueryFolkloreUC := folkloreUC.NewGetByQueryUC(folkloreRepo)
 	getLikedFolkloreUC := folkloreUC.NewGetLikedFolkloreUC(folkloreRepo)
-	toggleLikeFolkloreUC := folkloreUC.NewToggleLikeUC(folkloreRepo)
+	toggleLikeFolkloreUC := folkloreUC.NewToggleLikeUC(folkloreRepo, userActivityService)
 	updateFolkloreUC := folkloreUC.NewUpdateUC(folkloreRepo, geminiAI)
 
 	//LessonUCS
@@ -79,7 +86,7 @@ func NewContainer(cfg *config.Config) *Container {
 	updateLessonUC := lessonUC.NewUpdateUC(lessonRepo)
 	updateBlockLessonUC := lessonUC.NewUpdateBlockUC(lessonRepo)
 
-	finishLessonUC := lessonUC.NewFinishLessonUC(lessonRepo)
+	finishLessonUC := lessonUC.NewFinishLessonUC(lessonRepo, userActivityService)
 	getFinishedLessonsUC := lessonUC.NewGetFinishedLessonsUC(lessonRepo)
 	getLessonResultsUC := lessonUC.NewGetLessonResultsUC(lessonRepo)
 	getBestResultForLessonUC := lessonUC.NewGetBestResultForLessonUC(lessonRepo)
@@ -164,11 +171,13 @@ func NewContainer(cfg *config.Config) *Container {
 		updateQuestionUC,
 		updateTestUC,
 	)
+	userActivityHandler := userActivity.NewUserActivityHandler(userActivityService)
 	return &Container{
-		UserHandler:     userHandler,
-		JwtHandler:      jwtHandler,
-		FolkloreHandler: folkloreHandler,
-		LessonHandler:   lessonHandler,
-		TestHandler:     testHandler,
+		UserHandler:         userHandler,
+		JwtHandler:          jwtHandler,
+		FolkloreHandler:     folkloreHandler,
+		LessonHandler:       lessonHandler,
+		TestHandler:         testHandler,
+		userActivityHandler: userActivityHandler,
 	}
 }

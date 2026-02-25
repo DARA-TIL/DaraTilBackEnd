@@ -9,6 +9,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
 	"DaraTilBackendV2/internal/presentation/http/service/test"
 	"DaraTilBackendV2/internal/presentation/http/service/user"
+	"DaraTilBackendV2/internal/presentation/http/service/userActivity"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -79,6 +80,10 @@ func (a *App) setupRoutes() {
 	testRoute.Use(middleware.AuthMiddleware(a.cfg))
 	test.RegisterProtectedTestRoutes(testRoute, a.container.TestHandler)
 
+	//UserActivities
+	activityRoute := api.Group("/activity")
+	activityRoute.Use(middleware.AuthMiddleware(a.cfg))
+	userActivity.RegisterRoutes(activityRoute, a.container.userActivityHandler)
 	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
 

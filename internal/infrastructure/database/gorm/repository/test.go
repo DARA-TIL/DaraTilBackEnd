@@ -18,7 +18,7 @@ func NewTestRepository(db *gorm.DB) *TestRepository {
 	return &TestRepository{db: db}
 }
 
-func (t TestRepository) Create(ctx context.Context, test models.Test) (*models.Test, error) {
+func (t *TestRepository) Create(ctx context.Context, test models.Test) (*models.Test, error) {
 	gormTest := gormMappers.TestToGorm(test)
 	if err := t.db.WithContext(ctx).Create(&gormTest).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
@@ -27,7 +27,7 @@ func (t TestRepository) Create(ctx context.Context, test models.Test) (*models.T
 	return &test, nil
 }
 
-func (t TestRepository) CreateQuestion(ctx context.Context, question models.Question) (*models.Question, error) {
+func (t *TestRepository) CreateQuestion(ctx context.Context, question models.Question) (*models.Question, error) {
 	gormQuestion := gormMappers.QuestionToGorm(question)
 	if err := t.db.WithContext(ctx).Create(&gormQuestion).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
@@ -36,7 +36,7 @@ func (t TestRepository) CreateQuestion(ctx context.Context, question models.Ques
 	return &question, nil
 }
 
-func (t TestRepository) CreateOption(ctx context.Context, option models.QuestionOption) (*models.QuestionOption, error) {
+func (t *TestRepository) CreateOption(ctx context.Context, option models.QuestionOption) (*models.QuestionOption, error) {
 	gormOption := gormMappers.QuestionOptionToGorm(option)
 	if err := t.db.WithContext(ctx).Create(&gormOption).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
@@ -45,7 +45,7 @@ func (t TestRepository) CreateOption(ctx context.Context, option models.Question
 	return &option, nil
 }
 
-func (t TestRepository) GetById(ctx context.Context, id uint) (*models.Test, error) {
+func (t *TestRepository) GetById(ctx context.Context, id uint) (*models.Test, error) {
 	var test gormModels.Test
 	err := t.db.WithContext(ctx).Preload("Questions.Options").First(&test, id).Error
 	if err != nil {
@@ -55,7 +55,7 @@ func (t TestRepository) GetById(ctx context.Context, id uint) (*models.Test, err
 	return &testDom, nil
 }
 
-func (t TestRepository) GetByLessonId(ctx context.Context, id uint) (*models.Test, error) {
+func (t *TestRepository) GetByLessonId(ctx context.Context, id uint) (*models.Test, error) {
 	var test gormModels.Test
 	err := t.db.WithContext(ctx).Preload("Questions.Options").Where("lesson_id = ?", id).First(&test).Error
 	if err != nil {
@@ -64,7 +64,7 @@ func (t TestRepository) GetByLessonId(ctx context.Context, id uint) (*models.Tes
 	testDom := gormMappers.GormTestToDomain(test)
 	return &testDom, nil
 }
-func (t TestRepository) GetOptionByID(ctx context.Context, id uint) (*models.QuestionOption, error) {
+func (t *TestRepository) GetOptionByID(ctx context.Context, id uint) (*models.QuestionOption, error) {
 	var qo gormModels.QuestionOption
 	if err := t.db.WithContext(ctx).First(&qo, id).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
@@ -72,26 +72,26 @@ func (t TestRepository) GetOptionByID(ctx context.Context, id uint) (*models.Que
 	qoDom := gormMappers.GormQuestionOptionToDomain(qo)
 	return &qoDom, nil
 }
-func (t TestRepository) Delete(ctx context.Context, id uint) error {
+func (t *TestRepository) Delete(ctx context.Context, id uint) error {
 	if err := t.db.WithContext(ctx).Unscoped().Where("id = ?", id).Delete(&gormModels.Test{}).Error; err != nil {
 		return errhandlers.DBErrHandler(err)
 	}
 	return nil
 }
 
-func (t TestRepository) DeleteQuestion(ctx context.Context, id uint) error {
+func (t *TestRepository) DeleteQuestion(ctx context.Context, id uint) error {
 	if err := t.db.WithContext(ctx).Unscoped().Where("id = ?", id).Delete(&gormModels.Question{}).Error; err != nil {
 		return errhandlers.DBErrHandler(err)
 	}
 	return nil
 }
-func (t TestRepository) DeleteOption(ctx context.Context, id uint) error {
+func (t *TestRepository) DeleteOption(ctx context.Context, id uint) error {
 	if err := t.db.WithContext(ctx).Unscoped().Where("id = ?", id).Delete(&gormModels.QuestionOption{}).Error; err != nil {
 		return errhandlers.DBErrHandler(err)
 	}
 	return nil
 }
-func (t TestRepository) Update(ctx context.Context, upd models.TestUpdate) (*models.Test, error) {
+func (t *TestRepository) Update(ctx context.Context, upd models.TestUpdate) (*models.Test, error) {
 	err := t.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if upd.QuestionsUpd != nil {
 			for _, question := range upd.QuestionsUpd {
@@ -120,7 +120,7 @@ func (t TestRepository) Update(ctx context.Context, upd models.TestUpdate) (*mod
 	}
 	return testGorm, nil
 }
-func (t TestRepository) UpdateQuestion(ctx context.Context, upd models.QuestionUpdate) (*models.Question, error) {
+func (t *TestRepository) UpdateQuestion(ctx context.Context, upd models.QuestionUpdate) (*models.Question, error) {
 	updates := make(map[string]any)
 	err := t.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if upd.QuestionOptionsUpd != nil {
@@ -168,7 +168,7 @@ func UpdateQuestionTransaction(tx *gorm.DB, upd models.QuestionUpdate) (*models.
 	return &qDom, nil
 }
 
-func (t TestRepository) UpdateQuestionOption(ctx context.Context, upd models.QuestionOptionsUpdate) (*models.QuestionOption, error) {
+func (t *TestRepository) UpdateQuestionOption(ctx context.Context, upd models.QuestionOptionsUpdate) (*models.QuestionOption, error) {
 	updates := make(map[string]any)
 	if upd.Text != nil {
 		updates["text"] = *upd.Text
@@ -188,7 +188,7 @@ func (t TestRepository) UpdateQuestionOption(ctx context.Context, upd models.Que
 	return &qoDom, nil
 }
 
-func (t TestRepository) GetCorrectAnswers(ctx context.Context, testID uint) (map[uint]uint, error) {
+func (t *TestRepository) GetCorrectAnswers(ctx context.Context, testID uint) (map[uint]uint, error) {
 	var test gormModels.Test
 	correctAnswers := make(map[uint]uint)
 	err := t.db.WithContext(ctx).Preload("Questions.Options").First(&test, testID).Error

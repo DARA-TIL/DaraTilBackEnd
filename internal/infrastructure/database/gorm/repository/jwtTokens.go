@@ -21,7 +21,7 @@ func NewJwtRepository(db *gorm.DB) *JwtRepository {
 	}
 }
 
-func (j JwtRepository) Create(ctx context.Context, token models.Token) (*models.Token, error) {
+func (j *JwtRepository) Create(ctx context.Context, token models.Token) (*models.Token, error) {
 	gormToken := gormMappers.JwtToGormModel(token)
 	err := j.db.WithContext(ctx).Create(&gormToken).Error
 	if err != nil {
@@ -30,7 +30,7 @@ func (j JwtRepository) Create(ctx context.Context, token models.Token) (*models.
 	return &token, nil
 }
 
-func (j JwtRepository) Find(ctx context.Context, userId uint, refreshToken string) (*models.Token, error) {
+func (j *JwtRepository) Find(ctx context.Context, userId uint, refreshToken string) (*models.Token, error) {
 	var gormToken gormModels.Token
 	if err := j.db.WithContext(ctx).Where("user_id = ? AND refresh_token_hash = ? AND is_revoked = ?", userId, refreshToken, false).First(&gormToken).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
@@ -39,7 +39,7 @@ func (j JwtRepository) Find(ctx context.Context, userId uint, refreshToken strin
 	return &token, nil
 }
 
-func (j JwtRepository) Revoke(ctx context.Context, userId uint, refreshToken string) error {
+func (j *JwtRepository) Revoke(ctx context.Context, userId uint, refreshToken string) error {
 	if err := j.db.WithContext(ctx).Model(&gormModels.Token{}).Where("user_id = ? AND refresh_token_hash = ? AND is_revoked = ?", userId, refreshToken, false).Updates(map[string]interface{}{
 		"last_used":  time.Now(),
 		"is_revoked": true,

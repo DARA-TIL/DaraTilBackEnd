@@ -46,6 +46,7 @@ func AutoMigration(db *gorm.DB) error {
 		&gormModels.LessonResult{},
 		&gormModels.FolkloreLike{},
 		&gormModels.Token{},
+		&gormModels.UserActivity{},
 	)
 	return err
 }

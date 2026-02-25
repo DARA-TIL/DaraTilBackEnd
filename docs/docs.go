@@ -15,6 +15,45 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/activity": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retries recent user activities: Lesson Finish, Folklore like etc. For now there is only three activities:\"lesson_completed\", \"folklore_liked\", \"folklore_disliked\"",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Activity"
+                ],
+                "summary": "Get User Activities",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UserActivityDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Authenticate user and return access token",
@@ -2839,6 +2878,29 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.UserActivityDTO": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "entityID": {
+                    "type": "integer"
+                },
+                "entityType": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "integer"
                 }
             }
         },
