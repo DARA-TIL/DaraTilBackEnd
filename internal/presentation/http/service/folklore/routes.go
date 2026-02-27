@@ -11,7 +11,7 @@ func RegisterRoutes(r *gin.RouterGroup, h *FolkloreHandler) {
 	r.GET("/getAll", h.GetAll)
 	r.GET("/getById/:id", h.GetByID)
 	r.PATCH("/update/:id", middleware.RequireRole("admin"), h.Update)
-	r.DELETE("/delete/:id", middleware.RequireRole("admin"), h.Update)
+	r.DELETE("/delete/:id", middleware.RequireRole("admin"), h.Delete)
 	r.POST("/like/:id", h.ToggleLike)
 	r.GET("/search", h.GetByQuery)
 }
