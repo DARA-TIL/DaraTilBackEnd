@@ -54,16 +54,3 @@ type LessonResult struct {
 	Pass     bool `json:"pass"`
 	PassTime time.Time
 }
-
-type FinishLessonResponse struct {
-	IsImproved     bool `json:"isImproved"`
-	IsLvlUp        bool `json:"isLvlUp"`
-	XpGained       int  `json:"xpGained,omitempty"`
-	PrevBestResult uint `json:"prevBestResult,omitempty"`
-	MaxXp          int  `json:"maxXp,omitempty"`
-	PrevXp         int  `json:"prevXp,omitempty"`
-	PrevLevel      int  `json:"prevLevel,omitempty"`
-	CurrentXp      int  `json:"currentXp,omitempty"`
-	XpForNextLevel int  `json:"xpForNextLevel,omitempty"`
-	CurrentLevel   int  `json:"currentLevel,omitempty"`
-}

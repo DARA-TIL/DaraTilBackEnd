@@ -44,5 +44,15 @@ func UserToDto(user models.User) dto.User {
 		Role:         user.Role,
 		AuthProvider: user.AuthProvider,
 		Progress:     UserProgressToDto(user.Progress),
+		Streak:       StreakToDTO(user.Streak),
+	}
+}
+
+func StreakToDTO(streak models.Streak) dto.Streak {
+	return dto.Streak{
+		ID:            streak.ID,
+		UserID:        streak.UserID,
+		CurrentStreak: streak.CurrentStreak,
+		LongestStreak: streak.LongestStreak,
 	}
 }

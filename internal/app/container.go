@@ -41,12 +41,14 @@ func NewContainer(cfg *config.Config) *Container {
 	lessonRepo := repository.NewLessonRepository(db)
 	testRepo := repository.NewTestRepository(db)
 	userActivityRepo := repository.NewUserActivityRepository(db)
+	streakRepo := repository.NewStreakRepository(db)
 
 	//AI
 	geminiAI := gemini.NewGeminiAI(cfg)
 
 	//UserActivityService
-	userActivityService := services.NewUserActivityService(userActivityRepo)
+	StreakService := services.NewStreakService(streakRepo)
+	userActivityService := services.NewUserActivityService(userActivityRepo, StreakService)
 
 	// User UCs
 	createUserUC := userUC.NewCreateUC(userRepo)
@@ -67,7 +69,7 @@ func NewContainer(cfg *config.Config) *Container {
 	createFolkloreUC := folkloreUC.NewCreateUC(folkloreRepo, geminiAI)
 	deleteFolkloreUC := folkloreUC.NewDeleteUC(folkloreRepo)
 	getAllFolkloreUC := folkloreUC.NewGetAllUC(folkloreRepo)
-	getByIdFolkloreUC := folkloreUC.NewGetByFolkloreIDUC(folkloreRepo)
+	getByIdFolkloreUC := folkloreUC.NewGetByFolkloreIDUC(folkloreRepo, userActivityService)
 	getByQueryFolkloreUC := folkloreUC.NewGetByQueryUC(folkloreRepo)
 	getLikedFolkloreUC := folkloreUC.NewGetLikedFolkloreUC(folkloreRepo)
 	toggleLikeFolkloreUC := folkloreUC.NewToggleLikeUC(folkloreRepo, userActivityService)
@@ -115,6 +117,7 @@ func NewContainer(cfg *config.Config) *Container {
 		findTokenUC,
 		revokeJwtUC,
 		getUserByIDUC,
+		StreakService,
 		cfg,
 	)
 
@@ -128,6 +131,7 @@ func NewContainer(cfg *config.Config) *Container {
 		issueTokenUC,
 		getByUsernameUC,
 		getLikedFolkloreUC,
+		StreakService,
 		cfg,
 	)
 

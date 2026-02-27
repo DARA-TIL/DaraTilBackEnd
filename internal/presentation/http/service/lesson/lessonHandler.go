@@ -1,6 +1,7 @@
 package lesson
 
 import (
+	"DaraTilBackendV2/internal/application/services"
 	"DaraTilBackendV2/internal/application/usecases/lessonUC"
 	"DaraTilBackendV2/internal/application/usecases/testUC"
 	"DaraTilBackendV2/internal/application/usecases/userUC"
@@ -484,7 +485,7 @@ func (h *LessonHandler) UpdateBlock(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param request body dto.UserAnswers true "User answers payload"
-// @Success 200 {object} map[string]interface{} "Lesson result and progress info"
+// @Success 200 {object} dto.FinishLessonResponse "Lesson result and progress info"
 // @Failure 400 {object} map[string]interface{} "Bad request"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 404 {object} map[string]interface{} "Not found"
@@ -530,17 +531,20 @@ func (h *LessonHandler) FinishLesson(c *gin.Context) {
 		return
 	}
 
-	finLes, err := h.finishLessonUC.Execute(c.Request.Context(), *res)
+	finLes, streak, err := h.finishLessonUC.Execute(c.Request.Context(), *res)
 	if err != nil {
 		logger.Error("Failed to finish lesson")
 		response.HandleDomainError(c, err)
 		return
 	}
 	logger.Info("Lesson finish record created")
-
+	dtoLesRes := dtoMappers.LessonResultToDTO(*finLes)
+	resp := dto.FinishLessonResponse{
+		LessonResult: dtoLesRes,
+	}
 	if !finLes.Pass {
 		logger.Info("Lesson not passed, returning result without level up")
-		response.Success(c, http.StatusOK, finLes, gin.H{"progress": nil})
+		response.Success(c, http.StatusOK, resp)
 		return
 	}
 	logger.Info("Lesson passed, proceeding with reward and level up")
@@ -554,18 +558,19 @@ func (h *LessonHandler) FinishLesson(c *gin.Context) {
 	logger.Info("Lesson successfully fetched for reward processing")
 	if bestRes != nil && bestRes.Result >= finLes.Result {
 		logger.Info("User already Finished with better results")
-		finResp := dto.FinishLessonResponse{
+		finResp := dto.FinishLessonResults{
 			IsImproved:     false,
 			IsLvlUp:        false,
 			PrevBestResult: bestRes.Result,
 		}
-		response.Success(c, 200, finLes, gin.H{"progress": finResp})
+		resp.Streak = services.StreakResultToString(streak)
+		resp.Progress = &finResp
+		response.Success(c, 200, resp)
 		return
 	} else if bestRes != nil && bestRes.Result < finLes.Result {
 		prevResXp = float64(lesson.Reward) * (float64(bestRes.Result) / 100.0)
 		logger.Info("User finished with better results: giving more xp")
 	}
-
 	mult := float64(finLes.Result) / 100.0
 	reward := float64(lesson.Reward)*mult - prevResXp
 	if reward < 0 {
@@ -580,7 +585,7 @@ func (h *LessonHandler) FinishLesson(c *gin.Context) {
 		return
 	}
 	logger.Info("Level up processing completed successfully")
-	finResp := dto.FinishLessonResponse{
+	finResp := dto.FinishLessonResults{
 		IsImproved:     true,
 		IsLvlUp:        lvlUp.IsLvlUp,
 		XpGained:       xpReward,
@@ -591,5 +596,7 @@ func (h *LessonHandler) FinishLesson(c *gin.Context) {
 		XpForNextLevel: lvlUp.User.Progress.XpForNextLevel,
 		CurrentLevel:   lvlUp.User.Progress.Level,
 	}
-	response.Success(c, 200, finLes, gin.H{"progress": finResp})
+	resp.Progress = &finResp
+	resp.Streak = services.StreakResultToString(streak)
+	response.Success(c, 200, resp)
 }

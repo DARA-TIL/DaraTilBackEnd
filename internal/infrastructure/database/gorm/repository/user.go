@@ -31,13 +31,19 @@ func (u *UserRepository) Create(ctx context.Context, user models.User) (*models.
 		if err := tx.Create(&userProg).Error; err != nil {
 			return err
 		}
+		userStreak := gormModels.Streak{
+			UserID: userGorm.ID,
+		}
+		if err := tx.Create(&userStreak).Error; err != nil {
+			return err
+		}
 		return nil
 	})
 	if err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
 	var userWithProgress gormModels.User
-	err = u.db.WithContext(ctx).Preload("Progress").Where("id = ?", userGorm.ID).First(&userWithProgress).Error
+	err = u.db.WithContext(ctx).Preload("Progress").Preload("Streak").Where("id = ?", userGorm.ID).First(&userWithProgress).Error
 	if err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
@@ -47,7 +53,7 @@ func (u *UserRepository) Create(ctx context.Context, user models.User) (*models.
 
 func (u *UserRepository) GetByEmail(ctx context.Context, email string) (*models.User, error) {
 	var userGorm gormModels.User
-	if err := u.db.WithContext(ctx).Preload("Progress").Where("email = ?", email).First(&userGorm).Error; err != nil {
+	if err := u.db.WithContext(ctx).Preload("Progress").Preload("Streak").Where("email = ?", email).First(&userGorm).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
 	user := gormMappers.GormUserToDomain(userGorm)
@@ -56,7 +62,7 @@ func (u *UserRepository) GetByEmail(ctx context.Context, email string) (*models.
 
 func (u *UserRepository) GetByID(ctx context.Context, id uint) (*models.User, error) {
 	var userGorm gormModels.User
-	if err := u.db.WithContext(ctx).Preload("Progress").Where("id = ?", id).First(&userGorm).Error; err != nil {
+	if err := u.db.WithContext(ctx).Preload("Progress").Preload("Streak").Where("id = ?", id).First(&userGorm).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
 	user := gormMappers.GormUserToDomain(userGorm)
@@ -85,7 +91,7 @@ func (u *UserRepository) Update(ctx context.Context, id uint, upd models.UserUpd
 
 func (u *UserRepository) GetAll(ctx context.Context) ([]models.User, error) {
 	var users []gormModels.User
-	if err := u.db.WithContext(ctx).Preload("Progress").Find(&users).Error; err != nil {
+	if err := u.db.WithContext(ctx).Preload("Progress").Preload("Streak").Find(&users).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
 	var domUsers []models.User
@@ -100,7 +106,7 @@ func (u *UserRepository) LvlUp(ctx context.Context, userId uint, xpAdded int) mo
 	var isLvlUp bool
 	var user gormModels.User
 	err := u.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.WithContext(ctx).Preload("Progress").First(&user, userId).Error; err != nil {
+		if err := tx.WithContext(ctx).Preload("Progress").Preload("Streak").First(&user, userId).Error; err != nil {
 			return err
 		}
 		progress := user.Progress
@@ -120,7 +126,7 @@ func (u *UserRepository) LvlUp(ctx context.Context, userId uint, xpAdded int) mo
 		if err := tx.WithContext(ctx).Save(&progress).Error; err != nil {
 			return errhandlers.DBErrHandler(err)
 		}
-		if err := tx.WithContext(ctx).Preload("Progress").First(&user, userId).Error; err != nil {
+		if err := tx.WithContext(ctx).Preload("Progress").Preload("Streak").First(&user, userId).Error; err != nil {
 			return errhandlers.DBErrHandler(err)
 		}
 		return nil
@@ -140,7 +146,7 @@ func (u *UserRepository) LvlUp(ctx context.Context, userId uint, xpAdded int) mo
 
 func (u *UserRepository) GetByUsername(ctx context.Context, username string) ([]models.User, error) {
 	var userGorm []gormModels.User
-	err := u.db.WithContext(ctx).Preload("Progress").Where("username = ?", username).Find(&userGorm).Error
+	err := u.db.WithContext(ctx).Preload("Progress").Preload("Streak").Where("username = ?", username).Find(&userGorm).Error
 	if err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}

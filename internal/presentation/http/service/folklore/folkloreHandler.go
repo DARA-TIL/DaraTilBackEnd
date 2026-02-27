@@ -1,7 +1,9 @@
 package folklore
 
 import (
+	"DaraTilBackendV2/internal/application/services"
 	"DaraTilBackendV2/internal/application/usecases/folkloreUC"
+	utils2 "DaraTilBackendV2/internal/application/utils"
 	"DaraTilBackendV2/internal/domain/domErr"
 	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/infrastructure/logger"
@@ -137,30 +139,39 @@ func (h *FolkloreHandler) Update(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Folklore ID"
-// @Success 200 {object} dto.FolkloreDTO
+// @Success 200 {object} dto.GetFolkloreResponse
 // @Failure 400 {object} map[string]interface{}
 // @Failure 404 {object} map[string]interface{}
 // @Router /folklore/getById/{id} [get]
 func (h *FolkloreHandler) GetByID(c *gin.Context) {
 	logger.Info("Get folklore by ID request started")
-
 	idInt, err := utils.GetIdFromParams(c)
 	if err != nil {
 		logger.Error("Invalid folklore ID")
 		response.HandleDomainError(c, domErr.ErrInternal)
 		return
 	}
-
-	folk, err := h.GetByIdUC.Execute(c.Request.Context(), *idInt)
+	userID, err := middleware.GetCurrentUserID(c)
+	if err != nil {
+		logger.Error("Failed to get current user ID")
+	}
+	ctx := c.Request.Context()
+	if userID != nil {
+		ctx = utils2.WithUserID(ctx, *userID)
+	}
+	res, err := h.GetByIdUC.Execute(ctx, *idInt)
 	if err != nil {
 		logger.Error("Failed to get folklore by ID")
 		response.HandleDomainError(c, err)
 		return
 	}
-
 	logger.Info("Folklore retrieved successfully")
-	folkDto := dtoMappers.FolkloreToDto(*folk)
-	response.Success(c, 200, folkDto)
+	folkDto := dtoMappers.FolkloreToDto(*res.Folklore)
+	resp := dto.GetFolkloreResponse{
+		Folklore: folkDto,
+		Streak:   services.StreakResultToString(res.Streak),
+	}
+	response.Success(c, 200, resp)
 }
 
 // Delete godoc
@@ -193,7 +204,7 @@ func (h *FolkloreHandler) Delete(c *gin.Context) {
 	}
 
 	logger.Info("Folklore deleted successfully")
-	response.Success(c, 200, "record deleted")
+	response.Success(c, 204, "record deleted")
 }
 
 // GetAll godoc
@@ -232,7 +243,7 @@ func (h *FolkloreHandler) GetAll(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Folklore ID"
-// @Success 200 {object} dto.FolkloreDTO
+// @Success 200 {object} dto.LikeFolkloreResponse
 // @Failure 400 {object} map[string]interface{}
 // @Failure 401 {object} map[string]interface{}
 // @Router /folklore/like/{id} [post]
@@ -253,21 +264,26 @@ func (h *FolkloreHandler) ToggleLike(c *gin.Context) {
 		return
 	}
 
-	folk, isLiked, err := h.ToggleLikeUC.Execute(c.Request.Context(), *id, *userID)
+	res, err := h.ToggleLikeUC.Execute(c.Request.Context(), *id, *userID)
 	if err != nil {
 		logger.Error("Failed to toggle like")
 		response.HandleDomainError(c, err)
 		return
 	}
 
-	if isLiked {
+	if res.Liked {
 		logger.Info("Folklore liked successfully")
 	} else {
 		logger.Info("Folklore unliked successfully")
 	}
 
-	folkDto := dtoMappers.FolkloreToDto(*folk)
-	response.Success(c, 200, folkDto, gin.H{"liked": isLiked})
+	folkDto := dtoMappers.FolkloreToDto(*res.Folklore)
+	resp := dto.LikeFolkloreResponse{
+		Folklore: folkDto,
+		Liked:    res.Liked,
+		Streak:   services.StreakResultToString(res.Streak),
+	}
+	response.Success(c, 200, resp)
 }
 
 // GetByQuery godoc

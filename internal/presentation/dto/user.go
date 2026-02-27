@@ -21,6 +21,7 @@ type User struct {
 	Role         string       `json:"role"`
 	AuthProvider string       `json:"authProvider"`
 	Progress     UserProgress `json:"progress"`
+	Streak       Streak       `json:"streak"`
 }
 
 type UserProgress struct {
@@ -30,6 +31,13 @@ type UserProgress struct {
 	XpTotal        int  `json:"XpTotal"`
 	XpForNextLevel int  `json:"XpForNextLevel"`
 }
+type Streak struct {
+	ID            uint `json:"id"`
+	UserID        uint `json:"userID"`
+	CurrentStreak int  `json:"currentStreak"`
+	LongestStreak int  `json:"longestStreak"`
+}
+
 type UserUpdatableFields struct {
 	Username *string `json:"username"`
 	Avatar   *string `json:"avatar"`

@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"DaraTilBackendV2/internal/application/services"
 	"DaraTilBackendV2/internal/application/usecases/jwtTokenUC"
 	"DaraTilBackendV2/internal/application/usecases/userUC"
 	"DaraTilBackendV2/internal/application/utils"
@@ -20,21 +21,23 @@ import (
 )
 
 type JwtTokenHandler struct {
-	CreateUC   *jwtTokenUC.CreateUC
-	FindUC     *jwtTokenUC.FindUC
-	RevokeUC   *jwtTokenUC.RevokeJwtUC
-	FindByIdUC *userUC.GetByIdUC
-	cfg        *config.Config
+	CreateUC          *jwtTokenUC.CreateUC
+	FindUC            *jwtTokenUC.FindUC
+	RevokeUC          *jwtTokenUC.RevokeJwtUC
+	FindByIdUC        *userUC.GetByIdUC
+	UserStreakService *services.StreakService
+	cfg               *config.Config
 }
 
 func NewJwtTokenHandler(createUc *jwtTokenUC.CreateUC, findUc *jwtTokenUC.FindUC,
-	revokeUc *jwtTokenUC.RevokeJwtUC, findByIdUC *userUC.GetByIdUC, cfg *config.Config) *JwtTokenHandler {
+	revokeUc *jwtTokenUC.RevokeJwtUC, findByIdUC *userUC.GetByIdUC, userStreakService *services.StreakService, cfg *config.Config) *JwtTokenHandler {
 	return &JwtTokenHandler{
-		CreateUC:   createUc,
-		FindUC:     findUc,
-		RevokeUC:   revokeUc,
-		FindByIdUC: findByIdUC,
-		cfg:        cfg,
+		CreateUC:          createUc,
+		FindUC:            findUc,
+		RevokeUC:          revokeUc,
+		FindByIdUC:        findByIdUC,
+		UserStreakService: userStreakService,
+		cfg:               cfg,
 	}
 }
 
@@ -107,13 +110,12 @@ type RefreshRequest struct {
 // @Accept json
 // @Produce json
 // @Param refresh body RefreshRequest false "Refresh token (optional if cookie refreshToken exists)"
-// @Success 200 {object} map[string]interface{} "Returns user and new accessToken"
+// @Success 200 {object} dto.RefreshTokenResponse "Returns user and new accessToken"
 // @Failure 401 {object} map[string]interface{} "Session has been expired"
 // @Failure 400 {object} map[string]interface{} "Invalid request"
 // @Router /auth/refresh [get]
 func (h *JwtTokenHandler) RefreshToken(c *gin.Context) {
 	logger.Info("Refresh token request started")
-
 	refreshToken, err := c.Cookie("refreshToken")
 	if err != nil || refreshToken == "" {
 		logger.Warn("No refresh token found in cookie")
@@ -205,11 +207,12 @@ func (h *JwtTokenHandler) RefreshToken(c *gin.Context) {
 	logger.Info("New access token issued",
 		zap.Uint("user_id", claims.UserID),
 	)
-
-	response.Success(c, http.StatusOK, "success", gin.H{
-		"user":        userClaims,
-		"accessToken": tokens.AccessToken,
-	})
+	resp := dto.RefreshTokenResponse{
+		User:        userClaims,
+		AccessToken: tokens.AccessToken,
+		Status:      "success",
+	}
+	response.Success(c, http.StatusOK, resp)
 }
 
 // Logout godoc
@@ -285,7 +288,7 @@ func (h *JwtTokenHandler) Logout(c *gin.Context) {
 // @Tags Auth
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} map[string]interface{} "Returns user"
+// @Success 200 {object} dto.GetMeResponse  "Returns user"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Router /auth/me [get]
 func (h *JwtTokenHandler) GetMe(c *gin.Context) {
@@ -307,10 +310,14 @@ func (h *JwtTokenHandler) GetMe(c *gin.Context) {
 		response.HandleDomainError(c, err)
 		return
 	}
-
+	streak, err := h.UserStreakService.CheckStreak(c.Request.Context(), user.ID)
 	logger.Info("GetMe successful",
 		zap.Uint("user_id", claims.UserID),
 	)
-
-	c.JSON(http.StatusOK, gin.H{"user": user})
+	userDto := dtoMappers.UserToDto(*user)
+	resp := dto.GetMeResponse{
+		User:   userDto,
+		Streak: services.StreakResultToString(streak),
+	}
+	c.JSON(http.StatusOK, resp)
 }

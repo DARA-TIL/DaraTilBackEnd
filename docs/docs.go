@@ -34,7 +34,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.UserActivityDTO"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.UserActivityDTO"
+                            }
                         }
                     },
                     "401": {
@@ -82,7 +85,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.User"
+                            "$ref": "#/definitions/dto.LoginResponse"
                         }
                     },
                     "401": {
@@ -143,8 +146,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Returns user",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/dto.GetMeResponse"
                         }
                     },
                     "401": {
@@ -184,8 +186,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Returns user and new accessToken",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/dto.RefreshTokenResponse"
                         }
                     },
                     "400": {
@@ -233,7 +234,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/dto.User"
+                            "$ref": "#/definitions/dto.LoginResponse"
                         }
                     },
                     "400": {
@@ -424,7 +425,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.FolkloreDTO"
+                            "$ref": "#/definitions/dto.GetFolkloreResponse"
                         }
                     },
                     "400": {
@@ -472,7 +473,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.FolkloreDTO"
+                            "$ref": "#/definitions/dto.LikeFolkloreResponse"
                         }
                     },
                     "400": {
@@ -885,8 +886,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Lesson result and progress info",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/dto.FinishLessonResponse"
                         }
                     },
                     "400": {
@@ -2073,8 +2073,7 @@ const docTemplate = `{
                     "200": {
                         "description": "User",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/dto.User"
                         }
                     },
                     "400": {
@@ -2176,8 +2175,10 @@ const docTemplate = `{
                     "200": {
                         "description": "Liked folklore list",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.FolkloreDTO"
+                            }
                         }
                     },
                     "401": {
@@ -2300,8 +2301,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Updated user",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/dto.User"
                         }
                     },
                     "400": {
@@ -2368,8 +2368,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Updated user",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/dto.User"
                         }
                     },
                     "400": {
@@ -2475,6 +2474,55 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.FinishLessonResponse": {
+            "type": "object",
+            "properties": {
+                "lessonResult": {
+                    "$ref": "#/definitions/dto.LessonResult"
+                },
+                "progress": {
+                    "$ref": "#/definitions/dto.FinishLessonResults"
+                },
+                "streak": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.FinishLessonResults": {
+            "type": "object",
+            "properties": {
+                "currentLevel": {
+                    "type": "integer"
+                },
+                "currentXp": {
+                    "type": "integer"
+                },
+                "isImproved": {
+                    "type": "boolean"
+                },
+                "isLvlUp": {
+                    "type": "boolean"
+                },
+                "maxXp": {
+                    "type": "integer"
+                },
+                "prevBestResult": {
+                    "type": "integer"
+                },
+                "prevLevel": {
+                    "type": "integer"
+                },
+                "prevXp": {
+                    "type": "integer"
+                },
+                "xpForNextLevel": {
+                    "type": "integer"
+                },
+                "xpGained": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.FolkloreDTO": {
             "type": "object",
             "properties": {
@@ -2533,6 +2581,28 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.GetFolkloreResponse": {
+            "type": "object",
+            "properties": {
+                "folklore": {
+                    "$ref": "#/definitions/dto.FolkloreDTO"
+                },
+                "streak": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.GetMeResponse": {
+            "type": "object",
+            "properties": {
+                "streak": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/dto.User"
                 }
             }
         },
@@ -2632,6 +2702,20 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.LikeFolkloreResponse": {
+            "type": "object",
+            "properties": {
+                "folklore": {
+                    "$ref": "#/definitions/dto.FolkloreDTO"
+                },
+                "liked": {
+                    "type": "boolean"
+                },
+                "streak": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.LoginRequest": {
             "type": "object",
             "required": [
@@ -2645,6 +2729,20 @@ const docTemplate = `{
                 "password": {
                     "type": "string",
                     "minLength": 6
+                }
+            }
+        },
+        "dto.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "streak": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/dto.User"
                 }
             }
         },
@@ -2716,6 +2814,20 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.RefreshTokenResponse": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/dto.UserClaims"
+                }
+            }
+        },
         "dto.RegisterRequest": {
             "type": "object",
             "required": [
@@ -2737,6 +2849,23 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "minLength": 3
+                }
+            }
+        },
+        "dto.Streak": {
+            "type": "object",
+            "properties": {
+                "currentStreak": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "longestStreak": {
+                    "type": "integer"
+                },
+                "userID": {
+                    "type": "integer"
                 }
             }
         },
@@ -2876,6 +3005,9 @@ const docTemplate = `{
                 "role": {
                     "type": "string"
                 },
+                "streak": {
+                    "$ref": "#/definitions/dto.Streak"
+                },
                 "username": {
                     "type": "string"
                 }
@@ -2921,6 +3053,23 @@ const docTemplate = `{
                 },
                 "userId": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.UserClaims": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },

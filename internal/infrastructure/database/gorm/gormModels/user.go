@@ -12,6 +12,7 @@ type User struct {
 	Avatar       string
 	Role         string       `gorm:"not null"`
 	AuthProvider string       `gorm:"not null"`
+	Streak       Streak       `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	Progress     UserProgress `gorm:"constraint:OnDelete:CASCADE; OnUpdate:CASCADE;"`
 	Tokens       []Token      `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
 }

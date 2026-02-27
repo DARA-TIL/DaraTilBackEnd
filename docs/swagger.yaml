@@ -1,5 +1,37 @@
 basePath: /api
 definitions:
+  dto.FinishLessonResponse:
+    properties:
+      lessonResult:
+        $ref: '#/definitions/dto.LessonResult'
+      progress:
+        $ref: '#/definitions/dto.FinishLessonResults'
+      streak:
+        type: string
+    type: object
+  dto.FinishLessonResults:
+    properties:
+      currentLevel:
+        type: integer
+      currentXp:
+        type: integer
+      isImproved:
+        type: boolean
+      isLvlUp:
+        type: boolean
+      maxXp:
+        type: integer
+      prevBestResult:
+        type: integer
+      prevLevel:
+        type: integer
+      prevXp:
+        type: integer
+      xpForNextLevel:
+        type: integer
+      xpGained:
+        type: integer
+    type: object
   dto.FolkloreDTO:
     properties:
       author:
@@ -39,6 +71,20 @@ definitions:
         type: string
       name:
         type: string
+    type: object
+  dto.GetFolkloreResponse:
+    properties:
+      folklore:
+        $ref: '#/definitions/dto.FolkloreDTO'
+      streak:
+        type: string
+    type: object
+  dto.GetMeResponse:
+    properties:
+      streak:
+        type: string
+      user:
+        $ref: '#/definitions/dto.User'
     type: object
   dto.LessonBlockDTO:
     properties:
@@ -103,6 +149,15 @@ definitions:
       userId:
         type: integer
     type: object
+  dto.LikeFolkloreResponse:
+    properties:
+      folklore:
+        $ref: '#/definitions/dto.FolkloreDTO'
+      liked:
+        type: boolean
+      streak:
+        type: string
+    type: object
   dto.LoginRequest:
     properties:
       email:
@@ -113,6 +168,15 @@ definitions:
     required:
     - email
     - password
+    type: object
+  dto.LoginResponse:
+    properties:
+      accessToken:
+        type: string
+      streak:
+        type: string
+      user:
+        $ref: '#/definitions/dto.User'
     type: object
   dto.Question:
     properties:
@@ -158,6 +222,15 @@ definitions:
       text:
         type: string
     type: object
+  dto.RefreshTokenResponse:
+    properties:
+      accessToken:
+        type: string
+      status:
+        type: string
+      user:
+        $ref: '#/definitions/dto.UserClaims'
+    type: object
   dto.RegisterRequest:
     properties:
       email:
@@ -174,6 +247,17 @@ definitions:
     - email
     - password
     - username
+    type: object
+  dto.Streak:
+    properties:
+      currentStreak:
+        type: integer
+      id:
+        type: integer
+      longestStreak:
+        type: integer
+      userID:
+        type: integer
     type: object
   dto.Test:
     properties:
@@ -264,6 +348,8 @@ definitions:
         $ref: '#/definitions/dto.UserProgress'
       role:
         type: string
+      streak:
+        $ref: '#/definitions/dto.Streak'
       username:
         type: string
     type: object
@@ -294,6 +380,17 @@ definitions:
         type: object
       userId:
         type: integer
+    type: object
+  dto.UserClaims:
+    properties:
+      email:
+        type: string
+      role:
+        type: string
+      userId:
+        type: integer
+      username:
+        type: string
     type: object
   dto.UserProgress:
     properties:
@@ -354,7 +451,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.UserActivityDTO'
+            items:
+              $ref: '#/definitions/dto.UserActivityDTO'
+            type: array
         "401":
           description: Unauthorized
           schema:
@@ -388,7 +487,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.User'
+            $ref: '#/definitions/dto.LoginResponse'
         "401":
           description: Unauthorized
           schema:
@@ -425,8 +524,7 @@ paths:
         "200":
           description: Returns user
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.GetMeResponse'
         "401":
           description: Unauthorized
           schema:
@@ -456,8 +554,7 @@ paths:
         "200":
           description: Returns user and new accessToken
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.RefreshTokenResponse'
         "400":
           description: Invalid request
           schema:
@@ -489,7 +586,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/dto.User'
+            $ref: '#/definitions/dto.LoginResponse'
         "400":
           description: Bad Request
           schema:
@@ -610,7 +707,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.FolkloreDTO'
+            $ref: '#/definitions/dto.GetFolkloreResponse'
         "400":
           description: Bad Request
           schema:
@@ -641,7 +738,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.FolkloreDTO'
+            $ref: '#/definitions/dto.LikeFolkloreResponse'
         "400":
           description: Bad Request
           schema:
@@ -911,8 +1008,7 @@ paths:
         "200":
           description: Lesson result and progress info
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.FinishLessonResponse'
         "400":
           description: Bad request
           schema:
@@ -1708,8 +1804,7 @@ paths:
         "200":
           description: User
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.User'
         "400":
           description: Invalid input
           schema:
@@ -1776,8 +1871,9 @@ paths:
         "200":
           description: Liked folklore list
           schema:
-            additionalProperties: true
-            type: object
+            items:
+              $ref: '#/definitions/dto.FolkloreDTO'
+            type: array
         "401":
           description: Unauthorized
           schema:
@@ -1860,8 +1956,7 @@ paths:
         "200":
           description: Updated user
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.User'
         "400":
           description: Invalid input
           schema:
@@ -1905,8 +2000,7 @@ paths:
         "200":
           description: Updated user
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.User'
         "400":
           description: Invalid input
           schema:

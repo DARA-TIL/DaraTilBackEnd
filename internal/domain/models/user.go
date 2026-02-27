@@ -8,6 +8,7 @@ type User struct {
 	Avatar       string
 	Role         string
 	AuthProvider string
+	Streak       Streak
 	Progress     UserProgress
 	Tokens       []Token
 }

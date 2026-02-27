@@ -24,6 +24,7 @@ func GormUserToDomain(user gormModels.User) models.User {
 		Password:     user.Password,
 		Avatar:       user.Avatar,
 		Role:         user.Role,
+		Streak:       GormStreakToDomain(user.Streak),
 		AuthProvider: user.AuthProvider,
 		Progress:     GormUserProgressToDomain(user.Progress),
 	}

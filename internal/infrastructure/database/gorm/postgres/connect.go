@@ -47,6 +47,7 @@ func AutoMigration(db *gorm.DB) error {
 		&gormModels.FolkloreLike{},
 		&gormModels.Token{},
 		&gormModels.UserActivity{},
+		&gormModels.Streak{},
 	)
 	return err
 }

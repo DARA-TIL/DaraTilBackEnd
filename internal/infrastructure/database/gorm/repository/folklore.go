@@ -180,7 +180,7 @@ func (f *FolkloreRepository) GetByQuery(ctx context.Context, query models.Folklo
 		db = db.Where("likes_count > ?", query.MinLikes)
 	}
 	var folklores []gormModels.Folklore
-	if err := db.WithContext(ctx).Find(&folklores).Error; err != nil {
+	if err := db.WithContext(ctx).Preload("Translations").Find(&folklores).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
 	var domainFolklore []models.Folklore

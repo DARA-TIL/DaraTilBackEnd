@@ -2,6 +2,7 @@ package user
 
 import (
 	models2 "DaraTilBackendV2/internal/application/models"
+	"DaraTilBackendV2/internal/application/services"
 	errs "DaraTilBackendV2/internal/domain/domErr"
 	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/infrastructure/logger"
@@ -36,7 +37,7 @@ const (
 // @Accept json
 // @Produce json
 // @Param request body dto.RegisterRequest true "Register payload"
-// @Success 201 {object} dto.User
+// @Success 201 {object} dto.LoginResponse
 // @Failure 400 {object} map[string]interface{}
 // @Router /auth/register [post]
 func (h *UserHandler) Register(c *gin.Context) {
@@ -91,7 +92,11 @@ func (h *UserHandler) Register(c *gin.Context) {
 	}
 
 	userDto := dtoMappers.UserToDto(*userCr)
-	response.Success(c, 201, userDto, gin.H{"accessToken": accessToken})
+	resp := dto.LoginResponse{
+		AccessToken: accessToken,
+		User:        userDto,
+	}
+	response.Success(c, 201, resp)
 }
 
 // Login godoc
@@ -101,7 +106,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param request body dto.LoginRequest true "Login credentials"
-// @Success 200 {object} dto.User
+// @Success 200 {object} dto.LoginResponse
 // @Failure 401 {object} map[string]interface{}
 // @Router /auth/login [post]
 func (h *UserHandler) Login(c *gin.Context) {
@@ -146,9 +151,17 @@ func (h *UserHandler) Login(c *gin.Context) {
 		response.HandleDomainError(c, err)
 		return
 	}
-
+	streak, err := h.UserStreakService.CheckStreak(c.Request.Context(), user.ID)
+	if err != nil {
+		logger.Error("Failed to check streak after login", zap.Error(err))
+	}
 	userDto := dtoMappers.UserToDto(*user)
-	response.Success(c, 200, userDto, gin.H{"accessToken": accessToken})
+	resp := dto.LoginResponse{
+		AccessToken: accessToken,
+		User:        userDto,
+		Streak:      services.StreakResultToString(streak),
+	}
+	response.Success(c, 200, resp)
 }
 
 type OAuthState struct {
@@ -302,6 +315,10 @@ func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 		)
 		return
 	}
+	_, err = h.UserStreakService.CheckStreak(c.Request.Context(), user.ID)
+	if err != nil {
+		logger.Error("Failed to check streak", zap.Error(err))
+	}
 	var redirectURL string
 	if client == "web" {
 		redirectURL = fmt.Sprintf("%s/login?%s",
@@ -316,8 +333,7 @@ func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 			refreshToken,
 		)
 	}
-	msg := "Oauth successful: redirecting to " + redirectURL
-	logger.Info(msg)
+	logger.Info("Oauth success", zap.Uint("userID", user.ID))
 	c.Redirect(http.StatusTemporaryRedirect, redirectURL)
 }
 

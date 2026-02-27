@@ -8,6 +8,7 @@ const (
 	Lesson_completed  Actions = "lesson_completed"
 	Folklore_liked    Actions = "folklore_liked"
 	Folklore_disliked Actions = "folklore_disliked"
+	Folklore_readed   Actions = "folklore_readed"
 )
 
 type UserActivity struct {

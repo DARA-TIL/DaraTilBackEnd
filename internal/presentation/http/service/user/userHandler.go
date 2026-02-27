@@ -1,6 +1,7 @@
 package user
 
 import (
+	"DaraTilBackendV2/internal/application/services"
 	"DaraTilBackendV2/internal/application/usecases/folkloreUC"
 	"DaraTilBackendV2/internal/application/usecases/jwtTokenUC"
 	"DaraTilBackendV2/internal/application/usecases/userUC"
@@ -31,6 +32,7 @@ type UserHandler struct {
 	IssueTokenUC       *jwtTokenUC.IssueTokenUC
 	GetByUsernameUC    *userUC.GetByUsernameUC
 	GetLikedFolkloreUC *folkloreUC.GetLikedUC
+	UserStreakService  *services.StreakService
 	cfg                *config.Config
 }
 
@@ -44,6 +46,7 @@ func NewUserHandler(
 	issueTokenUC *jwtTokenUC.IssueTokenUC,
 	getByUsernameUC *userUC.GetByUsernameUC,
 	getLikedFolkloreUC *folkloreUC.GetLikedUC,
+	UserStreakService *services.StreakService,
 	cfg *config.Config,
 ) *UserHandler {
 	return &UserHandler{
@@ -56,6 +59,7 @@ func NewUserHandler(
 		IssueTokenUC:       issueTokenUC,
 		GetByUsernameUC:    getByUsernameUC,
 		GetLikedFolkloreUC: getLikedFolkloreUC,
+		UserStreakService:  UserStreakService,
 		cfg:                cfg,
 	}
 }
@@ -68,7 +72,7 @@ func NewUserHandler(
 // @Produce json
 // @Security BearerAuth
 // @Param request body dto.UserUpdatableFields true "Updatable user fields"
-// @Success 200 {object} map[string]interface{} "Updated user"
+// @Success 200 {object} dto.User "Updated user"
 // @Failure 400 {object} map[string]interface{} "Invalid input"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
@@ -136,7 +140,7 @@ func (h *UserHandler) UpdateMe(c *gin.Context) {
 // @Security BearerAuth
 // @Param id path int true "User ID"
 // @Param request body dto.UserUpdatableFields true "Updatable user fields"
-// @Success 200 {object} map[string]interface{} "Updated user"
+// @Success 200 {object} dto.User "Updated user"
 // @Failure 400 {object} map[string]interface{} "Invalid input"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 403 {object} map[string]interface{} "Forbidden"
@@ -233,7 +237,7 @@ func (h *UserHandler) GetAllUsers(c *gin.Context) {
 // @Tags User
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} map[string]interface{} "Liked folklore list"
+// @Success 200 {array} dto.FolkloreDTO "Liked folklore list"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 404 {object} map[string]interface{} "Not found"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
@@ -284,7 +288,7 @@ func (h *UserHandler) GetLikedFolklore(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "User ID"
-// @Success 200 {object} map[string]interface{} "User"
+// @Success 200 {object} dto.User "User"
 // @Failure 400 {object} map[string]interface{} "Invalid input"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 404 {object} map[string]interface{} "Not found"

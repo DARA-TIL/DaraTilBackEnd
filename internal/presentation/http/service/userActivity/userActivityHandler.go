@@ -25,7 +25,7 @@ func NewUserActivityHandler(userActivityService *services.UserActivityService) *
 // @Tags Activity
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} dto.UserActivityDTO
+// @Success 200 {array} dto.UserActivityDTO
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Router /activity [get]
