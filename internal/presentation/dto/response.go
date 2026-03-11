@@ -26,6 +26,7 @@ type RefreshTokenResponse struct {
 	User        UserClaims `json:"user"`
 	AccessToken string     `json:"accessToken"`
 	Status      string     `json:"status"`
+	Streak      string     `json:"streak"`
 }
 type FinishLessonResponse struct {
 	LessonResult LessonResult         `json:"lessonResult"`

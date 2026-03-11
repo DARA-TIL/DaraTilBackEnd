@@ -203,6 +203,10 @@ func (h *JwtTokenHandler) RefreshToken(c *gin.Context) {
 		response.HandleDomainError(c, err)
 		return
 	}
+	streak, err := h.UserStreakService.CheckStreak(c.Request.Context(), userClaims.UserID)
+	if err != nil {
+		logger.Error("Failed to check streak", zap.Uint("user_id", userClaims.UserID))
+	}
 
 	logger.Info("New access token issued",
 		zap.Uint("user_id", claims.UserID),
@@ -211,6 +215,7 @@ func (h *JwtTokenHandler) RefreshToken(c *gin.Context) {
 		User:        userClaims,
 		AccessToken: tokens.AccessToken,
 		Status:      "success",
+		Streak:      services.StreakResultToString(streak),
 	}
 	response.Success(c, http.StatusOK, resp)
 }
