@@ -5,6 +5,12 @@ import (
 	"DaraTilBackendV2/internal/application/usecases/folkloreUC"
 	"DaraTilBackendV2/internal/application/usecases/jwtTokenUC"
 	"DaraTilBackendV2/internal/application/usecases/lessonUC"
+	"DaraTilBackendV2/internal/application/usecases/regionSlangUC"
+	"DaraTilBackendV2/internal/application/usecases/regionSlangUC/regionSlangTranslationsUC"
+	"DaraTilBackendV2/internal/application/usecases/regionTraditionsUC"
+	"DaraTilBackendV2/internal/application/usecases/regionTraditionsUC/regionTraditionTranslationsUC"
+	"DaraTilBackendV2/internal/application/usecases/regionUC"
+	"DaraTilBackendV2/internal/application/usecases/regionUC/regionTranslationsUC"
 	"DaraTilBackendV2/internal/application/usecases/testUC"
 	"DaraTilBackendV2/internal/application/usecases/userUC"
 	"DaraTilBackendV2/internal/config"
@@ -14,18 +20,22 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/service/folklore"
 	"DaraTilBackendV2/internal/presentation/http/service/jwt"
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
+	"DaraTilBackendV2/internal/presentation/http/service/region"
 	"DaraTilBackendV2/internal/presentation/http/service/test"
 	"DaraTilBackendV2/internal/presentation/http/service/user"
 	"DaraTilBackendV2/internal/presentation/http/service/userActivity"
 )
 
 type Container struct {
-	UserHandler         *user.UserHandler
-	JwtHandler          *jwt.JwtTokenHandler
-	FolkloreHandler     *folklore.FolkloreHandler
-	LessonHandler       *lesson.LessonHandler
-	TestHandler         *test.TestHandler
-	userActivityHandler *userActivity.UserActivityHandler
+	UserHandler            *user.UserHandler
+	JwtHandler             *jwt.JwtTokenHandler
+	FolkloreHandler        *folklore.FolkloreHandler
+	LessonHandler          *lesson.LessonHandler
+	TestHandler            *test.TestHandler
+	UserActivityHandler    *userActivity.UserActivityHandler
+	RegionHandler          *region.RegionHandler
+	RegionTraditionHandler *region.RegionTraditionHandler
+	RegionSlangHandler     *region.RegionSlangHandler
 }
 
 func NewContainer(cfg *config.Config) *Container {
@@ -42,6 +52,12 @@ func NewContainer(cfg *config.Config) *Container {
 	testRepo := repository.NewTestRepository(db)
 	userActivityRepo := repository.NewUserActivityRepository(db)
 	streakRepo := repository.NewStreakRepository(db)
+	regionRepo := repository.NewRegionRepository(db)
+	regionTranslationRepo := repository.NewRegionTranslationRepository(db)
+	regionTraditionRepo := repository.NewRegionTraditionsRepository(db)
+	regionTraditionTranslationRepo := repository.NewRegionTraditionTranslationRepository(db)
+	regionSlangRepo := repository.NewRegionSlangRepository(db)
+	regionSlangTranslationRepo := repository.NewRegionSlangTranslationRepository(db)
 
 	//AI
 	geminiAI := gemini.NewGeminiAI(cfg)
@@ -111,6 +127,47 @@ func NewContainer(cfg *config.Config) *Container {
 
 	checkAnswerUC := testUC.NewCheckAnswersUC(testRepo)
 
+	//RegionUCs
+	createRegionUC := regionUC.NewCreateUC(regionRepo)
+	deleteRegionUC := regionUC.NewDeleteUC(regionRepo)
+	getAllRegionUC := regionUC.NewGetAllUC(regionRepo)
+	getRegionByIDUC := regionUC.NewGetByIDUC(regionRepo)
+	updateRegionUC := regionUC.NewUpdateUC(regionRepo)
+
+	//RegionTranslationsUCs
+	createRegionTranslationUC := regionTranslationsUC.NewCreateUC(regionTranslationRepo)
+	deleteRegionTranslationUC := regionTranslationsUC.NewDeleteUC(regionTranslationRepo)
+	getRegionTranslationByIDUC := regionTranslationsUC.NewGetByIDUC(regionTranslationRepo)
+	getTranslationsByRegionIDUC := regionTranslationsUC.NewGetByRegionUC(regionTranslationRepo)
+	updateRegionTranslationUC := regionTranslationsUC.NewUpdateUC(regionTranslationRepo)
+
+	//RegionSlangUcs
+	createRegionSlangUC := regionSlangUC.NewCreateUC(regionSlangRepo)
+	deleteRegionSlangUC := regionSlangUC.NewDeleteUC(regionSlangRepo)
+	getRegionSlangByIDUC := regionSlangUC.NewGetByIDUC(regionSlangRepo)
+	getSlangByRegionIDUC := regionSlangUC.NewGetByRegionUC(regionSlangRepo)
+	updateRegionSlangUC := regionSlangUC.NewUpdateUC(regionSlangRepo)
+
+	//RegionSlangTranslationsUcs
+	createRegionSlangTranslationUC := regionSlangTranslationsUC.NewCreateUC(regionSlangTranslationRepo)
+	deleteRegionSlangTranslationUC := regionSlangTranslationsUC.NewDeleteUC(regionSlangTranslationRepo)
+	getRegionSlangTranslationByIDUC := regionSlangTranslationsUC.NewGetByIDUC(regionSlangTranslationRepo)
+	getSlangTranslationsBySlangIDUC := regionSlangTranslationsUC.NewGetBySlangIDUC(regionSlangTranslationRepo)
+	updateRegionSlangTranslationUC := regionSlangTranslationsUC.NewUpdateUC(regionSlangTranslationRepo)
+
+	//RegionTraditionsUCs
+	createRegionTraditionUC := regionTraditionsUC.NewCreateUC(regionTraditionRepo)
+	deleteRegionTraditionUC := regionTraditionsUC.NewDeleteUC(regionTraditionRepo)
+	getRegionTraditionByIDUC := regionTraditionsUC.NewGetByIDUC(regionTraditionRepo)
+	getTraditionsByRegionIDUC := regionTraditionsUC.NewGetByRegionUC(regionTraditionRepo)
+	updateRegionTraditionUC := regionTraditionsUC.NewUpdateUC(regionTraditionRepo)
+
+	//RegionTraditionsTranslationsUCs
+	createRegionTraditionTranslationUC := regionTraditionTranslationsUC.NewCreateUC(regionTraditionTranslationRepo)
+	deleteRegionTraditionTranslationUC := regionTraditionTranslationsUC.NewDeleteUC(regionTraditionTranslationRepo)
+	getRegionTraditionTranslationByIDUC := regionTraditionTranslationsUC.NewGetByIDUC(regionTraditionTranslationRepo)
+	getTraditionTranslationsByTraditionIDUC := regionTraditionTranslationsUC.NewGetByTraditionIDUC(regionTraditionTranslationRepo)
+	updateRegionTraditionTranslationUC := regionTraditionTranslationsUC.NewUpdateUC(regionTraditionTranslationRepo)
 	// Handlers
 	jwtHandler := jwt.NewJwtTokenHandler(
 		createTokenUC,
@@ -175,13 +232,55 @@ func NewContainer(cfg *config.Config) *Container {
 		updateQuestionUC,
 		updateTestUC,
 	)
+	regionHandler := region.NewRegionHandler(
+		createRegionUC,
+		deleteRegionUC,
+		getAllRegionUC,
+		getRegionByIDUC,
+		updateRegionUC,
+
+		createRegionTranslationUC,
+		deleteRegionTranslationUC,
+		getRegionTranslationByIDUC,
+		updateRegionTranslationUC,
+		getTranslationsByRegionIDUC,
+	)
+	regionSlangHandler := region.NewRegionSlangHandler(
+		createRegionSlangUC,
+		deleteRegionSlangUC,
+		getRegionSlangByIDUC,
+		updateRegionSlangUC,
+		getSlangByRegionIDUC,
+
+		createRegionSlangTranslationUC,
+		deleteRegionSlangTranslationUC,
+		getRegionSlangTranslationByIDUC,
+		updateRegionSlangTranslationUC,
+		getSlangTranslationsBySlangIDUC,
+	)
+	regionTraditionHandler := region.NewRegionTraditionHandler(
+		createRegionTraditionUC,
+		deleteRegionTraditionUC,
+		getRegionTraditionByIDUC,
+		updateRegionTraditionUC,
+		getTraditionsByRegionIDUC,
+
+		createRegionTraditionTranslationUC,
+		deleteRegionTraditionTranslationUC,
+		getRegionTraditionTranslationByIDUC,
+		updateRegionTraditionTranslationUC,
+		getTraditionTranslationsByTraditionIDUC,
+	)
 	userActivityHandler := userActivity.NewUserActivityHandler(userActivityService)
 	return &Container{
-		UserHandler:         userHandler,
-		JwtHandler:          jwtHandler,
-		FolkloreHandler:     folkloreHandler,
-		LessonHandler:       lessonHandler,
-		TestHandler:         testHandler,
-		userActivityHandler: userActivityHandler,
+		UserHandler:            userHandler,
+		JwtHandler:             jwtHandler,
+		FolkloreHandler:        folkloreHandler,
+		LessonHandler:          lessonHandler,
+		TestHandler:            testHandler,
+		UserActivityHandler:    userActivityHandler,
+		RegionHandler:          regionHandler,
+		RegionSlangHandler:     regionSlangHandler,
+		RegionTraditionHandler: regionTraditionHandler,
 	}
 }

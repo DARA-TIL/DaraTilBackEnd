@@ -83,7 +83,7 @@ func (a *App) setupRoutes() {
 	//UserActivities
 	activityRoute := api.Group("/activity")
 	activityRoute.Use(middleware.AuthMiddleware(a.cfg))
-	userActivity.RegisterRoutes(activityRoute, a.container.userActivityHandler)
+	userActivity.RegisterRoutes(activityRoute, a.container.UserActivityHandler)
 	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
 

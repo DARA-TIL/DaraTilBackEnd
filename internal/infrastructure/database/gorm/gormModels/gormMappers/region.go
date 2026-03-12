@@ -233,3 +233,20 @@ func GormRegionTraditionTranslationToDomain(t gormModels.RegionTraditionsTransla
 		Description:        t.Description,
 	}
 }
+func RegionTranslationToGorm(t models.RegionTranslation) gormModels.RegionTranslation {
+	return gormModels.RegionTranslation{
+		RegionID:    t.RegionID,
+		Language:    t.Language,
+		Name:        t.Name,
+		Description: t.Description,
+	}
+}
+func GormRegionTranslationToDomain(t gormModels.RegionTranslation) models.RegionTranslation {
+	return models.RegionTranslation{
+		ID:          t.ID,
+		RegionID:    t.RegionID,
+		Language:    t.Language,
+		Name:        t.Name,
+		Description: t.Description,
+	}
+}

@@ -228,8 +228,96 @@ definitions:
         type: string
       status:
         type: string
+      streak:
+        type: string
       user:
         $ref: '#/definitions/dto.UserClaims'
+    type: object
+  dto.Region:
+    properties:
+      id:
+        type: integer
+      imageUrl:
+        type: string
+      regionAvailable:
+        type: string
+      regionSlang:
+        items:
+          $ref: '#/definitions/dto.RegionSlang'
+        type: array
+      regionTraditions:
+        items:
+          $ref: '#/definitions/dto.RegionTraditions'
+        type: array
+      requiredLevel:
+        type: integer
+      translations:
+        items:
+          $ref: '#/definitions/dto.RegionTranslation'
+        type: array
+    type: object
+  dto.RegionSlang:
+    properties:
+      id:
+        type: integer
+      regionId:
+        type: integer
+      translations:
+        items:
+          $ref: '#/definitions/dto.RegionSlangTranslation'
+        type: array
+    type: object
+  dto.RegionSlangTranslation:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      language:
+        $ref: '#/definitions/models.Language'
+      pronounceUrl:
+        type: string
+      regionSlangId:
+        type: integer
+      word:
+        type: string
+    type: object
+  dto.RegionTraditions:
+    properties:
+      id:
+        type: integer
+      regionId:
+        type: integer
+      translations:
+        items:
+          $ref: '#/definitions/dto.RegionTraditionsTranslation'
+        type: array
+    type: object
+  dto.RegionTraditionsTranslation:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      language:
+        $ref: '#/definitions/models.Language'
+      name:
+        type: string
+      regionTraditionsId:
+        type: integer
+    type: object
+  dto.RegionTranslation:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      language:
+        $ref: '#/definitions/models.Language'
+      name:
+        type: string
+      regionId:
+        type: integer
     type: object
   dto.RegisterRequest:
     properties:
@@ -421,6 +509,16 @@ definitions:
       refreshToken:
         type: string
     type: object
+  models.Language:
+    enum:
+    - KZ
+    - EN
+    - RU
+    type: string
+    x-enum-varnames:
+    - KZ
+    - EN
+    - RU
   user.ConfirmPasswordChangeRequest:
     properties:
       password:
@@ -1213,6 +1311,1219 @@ paths:
       summary: Update lesson block
       tags:
       - Lesson
+  /region/{id}/slang:
+    get:
+      description: Returns all slang entries for region.
+      parameters:
+      - description: Region ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Slang list
+          schema:
+            items:
+              $ref: '#/definitions/dto.RegionSlang'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get slang by region ID
+      tags:
+      - RegionSlang
+  /region/{id}/traditions:
+    get:
+      description: Returns all translations for tradition.
+      parameters:
+      - description: TraditionID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Translations list
+          schema:
+            items:
+              $ref: '#/definitions/dto.RegionTraditionsTranslation'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get tradition translations by tradition ID
+      tags:
+      - RegionTraditionTranslation
+  /region/{id}/translations:
+    get:
+      description: Returns all translations for a region.
+      parameters:
+      - description: Region ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Translations
+          schema:
+            items:
+              $ref: '#/definitions/dto.RegionTranslation'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get translations by region ID
+      tags:
+      - RegionTranslation
+  /region/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new region.
+      parameters:
+      - description: Region payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Region'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Region created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create region
+      tags:
+      - Region
+  /region/delete/{id}:
+    delete:
+      description: Deletes region by ID.
+      parameters:
+      - description: Region ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Region deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete region
+      tags:
+      - Region
+  /region/getAll:
+    get:
+      description: Returns list of regions. If user is not admin, locked regions are
+        hidden based on user level.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Regions list
+          schema:
+            items:
+              $ref: '#/definitions/dto.Region'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all regions
+      tags:
+      - Region
+  /region/getById/{id}:
+    get:
+      description: Returns region by ID. Returns 423 if user level is too low.
+      parameters:
+      - description: Region ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Region
+          schema:
+            $ref: '#/definitions/dto.Region'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "423":
+          description: User level too low
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get region by ID
+      tags:
+      - Region
+  /region/slang/{id}/translations:
+    get:
+      description: Returns all translations for slang.
+      parameters:
+      - description: Slang ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Translations
+          schema:
+            items:
+              $ref: '#/definitions/dto.RegionSlangTranslation'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get slang translations by slang ID
+      tags:
+      - RegionSlangTranslation
+  /region/slang/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates slang entry for region.
+      parameters:
+      - description: Region slang payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegionSlang'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Slang created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create region slang
+      tags:
+      - RegionSlang
+  /region/slang/delete/{id}:
+    delete:
+      description: Deletes region slang by ID.
+      parameters:
+      - description: Slang ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Slang deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete region slang
+      tags:
+      - RegionSlang
+  /region/slang/getById/{id}:
+    get:
+      description: Returns slang entry by ID.
+      parameters:
+      - description: Slang ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Region slang
+          schema:
+            $ref: '#/definitions/dto.RegionSlang'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get region slang by ID
+      tags:
+      - RegionSlang
+  /region/slang/translation/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates translation for region slang.
+      parameters:
+      - description: Slang translation payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegionSlangTranslation'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Translation created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create slang translation
+      tags:
+      - RegionSlangTranslation
+  /region/slang/translation/delete/{id}:
+    delete:
+      description: Deletes slang translation by ID.
+      parameters:
+      - description: Translation ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Translation deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete slang translation
+      tags:
+      - RegionSlangTranslation
+  /region/slang/translation/getById/{id}:
+    get:
+      description: Returns slang translation by ID.
+      parameters:
+      - description: Translation ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Slang translation
+          schema:
+            $ref: '#/definitions/dto.RegionSlangTranslation'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get slang translation by ID
+      tags:
+      - RegionSlangTranslation
+  /region/slang/translation/update:
+    patch:
+      consumes:
+      - application/json
+      description: Updates slang translation.
+      parameters:
+      - description: Slang translation payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegionSlangTranslation'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Translation updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update slang translation
+      tags:
+      - RegionSlangTranslation
+  /region/slang/update:
+    patch:
+      consumes:
+      - application/json
+      description: Updates region slang.
+      parameters:
+      - description: Region slang payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegionSlang'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Slang updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update region slang
+      tags:
+      - RegionSlang
+  /region/tradition/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates tradition entry for region.
+      parameters:
+      - description: Region tradition payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegionTraditions'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Tradition created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create region tradition
+      tags:
+      - RegionTradition
+  /region/tradition/delete/{id}:
+    delete:
+      description: Deletes region tradition by ID.
+      parameters:
+      - description: Tradition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Tradition deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete region tradition
+      tags:
+      - RegionTradition
+  /region/tradition/getById/{id}:
+    get:
+      description: Returns tradition entry by ID.
+      parameters:
+      - description: Tradition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Region tradition
+          schema:
+            $ref: '#/definitions/dto.RegionTraditions'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get region tradition by ID
+      tags:
+      - RegionTradition
+  /region/tradition/translation/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates translation for region tradition.
+      parameters:
+      - description: Tradition translation payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegionTraditionsTranslation'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Translation created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create tradition translation
+      tags:
+      - RegionTraditionTranslation
+  /region/tradition/translation/delete/{id}:
+    delete:
+      description: Deletes tradition translation by ID.
+      parameters:
+      - description: Translation ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Translation deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete tradition translation
+      tags:
+      - RegionTraditionTranslation
+  /region/tradition/translation/getById/{id}:
+    get:
+      description: Returns translation by ID.
+      parameters:
+      - description: Translation ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Tradition translation
+          schema:
+            $ref: '#/definitions/dto.RegionTraditionsTranslation'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get tradition translation by ID
+      tags:
+      - RegionTraditionTranslation
+  /region/tradition/translation/update:
+    patch:
+      consumes:
+      - application/json
+      description: Updates tradition translation.
+      parameters:
+      - description: Tradition translation payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegionTraditionsTranslation'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Translation updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update tradition translation
+      tags:
+      - RegionTraditionTranslation
+  /region/tradition/update:
+    patch:
+      consumes:
+      - application/json
+      description: Updates region tradition.
+      parameters:
+      - description: Region tradition payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegionTraditions'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Tradition updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update region tradition
+      tags:
+      - RegionTradition
+  /region/translation/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates translation for region.
+      parameters:
+      - description: Region translation payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegionTranslation'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Translation created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create region translation
+      tags:
+      - RegionTranslation
+  /region/translation/delete/{id}:
+    delete:
+      description: Deletes region translation by ID.
+      parameters:
+      - description: Translation ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Translation deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete region translation
+      tags:
+      - RegionTranslation
+  /region/translation/getById/{id}:
+    get:
+      description: Returns region translation by ID.
+      parameters:
+      - description: Translation ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Translation
+          schema:
+            $ref: '#/definitions/dto.RegionTranslation'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get region translation by ID
+      tags:
+      - RegionTranslation
+  /region/translation/update:
+    patch:
+      consumes:
+      - application/json
+      description: Updates translation for region.
+      parameters:
+      - description: Translation payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegionTranslation'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Translation updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update region translation
+      tags:
+      - RegionTranslation
+  /region/update:
+    patch:
+      consumes:
+      - application/json
+      description: Updates region fields.
+      parameters:
+      - description: Region payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Region'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Region updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update region
+      tags:
+      - Region
   /test/create:
     post:
       consumes:

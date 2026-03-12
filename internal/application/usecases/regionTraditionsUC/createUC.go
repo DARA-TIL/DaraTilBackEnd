@@ -1,4 +1,4 @@
-package regionUC
+package regionTraditionsUC
 
 import (
 	"DaraTilBackendV2/internal/domain/models"

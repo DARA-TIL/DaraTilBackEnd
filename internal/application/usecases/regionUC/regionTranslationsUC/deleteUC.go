@@ -1,4 +1,4 @@
-package regionUC
+package regionTranslationsUC
 
 import (
 	"DaraTilBackendV2/internal/domain/repo"

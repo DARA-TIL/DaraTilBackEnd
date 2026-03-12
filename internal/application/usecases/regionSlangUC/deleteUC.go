@@ -1,4 +1,4 @@
-package regionUC
+package regionSlangUC
 
 import (
 	"DaraTilBackendV2/internal/domain/repo"

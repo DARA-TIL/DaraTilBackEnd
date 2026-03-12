@@ -1,4 +1,4 @@
-package regionUC
+package regionTranslationsUC
 
 import (
 	errs "DaraTilBackendV2/internal/domain/domErr"
