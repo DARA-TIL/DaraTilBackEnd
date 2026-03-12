@@ -7,6 +7,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/middleware"
 	"DaraTilBackendV2/internal/presentation/http/service/folklore"
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
+	"DaraTilBackendV2/internal/presentation/http/service/region"
 	"DaraTilBackendV2/internal/presentation/http/service/test"
 	"DaraTilBackendV2/internal/presentation/http/service/user"
 	"DaraTilBackendV2/internal/presentation/http/service/userActivity"
@@ -84,7 +85,14 @@ func (a *App) setupRoutes() {
 	activityRoute := api.Group("/activity")
 	activityRoute.Use(middleware.AuthMiddleware(a.cfg))
 	userActivity.RegisterRoutes(activityRoute, a.container.UserActivityHandler)
+	//region
+	regionRoute := api.Group("/region")
+	regionRoute.Use(middleware.AuthMiddleware(a.cfg))
+	region.RegisterRoutes(regionRoute, a.container.RegionHandler)
+	region.RegisterSlangRoutes(regionRoute, a.container.RegionSlangHandler)
+	region.RegisterTraditionRoutes(regionRoute, a.container.RegionTraditionHandler)
 	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 }
 
 func (a *App) Run() {
