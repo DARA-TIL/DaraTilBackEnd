@@ -11,6 +11,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/middleware"
 	"DaraTilBackendV2/internal/presentation/http/response"
 	"DaraTilBackendV2/internal/presentation/http/utils"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -47,6 +48,7 @@ func NewRegionHandler(
 	getRegionTranslationByIDUC *regionTranslationsUC.GetByIDUC,
 	updateRegionTranslationsUC *regionTranslationsUC.UpdateUC,
 	getTranslationsByRegionIDUC *regionTranslationsUC.GetByRegionUC,
+	getUserByIDUC *userUC.GetByIdUC,
 ) *RegionHandler {
 
 	return &RegionHandler{
@@ -60,6 +62,7 @@ func NewRegionHandler(
 		GetRegionTranslationByIDUC:  getRegionTranslationByIDUC,
 		UpdateRegionTranslationsUC:  updateRegionTranslationsUC,
 		GetTranslationsByRegionIDUC: getTranslationsByRegionIDUC,
+		GetUserByIDUC:               getUserByIDUC,
 	}
 }
 
@@ -150,12 +153,14 @@ func (h *RegionHandler) GetAllRegion(c *gin.Context) {
 		response.HandleDomainError(c, err)
 		return
 	}
+	log.Print("USERID: ", *userID)
 	user, err := h.GetUserByIDUC.Execute(c.Request.Context(), *userID)
 	if err != nil {
 		logger.Error("[GET ALL REGIONS] Error occured while getting current user: " + err.Error())
 		response.HandleDomainError(c, err)
 		return
 	}
+	log.Print("USER: ", user)
 	if user.Role != "admin" {
 		dtoMappers.CheckRegionsAvailability(regionsDTO, user.Progress.Level)
 	}

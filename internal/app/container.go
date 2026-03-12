@@ -244,6 +244,7 @@ func NewContainer(cfg *config.Config) *Container {
 		getRegionTranslationByIDUC,
 		updateRegionTranslationUC,
 		getTranslationsByRegionIDUC,
+		getUserByIDUC,
 	)
 	regionSlangHandler := region.NewRegionSlangHandler(
 		createRegionSlangUC,
