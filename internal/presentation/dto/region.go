@@ -5,7 +5,7 @@ import "DaraTilBackendV2/internal/domain/models"
 type Region struct {
 	ID               uint                `json:"id"`
 	RequiredLevel    int                 `json:"requiredLevel"`
-	RegionStatus     string              `json:"regionAvailable"`
+	RegionStatus     string              `json:"regionStatus"`
 	ImageUrl         string              `json:"imageUrl"`
 	Translations     []RegionTranslation `json:"translations"`
 	RegionSlang      []RegionSlang       `json:"regionSlang"`

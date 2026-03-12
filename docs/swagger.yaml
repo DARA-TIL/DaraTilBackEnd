@@ -239,12 +239,12 @@ definitions:
         type: integer
       imageUrl:
         type: string
-      regionAvailable:
-        type: string
       regionSlang:
         items:
           $ref: '#/definitions/dto.RegionSlang'
         type: array
+      regionStatus:
+        type: string
       regionTraditions:
         items:
           $ref: '#/definitions/dto.RegionTraditions'

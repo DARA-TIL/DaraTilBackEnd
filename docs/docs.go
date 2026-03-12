@@ -4673,14 +4673,14 @@ const docTemplate = `{
                 "imageUrl": {
                     "type": "string"
                 },
-                "regionAvailable": {
-                    "type": "string"
-                },
                 "regionSlang": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.RegionSlang"
                     }
+                },
+                "regionStatus": {
+                    "type": "string"
                 },
                 "regionTraditions": {
                     "type": "array",
