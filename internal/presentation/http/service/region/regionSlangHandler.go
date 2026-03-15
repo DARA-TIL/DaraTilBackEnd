@@ -1,12 +1,15 @@
 package region
 
 import (
+	"DaraTilBackendV2/internal/application/services"
 	"DaraTilBackendV2/internal/application/usecases/regionSlangUC"
 	regionSlangTranslationUC "DaraTilBackendV2/internal/application/usecases/regionSlangUC/regionSlangTranslationsUC"
+	utils2 "DaraTilBackendV2/internal/application/utils"
 	errs "DaraTilBackendV2/internal/domain/domErr"
 	"DaraTilBackendV2/internal/infrastructure/logger"
 	"DaraTilBackendV2/internal/presentation/dto"
 	"DaraTilBackendV2/internal/presentation/dto/dtoMappers"
+	"DaraTilBackendV2/internal/presentation/http/middleware"
 	"DaraTilBackendV2/internal/presentation/http/response"
 	"DaraTilBackendV2/internal/presentation/http/utils"
 	"net/http"
@@ -133,7 +136,7 @@ func (h *RegionSlangHandler) DeleteRegionSlang(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Slang ID"
-// @Success 200 {object} dto.RegionSlang "Region slang"
+// @Success 200 {object} dto.GetSlangResponse "Region slang and streak status"
 // @Failure 400 {object} map[string]interface{} "Bad request"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 404 {object} map[string]interface{} "Not found"
@@ -146,18 +149,26 @@ func (h *RegionSlangHandler) GetRegionSlangByID(c *gin.Context) {
 		response.HandleDomainError(c, errs.ErrBadRequest)
 		return
 	}
+	ctx := c.Request.Context()
+	userID, err := middleware.GetCurrentUserID(c)
+	if err != nil {
+		logger.Warn("[REGION SLANG GET] Error getting user ID")
+	}
+	if userID != nil {
+		ctx = utils2.WithUserID(ctx, *userID)
+	}
 
-	slang, err := h.GetRegionSlangByIDUC.Execute(c.Request.Context(), *id)
+	res, err := h.GetRegionSlangByIDUC.Execute(ctx, *id)
 	if err != nil {
 		logger.Error("[REGION SLANG GET] Error occured while getting slang: " + err.Error())
 		response.HandleDomainError(c, err)
 		return
 	}
 
-	slangDTO := dtoMappers.RegionSlangToDTO(*slang)
-
+	slangDTO := dtoMappers.RegionSlangToDTO(*res.Slang)
+	resp := dto.GetSlangResponse{Slang: slangDTO, Streak: services.StreakResultToString(res.Streak)}
 	logger.Info("[REGION SLANG GET] success")
-	response.Success(c, http.StatusOK, slangDTO)
+	response.Success(c, http.StatusOK, resp)
 }
 
 // UpdateRegionSlang godoc

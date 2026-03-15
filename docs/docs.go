@@ -1571,9 +1571,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Region slang",
+                        "description": "Region slang and streak status",
                         "schema": {
-                            "$ref": "#/definitions/dto.RegionSlang"
+                            "$ref": "#/definitions/dto.GetSlangResponse"
                         }
                     },
                     "400": {
@@ -2146,7 +2146,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Region tradition",
                         "schema": {
-                            "$ref": "#/definitions/dto.RegionTraditions"
+                            "$ref": "#/definitions/dto.GetTraditionResponse"
                         }
                     },
                     "400": {
@@ -4436,6 +4436,28 @@ const docTemplate = `{
                 },
                 "user": {
                     "$ref": "#/definitions/dto.User"
+                }
+            }
+        },
+        "dto.GetSlangResponse": {
+            "type": "object",
+            "properties": {
+                "regionSlang": {
+                    "$ref": "#/definitions/dto.RegionSlang"
+                },
+                "streak": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.GetTraditionResponse": {
+            "type": "object",
+            "properties": {
+                "regionTradition": {
+                    "$ref": "#/definitions/dto.RegionTraditions"
+                },
+                "streak": {
+                    "type": "string"
                 }
             }
         },

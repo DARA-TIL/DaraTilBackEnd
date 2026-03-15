@@ -27,7 +27,7 @@ func (s *UserActivityService) LogActivityWithoutStreak(ctx context.Context, acti
 	return s.repo.Log(ctx, activity)
 }
 
-func (s *UserActivityService) LogActivity(ctx context.Context, action models.Actions, entityType string, userID, entityID uint) (StreakUpdateResult, error) {
+func (s *UserActivityService) LogActivityWithStreak(ctx context.Context, action models.Actions, entityType string, userID, entityID uint) (StreakUpdateResult, error) {
 	res, err := s.streakService.UpdateOnActivity(ctx, userID)
 	if err != nil {
 		return res, err

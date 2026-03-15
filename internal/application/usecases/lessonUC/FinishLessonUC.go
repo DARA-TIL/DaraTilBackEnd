@@ -24,7 +24,7 @@ func (uc *FinishLessonUC) Execute(ctx context.Context, lesRes models.LessonResul
 		return nil, 0, err
 	}
 	if lessonResult.Pass {
-		streak, err = uc.userActivityService.LogActivity(ctx, models.Lesson_completed, "lesson", lessonResult.UserID, lessonResult.LessonID)
+		streak, err = uc.userActivityService.LogActivityWithStreak(ctx, models.Lesson_completed, "lesson", lessonResult.UserID, lessonResult.LessonID)
 		if err != nil {
 			utils.ErrLoggerUserActivity(err)
 		}

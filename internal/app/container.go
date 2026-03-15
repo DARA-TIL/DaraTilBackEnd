@@ -71,7 +71,7 @@ func NewContainer(cfg *config.Config) *Container {
 	getAllUsersUC := userUC.NewGetAllUC(userRepo)
 	getByEmailUC := userUC.NewGetByEmailUC(userRepo)
 	getUserByIDUC := userUC.NewGetByIdUC(userRepo)
-	lvlUpUC := userUC.NewLvlUpUC(userRepo)
+	lvlUpUC := userUC.NewLvlUpUC(userRepo, userActivityService)
 	updateUC := userUC.NewUpdateUC(userRepo)
 	getByUsernameUC := userUC.NewGetByUsernameUC(userRepo)
 
@@ -144,7 +144,7 @@ func NewContainer(cfg *config.Config) *Container {
 	//RegionSlangUcs
 	createRegionSlangUC := regionSlangUC.NewCreateUC(regionSlangRepo)
 	deleteRegionSlangUC := regionSlangUC.NewDeleteUC(regionSlangRepo)
-	getRegionSlangByIDUC := regionSlangUC.NewGetByIDUC(regionSlangRepo)
+	getRegionSlangByIDUC := regionSlangUC.NewGetByIDUC(regionSlangRepo, userActivityService)
 	getSlangByRegionIDUC := regionSlangUC.NewGetByRegionUC(regionSlangRepo)
 	updateRegionSlangUC := regionSlangUC.NewUpdateUC(regionSlangRepo)
 
@@ -158,7 +158,7 @@ func NewContainer(cfg *config.Config) *Container {
 	//RegionTraditionsUCs
 	createRegionTraditionUC := regionTraditionsUC.NewCreateUC(regionTraditionRepo)
 	deleteRegionTraditionUC := regionTraditionsUC.NewDeleteUC(regionTraditionRepo)
-	getRegionTraditionByIDUC := regionTraditionsUC.NewGetByIDUC(regionTraditionRepo)
+	getRegionTraditionByIDUC := regionTraditionsUC.NewGetByIDUC(regionTraditionRepo, userActivityService)
 	getTraditionsByRegionIDUC := regionTraditionsUC.NewGetByRegionUC(regionTraditionRepo)
 	updateRegionTraditionUC := regionTraditionsUC.NewUpdateUC(regionTraditionRepo)
 

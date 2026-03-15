@@ -36,7 +36,7 @@ func (uc *GetByIDUC) Execute(ctx context.Context, folkloreID uint) (*GetFolklore
 		logger.Warn("Failed to log user activity: UserID not found in context")
 		return res, nil
 	}
-	streak, err := uc.userActivityService.LogActivity(ctx, models.Folklore_readed, "folklore", userID, folkloreID)
+	streak, err := uc.userActivityService.LogActivityWithStreak(ctx, models.Folklore_readed, "folklore", userID, folkloreID)
 	if err != nil {
 		utils.ErrLoggerUserActivity(err)
 		return nil, err

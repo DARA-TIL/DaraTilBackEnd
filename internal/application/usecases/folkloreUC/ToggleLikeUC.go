@@ -36,7 +36,7 @@ func (uc *ToggleLikeUC) Execute(ctx context.Context, folkloreID, userID uint) (*
 		} else {
 			act = models.Folklore_disliked
 		}
-		streak, err := uc.userActivityService.LogActivity(ctx, act, "folklore", userID, folkloreID)
+		streak, err := uc.userActivityService.LogActivityWithStreak(ctx, act, "folklore", userID, folkloreID)
 		if err != nil {
 			utils.ErrLoggerUserActivity(err)
 		}

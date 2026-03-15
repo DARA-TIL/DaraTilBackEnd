@@ -86,6 +86,20 @@ definitions:
       user:
         $ref: '#/definitions/dto.User'
     type: object
+  dto.GetSlangResponse:
+    properties:
+      regionSlang:
+        $ref: '#/definitions/dto.RegionSlang'
+      streak:
+        type: string
+    type: object
+  dto.GetTraditionResponse:
+    properties:
+      regionTradition:
+        $ref: '#/definitions/dto.RegionTraditions'
+      streak:
+        type: string
+    type: object
   dto.LessonBlockDTO:
     properties:
       contentText:
@@ -1734,9 +1748,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: Region slang
+          description: Region slang and streak status
           schema:
-            $ref: '#/definitions/dto.RegionSlang'
+            $ref: '#/definitions/dto.GetSlangResponse'
         "400":
           description: Bad request
           schema:
@@ -2072,7 +2086,7 @@ paths:
         "200":
           description: Region tradition
           schema:
-            $ref: '#/definitions/dto.RegionTraditions'
+            $ref: '#/definitions/dto.GetTraditionResponse'
         "400":
           description: Bad request
           schema:

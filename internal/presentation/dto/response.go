@@ -16,6 +16,14 @@ type GetFolkloreResponse struct {
 	Folklore FolkloreDTO `json:"folklore"`
 	Streak   string      `json:"streak"`
 }
+type GetSlangResponse struct {
+	Slang  RegionSlang `json:"regionSlang"`
+	Streak string      `json:"streak"`
+}
+type GetTraditionResponse struct {
+	Tradition RegionTraditions `json:"regionTradition"`
+	Streak    string           `json:"streak"`
+}
 type LikeFolkloreResponse struct {
 	Folklore FolkloreDTO `json:"folklore"`
 	Liked    bool        `json:"liked"`

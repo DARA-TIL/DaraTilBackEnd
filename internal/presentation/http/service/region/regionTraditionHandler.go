@@ -1,12 +1,15 @@
 package region
 
 import (
+	"DaraTilBackendV2/internal/application/services"
 	"DaraTilBackendV2/internal/application/usecases/regionTraditionsUC"
 	"DaraTilBackendV2/internal/application/usecases/regionTraditionsUC/regionTraditionTranslationsUC"
+	utils2 "DaraTilBackendV2/internal/application/utils"
 	errs "DaraTilBackendV2/internal/domain/domErr"
 	"DaraTilBackendV2/internal/infrastructure/logger"
 	"DaraTilBackendV2/internal/presentation/dto"
 	"DaraTilBackendV2/internal/presentation/dto/dtoMappers"
+	"DaraTilBackendV2/internal/presentation/http/middleware"
 	"DaraTilBackendV2/internal/presentation/http/response"
 	"DaraTilBackendV2/internal/presentation/http/utils"
 	"net/http"
@@ -133,7 +136,7 @@ func (h *RegionTraditionHandler) DeleteRegionTradition(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Tradition ID"
-// @Success 200 {object} dto.RegionTraditions "Region tradition"
+// @Success 200 {object} dto.GetTraditionResponse "Region tradition"
 // @Failure 400 {object} map[string]interface{} "Bad request"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 404 {object} map[string]interface{} "Not found"
@@ -146,18 +149,28 @@ func (h *RegionTraditionHandler) GetRegionTraditionByID(c *gin.Context) {
 		response.HandleDomainError(c, errs.ErrBadRequest)
 		return
 	}
-
-	tradition, err := h.GetRegionTraditionByIDUC.Execute(c.Request.Context(), *id)
+	ctx := c.Request.Context()
+	userID, err := middleware.GetCurrentUserID(c)
+	if err != nil {
+		logger.Warn("[REGION SLANG GET] Error getting user ID")
+	}
+	if userID != nil {
+		ctx = utils2.WithUserID(ctx, *userID)
+	}
+	res, err := h.GetRegionTraditionByIDUC.Execute(ctx, *id)
 	if err != nil {
 		logger.Error("[REGION TRADITION GET] Error occured while getting tradition: " + err.Error())
 		response.HandleDomainError(c, err)
 		return
 	}
 
-	traditionDTO := dtoMappers.RegionTraditionToDTO(*tradition)
-
+	traditionDTO := dtoMappers.RegionTraditionToDTO(*res.Tradition)
+	resp := dto.GetTraditionResponse{
+		Tradition: traditionDTO,
+		Streak:    services.StreakResultToString(res.Streak),
+	}
 	logger.Info("[REGION TRADITION GET] success")
-	response.Success(c, http.StatusOK, traditionDTO)
+	response.Success(c, http.StatusOK, resp)
 }
 
 // UpdateRegionTradition godoc
