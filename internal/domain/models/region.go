@@ -2,6 +2,7 @@ package models
 
 type Region struct {
 	ID               uint
+	Code             string
 	RequiredLevel    int
 	ImageUrl         string
 	Translations     []RegionTranslation

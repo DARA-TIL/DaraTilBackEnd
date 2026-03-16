@@ -9,6 +9,7 @@ import (
 type Region struct {
 	gorm.Model
 	RequiredLevel    int
+	Code             string `gorm:"unique"`
 	ImageUrl         string
 	Translations     []RegionTranslation
 	RegionSlang      []RegionSlang

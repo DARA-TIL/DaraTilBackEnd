@@ -6,6 +6,7 @@ type Region struct {
 	ID               uint                `json:"id"`
 	RequiredLevel    int                 `json:"requiredLevel"`
 	RegionStatus     string              `json:"regionStatus"`
+	Code             string              `json:"code"`
 	ImageUrl         string              `json:"imageUrl"`
 	Translations     []RegionTranslation `json:"translations"`
 	RegionSlang      []RegionSlang       `json:"regionSlang"`

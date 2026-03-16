@@ -4689,6 +4689,9 @@ const docTemplate = `{
         "dto.Region": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
