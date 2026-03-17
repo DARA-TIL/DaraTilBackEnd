@@ -108,7 +108,7 @@ func (f *FolkloreRepository) Update(ctx context.Context, id uint, fields models.
 }
 
 func (f *FolkloreRepository) Delete(ctx context.Context, id uint) error {
-	if err := f.db.WithContext(ctx).Delete(&gormModels.Folklore{}, id).Error; err != nil {
+	if err := f.db.WithContext(ctx).Unscoped().Delete(&gormModels.Folklore{}, id).Error; err != nil {
 		return errhandlers.DBErrHandler(err)
 	}
 	return nil

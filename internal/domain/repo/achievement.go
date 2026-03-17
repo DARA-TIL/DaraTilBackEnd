@@ -8,15 +8,17 @@ import (
 type AchievementRepo interface {
 	Create(ctx context.Context, achievement models.Achievement) error
 	Update(ctx context.Context, achievement models.Achievement) error
-	Delete(ctx context.Context, achievement models.Achievement) error
-	Get(ctx context.Context, id uint) (*models.Achievement, error)
-	GetAll(ctx context.Context) ([]models.Achievement, error)
+	Delete(ctx context.Context, id uint) error
+	GetByID(ctx context.Context, userID, id uint) (*models.Achievement, error)
+	GetAll(ctx context.Context, userID uint) ([]models.Achievement, error)
+	GetByAction(ctx context.Context, action models.Actions) ([]models.Achievement, error)
 }
 type UserAchievementRepo interface {
 	Create(ctx context.Context, ua models.UserAchievement) error
 	Update(ctx context.Context, ua models.UserAchievement) error
-	IncrementQuantity(ctx context.Context, userID, achievementID uint) error
-	Delete(ctx context.Context, ua models.UserAchievement) error
+	IncrementQuantity(ctx context.Context, userID uint, action models.Actions) error
+	CreateMissingUserAchievements(ctx context.Context, userID uint, action models.Actions) error
+	Delete(ctx context.Context, id uint) error
 	GetByUserID(ctx context.Context, userID uint) ([]models.UserAchievement, error)
-	GetByUserAndAchieveID(ctx context.Context, userID uint, achievementID uint) (*models.UserAchievement, error)
+	GetByID(ctx context.Context, id uint) (*models.UserAchievement, error)
 }

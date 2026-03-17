@@ -2,29 +2,36 @@ package userAchievementUC
 
 import (
 	"DaraTilBackendV2/internal/application/services"
+	errs "DaraTilBackendV2/internal/domain/domErr"
 	"DaraTilBackendV2/internal/domain/repo"
 	"context"
+	"errors"
 )
 
 type IncrementQuantityUC struct {
-	repo repo.UserAchievementRepo
+	repo    repo.UserAchievementRepo
+	achRepo repo.AchievementRepo
 }
 
-func NewIncrementQuantityUC(repo repo.UserAchievementRepo) *IncrementQuantityUC {
-	return &IncrementQuantityUC{repo: repo}
+func NewIncrementQuantityUC(repo repo.UserAchievementRepo, achRepo repo.AchievementRepo) *IncrementQuantityUC {
+	return &IncrementQuantityUC{
+		repo:    repo,
+		achRepo: achRepo,
+	}
 }
 
-func (uc *IncrementQuantityUC) Execute(ctx context.Context, userID, achievementID uint) error {
-	ua, err := uc.repo.GetByUserAndAchieveID(ctx, userID, achievementID)
+func (uc *IncrementQuantityUC) Handle(ctx context.Context, e services.Event) error {
+	_, err := uc.achRepo.GetByAction(ctx, e.Action)
+	if errors.Is(err, errs.ErrNotFound) {
+		return nil
+	}
+	err = uc.repo.CreateMissingUserAchievements(ctx, e.UserID, e.Action)
 	if err != nil {
 		return err
 	}
-	if ua.Achieved {
-		return nil
+	err = uc.repo.IncrementQuantity(ctx, e.UserID, e.Action)
+	if err != nil {
+		return err
 	}
-	err = uc.repo.IncrementQuantity(ctx, userID, achievementID)
-	return err
-}
-func (uc *IncrementQuantityUC) Handle(ctx context.Context, event services.Event) error {
-
+	return nil
 }

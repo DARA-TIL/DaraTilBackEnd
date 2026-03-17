@@ -10,8 +10,8 @@ const (
 	Folklore_disliked       Actions = "folklore_disliked"
 	Folklore_readed         Actions = "folklore_readed"
 	Level_upgraded          Actions = "level_upgraded"
-	Region_slang_opened     Actions = "region_slang_opened"
-	Region_tradition_opened Actions = "region_tradition_opened"
+	Region_slang_readed     Actions = "region_slang_readed"
+	Region_tradition_readed Actions = "region_tradition_readed"
 )
 
 type UserActivity struct {

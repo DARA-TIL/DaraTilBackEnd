@@ -17,12 +17,14 @@ type GetSlangResult struct {
 type GetByIDUC struct {
 	repo            repo.RegionSlangRepo
 	activityService *services.UserActivityService
+	publisher       services.Publisher
 }
 
-func NewGetByIDUC(repo repo.RegionSlangRepo, ua *services.UserActivityService) *GetByIDUC {
+func NewGetByIDUC(repo repo.RegionSlangRepo, ua *services.UserActivityService, pub services.Publisher) *GetByIDUC {
 	return &GetByIDUC{
 		repo:            repo,
 		activityService: ua,
+		publisher:       pub,
 	}
 }
 func (uc *GetByIDUC) Execute(ctx context.Context, id uint) (GetSlangResult, error) {
@@ -33,7 +35,11 @@ func (uc *GetByIDUC) Execute(ctx context.Context, id uint) (GetSlangResult, erro
 		utils.ErrLoggerUserActivity(errors.New("cannot get user ID"))
 		return ret, nil
 	}
-	str, err2 := uc.activityService.LogActivityWithStreak(ctx, models.Region_slang_opened, "region_slang", userID, id)
+	uc.publisher.NotifySubscribers(ctx, services.Event{
+		Action: models.Region_slang_readed,
+		UserID: userID,
+	})
+	str, err2 := uc.activityService.LogActivityWithStreak(ctx, models.Region_slang_readed, "region_slang", userID, id)
 	if err2 != nil {
 		utils.ErrLoggerUserActivity(err2)
 	}

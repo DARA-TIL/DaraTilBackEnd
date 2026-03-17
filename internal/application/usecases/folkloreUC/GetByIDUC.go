@@ -17,12 +17,14 @@ type GetFolkloreResult struct {
 type GetByIDUC struct {
 	repo                repo.FolkloreRepo
 	userActivityService *services.UserActivityService
+	Publisher           services.Publisher
 }
 
-func NewGetByFolkloreIDUC(repo repo.FolkloreRepo, uaService *services.UserActivityService) *GetByIDUC {
+func NewGetByFolkloreIDUC(repo repo.FolkloreRepo, uaService *services.UserActivityService, publisher services.Publisher) *GetByIDUC {
 	return &GetByIDUC{
 		repo:                repo,
 		userActivityService: uaService,
+		Publisher:           publisher,
 	}
 }
 func (uc *GetByIDUC) Execute(ctx context.Context, folkloreID uint) (*GetFolkloreResult, error) {
@@ -36,6 +38,11 @@ func (uc *GetByIDUC) Execute(ctx context.Context, folkloreID uint) (*GetFolklore
 		logger.Warn("Failed to log user activity: UserID not found in context")
 		return res, nil
 	}
+	event := services.Event{
+		Action: models.Folklore_readed,
+		UserID: userID,
+	}
+	uc.Publisher.NotifySubscribers(ctx, event)
 	streak, err := uc.userActivityService.LogActivityWithStreak(ctx, models.Folklore_readed, "folklore", userID, folkloreID)
 	if err != nil {
 		utils.ErrLoggerUserActivity(err)

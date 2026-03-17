@@ -1,4 +1,4 @@
-package achievementUC
+package userAchievementUC
 
 import (
 	"DaraTilBackendV2/internal/domain/repo"
@@ -6,10 +6,10 @@ import (
 )
 
 type DeleteUC struct {
-	repo repo.AchievementRepo
+	repo repo.UserAchievementRepo
 }
 
-func NewDeleteUC(repo repo.AchievementRepo) *DeleteUC {
+func NewDeleteUC(repo repo.UserAchievementRepo) *DeleteUC {
 	return &DeleteUC{repo: repo}
 }
 

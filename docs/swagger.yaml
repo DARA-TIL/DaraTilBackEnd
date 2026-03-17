@@ -1,5 +1,24 @@
 basePath: /api
 definitions:
+  dto.Achievement:
+    properties:
+      action:
+        $ref: '#/definitions/models.Actions'
+      description:
+        type: string
+      iconUrl:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      quantity:
+        type: integer
+      userAchievements:
+        items:
+          $ref: '#/definitions/dto.UserAchievement'
+        type: array
+    type: object
   dto.FinishLessonResponse:
     properties:
       lessonResult:
@@ -461,6 +480,19 @@ definitions:
       username:
         type: string
     type: object
+  dto.UserAchievement:
+    properties:
+      achieved:
+        type: boolean
+      achievementId:
+        type: integer
+      id:
+        type: integer
+      quantity:
+        type: integer
+      userId:
+        type: integer
+    type: object
   dto.UserActivityDTO:
     properties:
       action:
@@ -529,6 +561,24 @@ definitions:
       refreshToken:
         type: string
     type: object
+  models.Actions:
+    enum:
+    - lesson_completed
+    - folklore_liked
+    - folklore_disliked
+    - folklore_readed
+    - level_upgraded
+    - region_slang_readed
+    - region_tradition_readed
+    type: string
+    x-enum-varnames:
+    - Lesson_completed
+    - Folklore_liked
+    - Folklore_disliked
+    - Folklore_readed
+    - Level_upgraded
+    - Region_slang_readed
+    - Region_tradition_readed
   models.Language:
     enum:
     - KZ
@@ -558,6 +608,193 @@ info:
   title: DaraTil Backend
   version: "0.2"
 paths:
+  /achievement/create:
+    post:
+      consumes:
+      - application/json
+      description: Create new achievement (admin only)
+      parameters:
+      - description: Achievement data
+        in: body
+        name: achievement
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Achievement'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create achievement
+      tags:
+      - Achievement
+  /achievement/delete/{id}:
+    delete:
+      description: Delete achievement by ID (admin only)
+      parameters:
+      - description: Achievement ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete achievement
+      tags:
+      - Achievement
+  /achievement/getAll:
+    get:
+      description: Get all achievements for current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.Achievement'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all achievements
+      tags:
+      - Achievement
+  /achievement/getById/{id}:
+    get:
+      description: Get achievement details by ID for current user
+      parameters:
+      - description: Achievement ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Achievement'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get achievement by ID
+      tags:
+      - Achievement
+  /achievement/update:
+    patch:
+      consumes:
+      - application/json
+      description: Update achievement (admin only)
+      parameters:
+      - description: Achievement data
+        in: body
+        name: achievement
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Achievement'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update achievement
+      tags:
+      - Achievement
   /activity:
     get:
       description: 'Retries recent user activities: Lesson Finish, Folklore like etc.
@@ -3482,6 +3719,214 @@ paths:
       summary: Verify password reset code
       tags:
       - User
+  /userAchievements/create:
+    post:
+      consumes:
+      - application/json
+      description: Create new user achievement record (admin only)
+      parameters:
+      - description: User achievement data
+        in: body
+        name: userAchievement
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserAchievement'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create user achievement
+      tags:
+      - UserAchievement
+  /userAchievements/delete/{id}:
+    delete:
+      description: Delete user achievement by ID (admin only)
+      parameters:
+      - description: UserAchievement ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete user achievement
+      tags:
+      - UserAchievement
+  /userAchievements/getById/{id}:
+    get:
+      description: Get user achievement by record ID (admin only)
+      parameters:
+      - description: UserAchievement ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserAchievement'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user achievement by ID
+      tags:
+      - UserAchievement
+  /userAchievements/getByUserId/{id}:
+    get:
+      description: Get all user achievement records for a specific user (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.UserAchievement'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user achievements by user ID
+      tags:
+      - UserAchievement
+  /userAchievements/update:
+    patch:
+      consumes:
+      - application/json
+      description: Update user achievement record (admin only)
+      parameters:
+      - description: User achievement data
+        in: body
+        name: userAchievement
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserAchievement'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update user achievement
+      tags:
+      - UserAchievement
 schemes:
 - https
 securityDefinitions:

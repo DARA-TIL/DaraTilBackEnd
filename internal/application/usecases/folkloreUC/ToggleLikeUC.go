@@ -17,10 +17,11 @@ type ToggleLikeResult struct {
 type ToggleLikeUC struct {
 	repo                repo.FolkloreRepo
 	userActivityService *services.UserActivityService
+	publisher           services.Publisher
 }
 
-func NewToggleLikeUC(repo repo.FolkloreRepo, uas *services.UserActivityService) *ToggleLikeUC {
-	return &ToggleLikeUC{repo: repo, userActivityService: uas}
+func NewToggleLikeUC(repo repo.FolkloreRepo, uas *services.UserActivityService, pub services.Publisher) *ToggleLikeUC {
+	return &ToggleLikeUC{repo: repo, userActivityService: uas, publisher: pub}
 }
 
 func (uc *ToggleLikeUC) Execute(ctx context.Context, folkloreID, userID uint) (*ToggleLikeResult, error) {
@@ -36,6 +37,10 @@ func (uc *ToggleLikeUC) Execute(ctx context.Context, folkloreID, userID uint) (*
 		} else {
 			act = models.Folklore_disliked
 		}
+		uc.publisher.NotifySubscribers(ctx, services.Event{
+			Action: act,
+			UserID: userID,
+		})
 		streak, err := uc.userActivityService.LogActivityWithStreak(ctx, act, "folklore", userID, folkloreID)
 		if err != nil {
 			utils.ErrLoggerUserActivity(err)

@@ -17,10 +17,11 @@ type GetTraditionResult struct {
 type GetByIDUC struct {
 	repo            repo.RegionTraditionRepo
 	activityService *services.UserActivityService
+	publisher       services.Publisher
 }
 
-func NewGetByIDUC(repo repo.RegionTraditionRepo, ua *services.UserActivityService) *GetByIDUC {
-	return &GetByIDUC{repo: repo, activityService: ua}
+func NewGetByIDUC(repo repo.RegionTraditionRepo, ua *services.UserActivityService, pub services.Publisher) *GetByIDUC {
+	return &GetByIDUC{repo: repo, activityService: ua, publisher: pub}
 }
 func (uc *GetByIDUC) Execute(ctx context.Context, id uint) (GetTraditionResult, error) {
 	tr, err := uc.repo.GetByID(ctx, id)
@@ -32,7 +33,11 @@ func (uc *GetByIDUC) Execute(ctx context.Context, id uint) (GetTraditionResult, 
 		logger.Warn("userId not found in context")
 		return resp, nil
 	}
-	str, err := uc.activityService.LogActivityWithStreak(ctx, models.Region_tradition_opened, "region_tradition", userID, id)
+	uc.publisher.NotifySubscribers(ctx, services.Event{
+		Action: models.Region_slang_readed,
+		UserID: userID,
+	})
+	str, err := uc.activityService.LogActivityWithStreak(ctx, models.Region_tradition_readed, "region_tradition", userID, id)
 	resp.Streak = str
 	return resp, err
 }

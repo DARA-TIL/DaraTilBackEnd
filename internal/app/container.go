@@ -2,6 +2,8 @@ package app
 
 import (
 	"DaraTilBackendV2/internal/application/services"
+	"DaraTilBackendV2/internal/application/usecases/achievementUC"
+	"DaraTilBackendV2/internal/application/usecases/achievementUC/userAchievementUC"
 	"DaraTilBackendV2/internal/application/usecases/folkloreUC"
 	"DaraTilBackendV2/internal/application/usecases/jwtTokenUC"
 	"DaraTilBackendV2/internal/application/usecases/lessonUC"
@@ -14,9 +16,11 @@ import (
 	"DaraTilBackendV2/internal/application/usecases/testUC"
 	"DaraTilBackendV2/internal/application/usecases/userUC"
 	"DaraTilBackendV2/internal/config"
+	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/infrastructure/ai/gemini"
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/postgres"
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/repository"
+	"DaraTilBackendV2/internal/presentation/http/service/achievement"
 	"DaraTilBackendV2/internal/presentation/http/service/folklore"
 	"DaraTilBackendV2/internal/presentation/http/service/jwt"
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
@@ -36,6 +40,8 @@ type Container struct {
 	RegionHandler          *region.RegionHandler
 	RegionTraditionHandler *region.RegionTraditionHandler
 	RegionSlangHandler     *region.RegionSlangHandler
+	AchievementHandler     *achievement.AchievementHandler
+	UserAchievementHandler *achievement.UserAchievementHandler
 }
 
 func NewContainer(cfg *config.Config) *Container {
@@ -58,6 +64,8 @@ func NewContainer(cfg *config.Config) *Container {
 	regionTraditionTranslationRepo := repository.NewRegionTraditionTranslationRepository(db)
 	regionSlangRepo := repository.NewRegionSlangRepository(db)
 	regionSlangTranslationRepo := repository.NewRegionSlangTranslationRepository(db)
+	achievementRepo := repository.NewAchievementRepository(db)
+	userAchievementRepo := repository.NewUserAchievementRepository(db)
 
 	//AI
 	geminiAI := gemini.NewGeminiAI(cfg)
@@ -66,12 +74,37 @@ func NewContainer(cfg *config.Config) *Container {
 	StreakService := services.NewStreakService(streakRepo)
 	userActivityService := services.NewUserActivityService(userActivityRepo, StreakService)
 
+	publisher := services.NewActionPublisher()
+
+	//AchievementsUCS
+	createAchievementUC := achievementUC.NewCreateUC(achievementRepo)
+	deleteAchievementUC := achievementUC.NewDeleteUC(achievementRepo)
+	getAllAchievementUC := achievementUC.NewGetAllUC(achievementRepo)
+	getAchievementByIDUC := achievementUC.NewGetByIDUC(achievementRepo)
+	updateAchievementUC := achievementUC.NewUpdateUC(achievementRepo)
+
+	//UserAchievementsUCs
+	createUserAchievementUC := userAchievementUC.NewCreateUC(userAchievementRepo)
+	deleteUserAchievementUC := userAchievementUC.NewDeleteUC(userAchievementRepo)
+	getUserAchievementByIDUC := userAchievementUC.NewGetByIDUC(userAchievementRepo)
+	updateUserAchievementUC := userAchievementUC.NewUpdateUC(userAchievementRepo)
+	increaseUserAchievementSub := userAchievementUC.NewIncrementQuantityUC(userAchievementRepo, achievementRepo)
+	getUaByUserIDUC := userAchievementUC.NewGetByUserIDUC(userAchievementRepo)
+
+	publisher.AddSubscriber(models.Lesson_completed, increaseUserAchievementSub)
+	publisher.AddSubscriber(models.Folklore_liked, increaseUserAchievementSub)
+	publisher.AddSubscriber(models.Folklore_disliked, increaseUserAchievementSub)
+	publisher.AddSubscriber(models.Folklore_readed, increaseUserAchievementSub)
+	publisher.AddSubscriber(models.Level_upgraded, increaseUserAchievementSub)
+	publisher.AddSubscriber(models.Region_slang_readed, increaseUserAchievementSub)
+	publisher.AddSubscriber(models.Region_tradition_readed, increaseUserAchievementSub)
+
 	// User UCs
 	createUserUC := userUC.NewCreateUC(userRepo)
 	getAllUsersUC := userUC.NewGetAllUC(userRepo)
 	getByEmailUC := userUC.NewGetByEmailUC(userRepo)
 	getUserByIDUC := userUC.NewGetByIdUC(userRepo)
-	lvlUpUC := userUC.NewLvlUpUC(userRepo, userActivityService)
+	lvlUpUC := userUC.NewLvlUpUC(userRepo, userActivityService, publisher)
 	updateUC := userUC.NewUpdateUC(userRepo)
 	getByUsernameUC := userUC.NewGetByUsernameUC(userRepo)
 
@@ -85,10 +118,10 @@ func NewContainer(cfg *config.Config) *Container {
 	createFolkloreUC := folkloreUC.NewCreateUC(folkloreRepo, geminiAI)
 	deleteFolkloreUC := folkloreUC.NewDeleteUC(folkloreRepo)
 	getAllFolkloreUC := folkloreUC.NewGetAllUC(folkloreRepo)
-	getByIdFolkloreUC := folkloreUC.NewGetByFolkloreIDUC(folkloreRepo, userActivityService)
+	getByIdFolkloreUC := folkloreUC.NewGetByFolkloreIDUC(folkloreRepo, userActivityService, publisher)
 	getByQueryFolkloreUC := folkloreUC.NewGetByQueryUC(folkloreRepo)
 	getLikedFolkloreUC := folkloreUC.NewGetLikedFolkloreUC(folkloreRepo)
-	toggleLikeFolkloreUC := folkloreUC.NewToggleLikeUC(folkloreRepo, userActivityService)
+	toggleLikeFolkloreUC := folkloreUC.NewToggleLikeUC(folkloreRepo, userActivityService, publisher)
 	updateFolkloreUC := folkloreUC.NewUpdateUC(folkloreRepo, geminiAI)
 
 	//LessonUCS
@@ -104,7 +137,7 @@ func NewContainer(cfg *config.Config) *Container {
 	updateLessonUC := lessonUC.NewUpdateUC(lessonRepo)
 	updateBlockLessonUC := lessonUC.NewUpdateBlockUC(lessonRepo)
 
-	finishLessonUC := lessonUC.NewFinishLessonUC(lessonRepo, userActivityService)
+	finishLessonUC := lessonUC.NewFinishLessonUC(lessonRepo, userActivityService, publisher)
 	getFinishedLessonsUC := lessonUC.NewGetFinishedLessonsUC(lessonRepo)
 	getLessonResultsUC := lessonUC.NewGetLessonResultsUC(lessonRepo)
 	getBestResultForLessonUC := lessonUC.NewGetBestResultForLessonUC(lessonRepo)
@@ -146,7 +179,7 @@ func NewContainer(cfg *config.Config) *Container {
 	//RegionSlangUcs
 	createRegionSlangUC := regionSlangUC.NewCreateUC(regionSlangRepo)
 	deleteRegionSlangUC := regionSlangUC.NewDeleteUC(regionSlangRepo)
-	getRegionSlangByIDUC := regionSlangUC.NewGetByIDUC(regionSlangRepo, userActivityService)
+	getRegionSlangByIDUC := regionSlangUC.NewGetByIDUC(regionSlangRepo, userActivityService, publisher)
 	getSlangByRegionIDUC := regionSlangUC.NewGetByRegionUC(regionSlangRepo)
 	updateRegionSlangUC := regionSlangUC.NewUpdateUC(regionSlangRepo)
 
@@ -160,7 +193,7 @@ func NewContainer(cfg *config.Config) *Container {
 	//RegionTraditionsUCs
 	createRegionTraditionUC := regionTraditionsUC.NewCreateUC(regionTraditionRepo)
 	deleteRegionTraditionUC := regionTraditionsUC.NewDeleteUC(regionTraditionRepo)
-	getRegionTraditionByIDUC := regionTraditionsUC.NewGetByIDUC(regionTraditionRepo, userActivityService)
+	getRegionTraditionByIDUC := regionTraditionsUC.NewGetByIDUC(regionTraditionRepo, userActivityService, publisher)
 	getTraditionsByRegionIDUC := regionTraditionsUC.NewGetByRegionUC(regionTraditionRepo)
 	updateRegionTraditionUC := regionTraditionsUC.NewUpdateUC(regionTraditionRepo)
 
@@ -276,6 +309,21 @@ func NewContainer(cfg *config.Config) *Container {
 		updateRegionTraditionTranslationUC,
 		getTraditionTranslationsByTraditionIDUC,
 	)
+	achievementHandler := achievement.NewAchievementHandler(
+		createAchievementUC,
+		deleteAchievementUC,
+		getAllAchievementUC,
+		getAchievementByIDUC,
+		updateAchievementUC,
+	)
+
+	userAchievementHandler := achievement.NewUserAchievementHandler(
+		createUserAchievementUC,
+		deleteUserAchievementUC,
+		getUserAchievementByIDUC,
+		getUaByUserIDUC,
+		updateUserAchievementUC,
+	)
 	userActivityHandler := userActivity.NewUserActivityHandler(userActivityService)
 	return &Container{
 		UserHandler:            userHandler,
@@ -287,5 +335,7 @@ func NewContainer(cfg *config.Config) *Container {
 		RegionHandler:          regionHandler,
 		RegionSlangHandler:     regionSlangHandler,
 		RegionTraditionHandler: regionTraditionHandler,
+		AchievementHandler:     achievementHandler,
+		UserAchievementHandler: userAchievementHandler,
 	}
 }

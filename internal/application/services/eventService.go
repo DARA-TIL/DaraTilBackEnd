@@ -1,30 +1,19 @@
 package services
 
 import (
+	"DaraTilBackendV2/internal/domain/models"
 	"context"
 )
 
+type Subscriber interface {
+	Handle(ctx context.Context, e Event) error
+}
+
+type Publisher interface {
+	NotifySubscribers(ctx context.Context, e Event)
+	AddSubscriber(name models.Actions, s Subscriber)
+}
 type Event struct {
-	Name     string
-	Entity   string
-	UserID   string
-	EntityID string
-}
-
-type EventHandler interface {
-	Handle(ctx context.Context, event Event) error
-}
-
-type Listener struct {
-	Handlers map[string]EventHandler
-}
-
-func NewListener() *Listener {
-	return &Listener{
-		Handlers: make(map[string]EventHandler),
-	}
-}
-func (l *Listener) AddEvent(event string, handler EventHandler) error {
-	l.Handlers[event] = handler
-	return nil
+	Action models.Actions
+	UserID uint
 }

@@ -4,9 +4,11 @@ type Achievement struct {
 	ID          uint
 	Name        string
 	Description string
-	Action      string
+	Action      Actions
 	Quantity    uint
 	IconURL     string
+
+	UserAchievements []UserAchievement
 }
 type UserAchievement struct {
 	ID            uint

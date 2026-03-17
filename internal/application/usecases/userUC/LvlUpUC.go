@@ -11,16 +11,27 @@ import (
 type LvlUpUC struct {
 	repo            repo.UserRepo
 	activityService *services.UserActivityService
+	publisher       services.Publisher
 }
 
-func NewLvlUpUC(repo repo.UserRepo, ua *services.UserActivityService) *LvlUpUC {
-	return &LvlUpUC{repo: repo, activityService: ua}
+func NewLvlUpUC(repo repo.UserRepo, ua *services.UserActivityService, pub services.Publisher) *LvlUpUC {
+	return &LvlUpUC{repo: repo, activityService: ua, publisher: pub}
 }
 
 func (u *LvlUpUC) Execute(ctx context.Context, userId uint, xpAdded int) models.LvlRet {
-	err := u.activityService.LogActivityWithoutStreak(ctx, models.Level_upgraded, "user", userId, userId)
-	if err != nil {
-		utils.ErrLoggerUserActivity(err)
+	lvlRet := u.repo.LvlUp(ctx, userId, xpAdded)
+	if lvlRet.Err != nil {
+		return lvlRet
 	}
-	return u.repo.LvlUp(ctx, userId, xpAdded)
+	if lvlRet.IsLvlUp {
+		err := u.activityService.LogActivityWithoutStreak(ctx, models.Level_upgraded, "user", userId, userId)
+		if err != nil {
+			utils.ErrLoggerUserActivity(err)
+		}
+		u.publisher.NotifySubscribers(ctx, services.Event{
+			Action: models.Level_upgraded,
+			UserID: userId,
+		})
+	}
+	return lvlRet
 }

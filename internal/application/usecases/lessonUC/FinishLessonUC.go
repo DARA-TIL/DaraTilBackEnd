@@ -11,10 +11,11 @@ import (
 type FinishLessonUC struct {
 	repo                repo.LessonRepo
 	userActivityService *services.UserActivityService
+	Publisher           services.Publisher
 }
 
-func NewFinishLessonUC(repo repo.LessonRepo, uas *services.UserActivityService) *FinishLessonUC {
-	return &FinishLessonUC{repo: repo, userActivityService: uas}
+func NewFinishLessonUC(repo repo.LessonRepo, uas *services.UserActivityService, pub services.Publisher) *FinishLessonUC {
+	return &FinishLessonUC{repo: repo, userActivityService: uas, Publisher: pub}
 }
 
 func (uc *FinishLessonUC) Execute(ctx context.Context, lesRes models.LessonResult) (*models.LessonResult, services.StreakUpdateResult, error) {
@@ -24,6 +25,10 @@ func (uc *FinishLessonUC) Execute(ctx context.Context, lesRes models.LessonResul
 		return nil, 0, err
 	}
 	if lessonResult.Pass {
+		uc.Publisher.NotifySubscribers(ctx, services.Event{
+			Action: models.Lesson_completed,
+			UserID: lesRes.UserID,
+		})
 		streak, err = uc.userActivityService.LogActivityWithStreak(ctx, models.Lesson_completed, "lesson", lessonResult.UserID, lessonResult.LessonID)
 		if err != nil {
 			utils.ErrLoggerUserActivity(err)

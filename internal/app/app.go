@@ -5,6 +5,7 @@ import (
 	"DaraTilBackendV2/internal/config"
 	"DaraTilBackendV2/internal/infrastructure/logger"
 	"DaraTilBackendV2/internal/presentation/http/middleware"
+	"DaraTilBackendV2/internal/presentation/http/service/achievement"
 	"DaraTilBackendV2/internal/presentation/http/service/folklore"
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
 	"DaraTilBackendV2/internal/presentation/http/service/region"
@@ -80,6 +81,17 @@ func (a *App) setupRoutes() {
 	testRoute := api.Group("/test")
 	testRoute.Use(middleware.AuthMiddleware(a.cfg))
 	test.RegisterProtectedTestRoutes(testRoute, a.container.TestHandler)
+
+	//Achievements
+	achievementRoute := api.Group("/achievement")
+	achievementRoute.Use(middleware.AuthMiddleware(a.cfg))
+	achievement.RegisterAchievementRoutes(achievementRoute, a.container.AchievementHandler)
+
+	//UserAchievements
+	userAchievementRoute := api.Group("/userAchievements")
+	userAchievementRoute.Use(middleware.AuthMiddleware(a.cfg))
+	userAchievementRoute.Use(middleware.RequireRole("admin"))
+	achievement.RegisterUserAchievementRoutes(userAchievementRoute, a.container.UserAchievementHandler)
 
 	//UserActivities
 	activityRoute := api.Group("/activity")
