@@ -133,6 +133,8 @@ func NewContainer(cfg *config.Config) *Container {
 	getAllRegionUC := regionUC.NewGetAllUC(regionRepo)
 	getRegionByIDUC := regionUC.NewGetByIDUC(regionRepo)
 	updateRegionUC := regionUC.NewUpdateUC(regionRepo)
+	createMultiUC := regionUC.NewCreateMultiUC(regionRepo)
+	getByCode := regionUC.NewGetByCodeUC(regionRepo)
 
 	//RegionTranslationsUCs
 	createRegionTranslationUC := regionTranslationsUC.NewCreateUC(regionTranslationRepo)
@@ -238,6 +240,8 @@ func NewContainer(cfg *config.Config) *Container {
 		getAllRegionUC,
 		getRegionByIDUC,
 		updateRegionUC,
+		createMultiUC,
+		getByCode,
 
 		createRegionTranslationUC,
 		deleteRegionTranslationUC,

@@ -10,10 +10,12 @@ type Region struct {
 	gorm.Model
 	RequiredLevel    int
 	Code             string `gorm:"unique"`
+	Kind             string
+	IsActive         bool `gorm:"default:true"`
 	ImageUrl         string
-	Translations     []RegionTranslation
-	RegionSlang      []RegionSlang
-	RegionTraditions []RegionTraditions
+	Translations     []RegionTranslation `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	RegionSlang      []RegionSlang       `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	RegionTraditions []RegionTraditions  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 type RegionTranslation struct {
 	gorm.Model

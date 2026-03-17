@@ -9,10 +9,20 @@ func RegionToGormModel(region models.Region) gormModels.Region {
 	return gormModels.Region{
 		RequiredLevel:    region.RequiredLevel,
 		ImageUrl:         region.ImageUrl,
+		Kind:             region.Kind,
+		Code:             region.Code,
+		IsActive:         region.IsActive,
 		Translations:     RegionTranslationsToGorm(region.Translations),
 		RegionSlang:      RegionSlangsToGorm(region.RegionSlang),
 		RegionTraditions: RegionTraditionsToGorm(region.RegionTraditions),
 	}
+}
+func RegionsToGormModel(region []models.Region) []gormModels.Region {
+	var gormRegions []gormModels.Region
+	for _, r := range region {
+		gormRegions = append(gormRegions, RegionToGormModel(r))
+	}
+	return gormRegions
 }
 
 func RegionTranslationsToGorm(translations []models.RegionTranslation) []gormModels.RegionTranslation {
@@ -119,6 +129,9 @@ func GormRegionToDomain(region gormModels.Region) models.Region {
 		ID:               region.ID,
 		RequiredLevel:    region.RequiredLevel,
 		ImageUrl:         region.ImageUrl,
+		Kind:             region.Kind,
+		IsActive:         region.IsActive,
+		Code:             region.Code,
 		Translations:     GormRegionTranslationsToDomain(region.Translations),
 		RegionSlang:      GormRegionSlangsToDomain(region.RegionSlang),
 		RegionTraditions: GormRegionTraditionsToDomain(region.RegionTraditions),

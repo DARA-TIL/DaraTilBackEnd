@@ -28,7 +28,7 @@ func (r *RegionTraditionRepository) Create(ctx context.Context, tradition models
 
 func (r *RegionTraditionRepository) Update(ctx context.Context, tradition models.RegionTraditions) error {
 	tg := gormMappers.RegionTraditionToGorm(tradition)
-	if err := r.db.WithContext(ctx).Session(&gorm.Session{FullSaveAssociations: true}).Updates(&tg).Error; err != nil {
+	if err := r.db.WithContext(ctx).Session(&gorm.Session{FullSaveAssociations: true}).Where("id = ?", tradition.ID).Updates(&tg).Error; err != nil {
 		return errhandlers.DBErrHandler(err)
 	}
 	return nil

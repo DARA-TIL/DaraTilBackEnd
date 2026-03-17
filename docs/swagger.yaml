@@ -255,6 +255,10 @@ definitions:
         type: integer
       imageUrl:
         type: string
+      isActive:
+        type: boolean
+      kind:
+        type: string
       regionSlang:
         items:
           $ref: '#/definitions/dto.RegionSlang'
@@ -1564,6 +1568,49 @@ paths:
       security:
       - BearerAuth: []
       summary: Get all regions
+      tags:
+      - Region
+  /region/getByCode/{code}:
+    get:
+      description: Returns region by code
+      parameters:
+      - description: Region ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Region
+          schema:
+            items:
+              $ref: '#/definitions/dto.Region'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get region by code
       tags:
       - Region
   /region/getById/{id}:

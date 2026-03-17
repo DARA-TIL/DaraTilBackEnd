@@ -49,7 +49,7 @@ func (r *RegionSlangRepository) GetByID(ctx context.Context, id uint) (*models.R
 
 func (r *RegionSlangRepository) Update(ctx context.Context, s models.RegionSlang) error {
 	sg := gormMappers.RegionSlangToGorm(s)
-	if err := r.db.WithContext(ctx).Session(&gorm.Session{FullSaveAssociations: true}).Updates(&sg).Error; err != nil {
+	if err := r.db.WithContext(ctx).Session(&gorm.Session{FullSaveAssociations: true}).Where("id = ?", s.ID).Updates(&sg).Error; err != nil {
 		return errhandlers.DBErrHandler(err)
 	}
 	return nil

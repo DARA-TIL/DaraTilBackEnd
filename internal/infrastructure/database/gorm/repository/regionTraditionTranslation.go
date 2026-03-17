@@ -29,7 +29,7 @@ func (r *RegionTraditionTranslationRepository) Create(ctx context.Context, t mod
 func (r *RegionTraditionTranslationRepository) Update(ctx context.Context, t models.RegionTraditionsTranslation) error {
 	tg := gormMappers.RegionTraditionTranslationToGorm(t)
 
-	if err := r.db.WithContext(ctx).Updates(&tg).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("id = ?", t.ID).Updates(&tg).Error; err != nil {
 		return errhandlers.DBErrHandler(err)
 	}
 	return nil

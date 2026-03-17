@@ -8,8 +8,10 @@ import (
 
 func RegisterRoutes(r *gin.RouterGroup, h *RegionHandler) {
 	r.POST("/create", middleware.RequireRole("admin"), h.CreateRegion)
+	r.POST("/createAll", middleware.RequireRole("admin"), h.CreateAllRegions)
 	r.GET("/getAll", h.GetAllRegion)
 	r.GET("/getById/:id", h.GetRegionByID)
+	r.GET("/getByCode/:code", h.GetByCode)
 	r.PATCH("/update", middleware.RequireRole("admin"), h.UpdateRegion)
 	r.DELETE("/delete/:id", middleware.RequireRole("admin"), h.DeleteRegion)
 

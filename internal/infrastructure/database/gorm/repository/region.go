@@ -6,6 +6,7 @@ import (
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/gormModels"
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/gormModels/gormMappers"
 	"context"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -30,7 +31,7 @@ func (r *RegionRepository) Update(ctx context.Context, region models.Region) err
 	gormRegion := gormMappers.RegionToGormModel(region)
 
 	if err := r.db.WithContext(ctx).
-		Session(&gorm.Session{FullSaveAssociations: true}).
+		Session(&gorm.Session{FullSaveAssociations: true}).Where("id = ?", region.ID).
 		Updates(&gormRegion).Error; err != nil {
 		return errhandlers.DBErrHandler(err)
 	}
@@ -69,4 +70,46 @@ func (r *RegionRepository) Delete(ctx context.Context, id uint) error {
 		return errhandlers.DBErrHandler(err)
 	}
 	return nil
+}
+
+func (r *RegionRepository) CreateMulti(ctx context.Context, regions []models.Region) error {
+	gormRegions := gormMappers.RegionsToGormModel(regions)
+	regions, err := r.GetAll(ctx)
+	if err != nil {
+		return err
+	}
+	regMaps := make(map[string]models.Region)
+	for _, r := range regions {
+		regMaps[r.Code] = r
+	}
+	fmt.Println(regMaps)
+	fmt.Println(gormRegions)
+	var filteredRegions []gormModels.Region
+	for _, r := range gormRegions {
+		if _, ok := regMaps[r.Code]; ok {
+			continue
+		}
+		filteredRegions = append(filteredRegions, r)
+	}
+	fmt.Println(filteredRegions)
+
+	if len(filteredRegions) == 0 {
+		return nil
+	}
+	if err := r.db.WithContext(ctx).Create(&filteredRegions).Error; err != nil {
+		return errhandlers.DBErrHandler(err)
+	}
+	return nil
+}
+
+func (r *RegionRepository) GetByCode(ctx context.Context, code string) (*models.Region, error) {
+	var gormRegion gormModels.Region
+	err := r.db.WithContext(ctx).Preload("Translations").
+		Preload("RegionSlang.Translations").
+		Preload("RegionTraditions.Translations").Where("code = ?", code).First(&gormRegion).Error
+	if err != nil {
+		return nil, errhandlers.DBErrHandler(err)
+	}
+	region := gormMappers.GormRegionToDomain(gormRegion)
+	return &region, nil
 }

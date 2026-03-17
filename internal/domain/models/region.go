@@ -3,12 +3,15 @@ package models
 type Region struct {
 	ID               uint
 	Code             string
+	Kind             string
+	IsActive         bool
 	RequiredLevel    int
 	ImageUrl         string
 	Translations     []RegionTranslation
 	RegionSlang      []RegionSlang
 	RegionTraditions []RegionTraditions
 }
+
 type RegionTranslation struct {
 	ID          uint
 	RegionID    uint

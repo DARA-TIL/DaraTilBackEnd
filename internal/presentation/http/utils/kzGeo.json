@@ -1,0 +1,122 @@
+[
+  {
+    "requiredLevel": 1,
+    "code": "abai",
+    "kind": "region",
+    "imageUrl": ""
+  },
+  {
+    "requiredLevel": 1,
+    "code": "akmola",
+    "kind": "region",
+    "imageUrl": ""
+  },
+  {
+    "requiredLevel": 1,
+    "code": "aktobe",
+    "kind": "region",
+    "imageUrl": ""
+  },
+  {
+    "requiredLevel": 1,
+    "code": "almaty-region",
+    "kind": "region",
+    "imageUrl": ""
+  },
+  {
+    "requiredLevel": 1,
+    "code": "atyrau",
+    "kind": "region",
+    "imageUrl": ""
+  },
+  {
+    "requiredLevel": 1,
+    "code": "east-kazakhstan",
+    "kind": "region",
+    "imageUrl": ""
+  },
+  {
+    "requiredLevel": 1,
+    "code": "zhambyl",
+    "kind": "region",
+    "imageUrl": ""
+  },
+  {
+    "requiredLevel": 1,
+    "code": "zhetisu",
+    "kind": "region",
+    "imageUrl": ""
+  },
+  {
+    "requiredLevel": 1,
+    "code": "west-kazakhstan",
+    "kind": "region",
+    "imageUrl": ""
+  },
+  {
+    "requiredLevel": 1,
+    "code": "karaganda",
+    "kind": "region",
+    "imageUrl": ""
+  },
+  {
+    "requiredLevel": 1,
+    "code": "kostanay",
+    "kind": "region",
+    "imageUrl": ""
+  },
+  {
+    "requiredLevel": 1,
+    "code": "kyzylorda",
+    "kind": "region",
+    "imageUrl": ""
+  },
+  {
+    "requiredLevel": 1,
+    "code": "mangystau",
+    "kind": "region",
+    "imageUrl": ""
+  },
+  {
+    "requiredLevel": 1,
+    "code": "pavlodar",
+    "kind": "region",
+    "imageUrl": ""
+  },
+  {
+    "requiredLevel": 1,
+    "code": "north-kazakhstan",
+    "kind": "region",
+    "imageUrl": ""
+  },
+  {
+    "requiredLevel": 1,
+    "code": "turkistan",
+    "kind": "region",
+    "imageUrl": ""
+  },
+  {
+    "requiredLevel": 1,
+    "code": "ulytau",
+    "kind": "region",
+    "imageUrl": ""
+  },
+  {
+    "requiredLevel": 1,
+    "code": "astana",
+    "kind": "city",
+    "imageUrl": ""
+  },
+  {
+    "requiredLevel": 1,
+    "code": "almaty-city",
+    "kind": "city",
+    "imageUrl": ""
+  },
+  {
+    "requiredLevel": 1,
+    "code": "shymkent",
+    "kind": "city",
+    "imageUrl": ""
+  }
+]

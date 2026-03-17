@@ -7,6 +7,8 @@ type Region struct {
 	RequiredLevel    int                 `json:"requiredLevel"`
 	RegionStatus     string              `json:"regionStatus"`
 	Code             string              `json:"code"`
+	Kind             string              `json:"kind"`
+	IsActive         bool                `json:"isActive"`
 	ImageUrl         string              `json:"imageUrl"`
 	Translations     []RegionTranslation `json:"translations"`
 	RegionSlang      []RegionSlang       `json:"regionSlang"`

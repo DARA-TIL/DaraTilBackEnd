@@ -11,6 +11,8 @@ type RegionRepo interface {
 	GetAll(ctx context.Context) ([]models.Region, error)
 	GetByID(ctx context.Context, id uint) (*models.Region, error)
 	Delete(ctx context.Context, id uint) error
+	CreateMulti(ctx context.Context, regions []models.Region) error
+	GetByCode(ctx context.Context, code string) (*models.Region, error)
 }
 
 type RegionTranslationRepo interface {

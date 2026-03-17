@@ -24,6 +24,8 @@ type RegionHandler struct {
 	GetAllRegionUC  *regionUC.GetAllUC
 	GetRegionByIDUC *regionUC.GetByIDUC
 	UpdateRegionUC  *regionUC.UpdateUC
+	CreateMultiUC   *regionUC.CreateMultiUC
+	GetByCodeUC     *regionUC.GetByCodeUC
 
 	// region translations
 	CreateRegionTranslationUC   *regionTranslationsUC.CreateUC
@@ -42,6 +44,8 @@ func NewRegionHandler(
 	getAllRegionUC *regionUC.GetAllUC,
 	getRegionByIDUC *regionUC.GetByIDUC,
 	updateRegionUC *regionUC.UpdateUC,
+	createMultiUC *regionUC.CreateMultiUC,
+	getByCodeUC *regionUC.GetByCodeUC,
 
 	createRegionTranslationUC *regionTranslationsUC.CreateUC,
 	deleteRegionTranslationUC *regionTranslationsUC.DeleteUC,
@@ -57,6 +61,8 @@ func NewRegionHandler(
 		GetAllRegionUC:              getAllRegionUC,
 		GetRegionByIDUC:             getRegionByIDUC,
 		UpdateRegionUC:              updateRegionUC,
+		CreateMultiUC:               createMultiUC,
+		GetByCodeUC:                 getByCodeUC,
 		CreateRegionTranslationUC:   createRegionTranslationUC,
 		DeleteRegionTranslationUC:   deleteRegionTranslationUC,
 		GetRegionTranslationByIDUC:  getRegionTranslationByIDUC,
@@ -64,6 +70,30 @@ func NewRegionHandler(
 		GetTranslationsByRegionIDUC: getTranslationsByRegionIDUC,
 		GetUserByIDUC:               getUserByIDUC,
 	}
+}
+
+// CreateAllRegions godoc
+// @Summary Create All pre-imported regions
+// @Description Creates all regions.
+// @Tags Region
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 201 {object} map[string]interface{} "Region created"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /region/create [post]
+func (h *RegionHandler) CreateAllRegions(c *gin.Context) {
+	regions := utils.ReadKzGeoJson()
+	regionsDom := dtoMappers.RegionsToDomain(regions)
+	err := h.CreateMultiUC.Execute(c.Request.Context(), regionsDom)
+	if err != nil {
+		logger.Error("CreateAllRegions error", zap.Error(err))
+		response.HandleDomainError(c, err)
+		return
+	}
+	response.Success(c, 201, "success")
 }
 
 // CreateRegion godoc
@@ -423,4 +453,35 @@ func (h *RegionHandler) GetTranslationsByRegionID(c *gin.Context) {
 
 	logger.Info("[REGION TRANSLATIONS GET] success")
 	response.Success(c, http.StatusOK, translationsDTO)
+}
+
+// GetByCode godoc
+// @Summary Get region by code
+// @Description Returns region by code
+// @Tags Region
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Region ID"
+// @Success 200 {array} dto.Region "Region"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /region/getByCode/{code} [get]
+func (h *RegionHandler) GetByCode(c *gin.Context) {
+	code := c.Param("code")
+	if code == "" {
+		logger.Error("Invalid request parameter")
+		response.HandleDomainError(c, errs.ErrBadRequest)
+		return
+	}
+	region, err := h.GetByCodeUC.Execute(c.Request.Context(), code)
+	if err != nil {
+		logger.Error("error occured while getting region: " + err.Error())
+		response.HandleDomainError(c, err)
+		return
+	}
+	regionDTO := dtoMappers.RegionToDTO(*region)
+	response.Success(c, http.StatusOK, regionDTO)
+
 }

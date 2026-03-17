@@ -28,7 +28,7 @@ func (r *RegionSlangTranslationRepository) Create(ctx context.Context, t models.
 
 func (r *RegionSlangTranslationRepository) Update(ctx context.Context, t models.RegionSlangTranslation) error {
 	tg := gormMappers.RegionSlangTranslationToGorm(t)
-	if err := r.db.WithContext(ctx).Updates(&tg).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("id = ?", t.ID).Updates(&tg).Error; err != nil {
 		return errhandlers.DBErrHandler(err)
 	}
 	return nil

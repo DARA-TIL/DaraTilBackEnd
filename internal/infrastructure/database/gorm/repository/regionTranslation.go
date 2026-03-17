@@ -31,7 +31,7 @@ func (r *RegionTranslationRepository) Create(ctx context.Context, t models.Regio
 func (r *RegionTranslationRepository) Update(ctx context.Context, t models.RegionTranslation) error {
 	tg := gormMappers.RegionTranslationToGorm(t)
 
-	if err := r.db.WithContext(ctx).Updates(&tg).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("id = ?", t.ID).Updates(&tg).Error; err != nil {
 		return errhandlers.DBErrHandler(err)
 	}
 
