@@ -6,6 +6,14 @@ import (
 )
 
 func AchievementToDTO(achievement models.Achievement) dto.Achievement {
+	if achievement.UserAchievements == nil {
+		achievement.UserAchievements = append(achievement.UserAchievements, models.UserAchievement{
+			UserID:        0,
+			AchievementID: achievement.ID,
+			Quantity:      0,
+			Achieved:      false,
+		})
+	}
 	return dto.Achievement{
 		ID:               achievement.ID,
 		Name:             achievement.Name,
