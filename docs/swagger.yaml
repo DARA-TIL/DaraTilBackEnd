@@ -1500,6 +1500,39 @@ paths:
       summary: Create region
       tags:
       - Region
+  /region/createAll:
+    post:
+      consumes:
+      - application/json
+      description: Creates all regions.
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Region created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create All pre-imported regions
+      tags:
+      - Region
   /region/delete/{id}:
     delete:
       description: Deletes region by ID.

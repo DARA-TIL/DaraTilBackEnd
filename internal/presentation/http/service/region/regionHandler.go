@@ -83,7 +83,7 @@ func NewRegionHandler(
 // @Failure 400 {object} map[string]interface{} "Bad request"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
-// @Router /region/create [post]
+// @Router /region/createAll [post]
 func (h *RegionHandler) CreateAllRegions(c *gin.Context) {
 	regions := utils.ReadKzGeoJson()
 	regionsDom := dtoMappers.RegionsToDomain(regions)
