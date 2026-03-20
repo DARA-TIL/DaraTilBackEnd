@@ -45,14 +45,19 @@ type StreakService struct {
 func NewStreakService(repo repo.StreakRepo) *StreakService {
 	return &StreakService{repo: repo}
 }
-func (s *StreakService) UpdateOnActivity(ctx context.Context, userID uint) (StreakUpdateResult, error) {
-	logger.Info("Checking User Streak", zap.Uint("user_id", userID))
+
+func (s *StreakService) Category() models.ActionTrigger {
+	return models.EventStreak
+}
+
+func (s *StreakService) Handle(ctx context.Context, e Event) error {
+	logger.Info("Checking User Streak", zap.Uint("user_id", e.UserID))
 	today := utils.TodayUTC()
-	streak, err := s.repo.GetByUserID(ctx, userID)
+	streak, err := s.repo.GetByUserID(ctx, e.UserID)
 	if errors.Is(err, errs.ErrNotFound) {
-		logger.Info("User Streak not found, creating new one", zap.Uint("user_id", userID))
+		logger.Info("User Streak not found, creating new one", zap.Uint("user_id", e.UserID))
 		newStreak := models.Streak{
-			UserID:        userID,
+			UserID:        e.UserID,
 			CurrentStreak: 1,
 			LongestStreak: 1,
 			LastActivity:  today,
@@ -60,33 +65,34 @@ func (s *StreakService) UpdateOnActivity(ctx context.Context, userID uint) (Stre
 		err = s.repo.Create(ctx, newStreak)
 		if err != nil {
 			logger.Error("Failed to create new Streak", zap.Error(err))
-			return NoChange, err
+			return err
 		}
-		return Created, nil
+		return nil
 	}
 	if err != nil {
 		logger.Error("Failed to get Streak", zap.Error(err))
-		return NoChange, err
+		return err
 	}
 	if streak.LastActivity.Equal(today) {
-		return NoChange, nil
+		return nil
 	} else if today.Equal(streak.LastActivity.AddDate(0, 0, 1)) {
-		logger.Info("Incrementing user streak", zap.Uint("user_id", userID))
-		err = s.repo.Increment(ctx, userID)
+		logger.Info("Incrementing user streak", zap.Uint("user_id", e.UserID))
+		err = s.repo.Increment(ctx, e.UserID)
 		if err != nil {
 			logger.Error("Failed to increment user streak", zap.Error(err))
-			return NoChange, err
+			return err
 		}
-		return Incremented, nil
+		return nil
 	}
-	logger.Info("Staring new user streak", zap.Uint("user_id", userID))
-	err = s.repo.Start(ctx, userID)
+	logger.Info("Staring new user streak", zap.Uint("user_id", e.UserID))
+	err = s.repo.Start(ctx, e.UserID)
 	if err != nil {
 		logger.Error("Failed to start user streak", zap.Error(err))
-		return NoChange, err
+		return err
 	}
-	return NewStart, nil
+	return nil
 }
+
 func (s *StreakService) CheckStreak(ctx context.Context, userID uint) (StreakUpdateResult, error) {
 	streak, err := s.repo.GetByUserID(ctx, userID)
 	if errors.Is(err, errs.ErrNotFound) {

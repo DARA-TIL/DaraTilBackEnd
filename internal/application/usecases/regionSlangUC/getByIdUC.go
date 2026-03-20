@@ -36,13 +36,10 @@ func (uc *GetByIDUC) Execute(ctx context.Context, id uint) (GetSlangResult, erro
 		return ret, nil
 	}
 	uc.publisher.NotifySubscribers(ctx, services.Event{
-		Action: models.Region_slang_readed,
-		UserID: userID,
+		Action:     models.Region_slang_readed,
+		UserID:     userID,
+		EntityID:   id,
+		EntityType: models.SlangEntityType,
 	})
-	str, err2 := uc.activityService.LogActivityWithStreak(ctx, models.Region_slang_readed, "region_slang", userID, id)
-	if err2 != nil {
-		utils.ErrLoggerUserActivity(err2)
-	}
-	ret.Streak = str
 	return ret, err
 }

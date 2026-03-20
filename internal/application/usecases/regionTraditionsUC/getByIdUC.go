@@ -34,10 +34,10 @@ func (uc *GetByIDUC) Execute(ctx context.Context, id uint) (GetTraditionResult, 
 		return resp, nil
 	}
 	uc.publisher.NotifySubscribers(ctx, services.Event{
-		Action: models.Region_slang_readed,
-		UserID: userID,
+		Action:     models.Region_slang_readed,
+		UserID:     userID,
+		EntityID:   id,
+		EntityType: models.TraditionEntityType,
 	})
-	str, err := uc.activityService.LogActivityWithStreak(ctx, models.Region_tradition_readed, "region_tradition", userID, id)
-	resp.Streak = str
 	return resp, err
 }

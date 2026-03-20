@@ -19,6 +19,18 @@ definitions:
           $ref: '#/definitions/dto.UserAchievement'
         type: array
     type: object
+  dto.ActionRuleDTO:
+    properties:
+      action:
+        type: string
+      rules:
+        additionalProperties:
+          type: boolean
+        type: object
+    required:
+    - action
+    - rules
+    type: object
   dto.FinishLessonResponse:
     properties:
       lessonResult:
@@ -500,7 +512,7 @@ definitions:
       entityID:
         type: integer
       entityType:
-        type: string
+        $ref: '#/definitions/models.EventEntityType'
       id:
         type: integer
       time:
@@ -579,6 +591,20 @@ definitions:
     - Level_upgraded
     - Region_slang_readed
     - Region_tradition_readed
+  models.EventEntityType:
+    enum:
+    - folklore
+    - lesson
+    - user
+    - slang
+    - tradition
+    type: string
+    x-enum-varnames:
+    - FolkloreEntityType
+    - LessonEntityType
+    - UserEntityType
+    - SlangEntityType
+    - TraditionEntityType
   models.Language:
     enum:
     - KZ
@@ -795,6 +821,234 @@ paths:
       summary: Update achievement
       tags:
       - Achievement
+  /actionRules/create:
+    post:
+      consumes:
+      - application/json
+      description: Create new action rule (admin only)
+      parameters:
+      - description: ActionRule payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ActionRuleDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create action rule
+      tags:
+      - ActionRule
+  /actionRules/createMulti:
+    post:
+      consumes:
+      - application/json
+      description: Create multiple action rules (admin only)
+      parameters:
+      - description: ActionRules payload
+        in: body
+        name: request
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/dto.ActionRuleDTO'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create multiple action rules
+      tags:
+      - ActionRule
+  /actionRules/delete/{action}:
+    delete:
+      description: Delete action rule by action (admin only)
+      parameters:
+      - description: Action
+        in: path
+        name: action
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete action rule
+      tags:
+      - ActionRule
+  /actionRules/get/{action}:
+    get:
+      description: Get action rule by action (admin only)
+      parameters:
+      - description: Action
+        in: path
+        name: action
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ActionRuleDTO'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get action rule by action
+      tags:
+      - ActionRule
+  /actionRules/getAll:
+    get:
+      description: Get all action rules (admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.ActionRuleDTO'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all action rules
+      tags:
+      - ActionRule
+  /actionRules/update:
+    patch:
+      consumes:
+      - application/json
+      description: Update action rule (admin only)
+      parameters:
+      - description: ActionRule payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ActionRuleDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update action rule
+      tags:
+      - ActionRule
   /activity:
     get:
       description: 'Retries recent user activities: Lesson Finish, Folklore like etc.

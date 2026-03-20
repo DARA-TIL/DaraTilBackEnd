@@ -8,40 +8,28 @@ import (
 )
 
 type UserActivityService struct {
-	repo          repo.UserActivityRepo
-	streakService *StreakService
+	repo repo.UserActivityRepo
 }
 
-func NewUserActivityService(repo repo.UserActivityRepo, streakService *StreakService) *UserActivityService {
-	return &UserActivityService{repo: repo, streakService: streakService}
+func NewUserActivityService(repo repo.UserActivityRepo) *UserActivityService {
+	return &UserActivityService{repo: repo}
 }
 
-func (s *UserActivityService) LogActivityWithoutStreak(ctx context.Context, action models.Actions, entityType string, userID, entityID uint) error {
-	utils.LoggerUserActivity(userID, entityID, entityType, string(action))
+func (s *UserActivityService) Category() models.ActionTrigger {
+	return models.EventActivity
+}
+
+func (s *UserActivityService) Handle(ctx context.Context, e Event) error {
+	utils.LoggerUserActivity(e.UserID, e.EntityID, e.EntityType, string(e.Action))
 	activity := models.UserActivity{
-		UserID:     userID,
-		Action:     string(action),
-		EntityID:   entityID,
-		EntityType: entityType,
+		UserID:     e.UserID,
+		Action:     string(e.Action),
+		EntityID:   e.EntityID,
+		EntityType: e.EntityType,
 	}
 	return s.repo.Log(ctx, activity)
 }
 
-func (s *UserActivityService) LogActivityWithStreak(ctx context.Context, action models.Actions, entityType string, userID, entityID uint) (StreakUpdateResult, error) {
-	res, err := s.streakService.UpdateOnActivity(ctx, userID)
-	if err != nil {
-		return res, err
-	}
-	utils.LoggerUserActivity(userID, entityID, entityType, string(action))
-
-	activity := models.UserActivity{
-		UserID:     userID,
-		Action:     string(action),
-		EntityID:   entityID,
-		EntityType: entityType,
-	}
-	return res, s.repo.Log(ctx, activity)
-}
 func (s *UserActivityService) GetUserActivities(ctx context.Context, id uint) ([]models.UserActivity, error) {
 	return s.repo.Get(ctx, id)
 }

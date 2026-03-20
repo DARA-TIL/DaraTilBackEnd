@@ -56,6 +56,7 @@ func AutoMigration(db *gorm.DB) error {
 		&gormModels.Region{},
 		&gormModels.Achievement{},
 		&gormModels.UserAchievement{},
+		&gormModels.ActionRule{},
 	)
 	return err
 }

@@ -15,16 +15,14 @@ type GetFolkloreResult struct {
 }
 
 type GetByIDUC struct {
-	repo                repo.FolkloreRepo
-	userActivityService *services.UserActivityService
-	Publisher           services.Publisher
+	repo      repo.FolkloreRepo
+	Publisher services.Publisher
 }
 
-func NewGetByFolkloreIDUC(repo repo.FolkloreRepo, uaService *services.UserActivityService, publisher services.Publisher) *GetByIDUC {
+func NewGetByFolkloreIDUC(repo repo.FolkloreRepo, publisher services.Publisher) *GetByIDUC {
 	return &GetByIDUC{
-		repo:                repo,
-		userActivityService: uaService,
-		Publisher:           publisher,
+		repo:      repo,
+		Publisher: publisher,
 	}
 }
 func (uc *GetByIDUC) Execute(ctx context.Context, folkloreID uint) (*GetFolkloreResult, error) {
@@ -39,15 +37,11 @@ func (uc *GetByIDUC) Execute(ctx context.Context, folkloreID uint) (*GetFolklore
 		return res, nil
 	}
 	event := services.Event{
-		Action: models.Folklore_readed,
-		UserID: userID,
+		Action:     models.Folklore_readed,
+		UserID:     userID,
+		EntityID:   folkloreID,
+		EntityType: models.FolkloreEntityType,
 	}
 	uc.Publisher.NotifySubscribers(ctx, event)
-	streak, err := uc.userActivityService.LogActivityWithStreak(ctx, models.Folklore_readed, "folklore", userID, folkloreID)
-	if err != nil {
-		utils.ErrLoggerUserActivity(err)
-		return nil, err
-	}
-	res.Streak = streak
 	return res, nil
 }

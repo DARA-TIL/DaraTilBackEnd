@@ -6,6 +6,7 @@ import (
 	"DaraTilBackendV2/internal/infrastructure/logger"
 	"DaraTilBackendV2/internal/presentation/http/middleware"
 	"DaraTilBackendV2/internal/presentation/http/service/achievement"
+	"DaraTilBackendV2/internal/presentation/http/service/actionRule"
 	"DaraTilBackendV2/internal/presentation/http/service/folklore"
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
 	"DaraTilBackendV2/internal/presentation/http/service/region"
@@ -103,6 +104,12 @@ func (a *App) setupRoutes() {
 	region.RegisterRoutes(regionRoute, a.container.RegionHandler)
 	region.RegisterSlangRoutes(regionRoute, a.container.RegionSlangHandler)
 	region.RegisterTraditionRoutes(regionRoute, a.container.RegionTraditionHandler)
+
+	//actionRules
+	actionRulesRoute := api.Group("/actionRules")
+	actionRulesRoute.Use(middleware.AuthMiddleware(a.cfg))
+	actionRulesRoute.Use(middleware.RequireRole("admin"))
+	actionRule.RegisterRoutes(actionRulesRoute, a.container.ActionRuleHandler)
 	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 }

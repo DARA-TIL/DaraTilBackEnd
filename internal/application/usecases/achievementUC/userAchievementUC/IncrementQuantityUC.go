@@ -3,6 +3,7 @@ package userAchievementUC
 import (
 	"DaraTilBackendV2/internal/application/services"
 	errs "DaraTilBackendV2/internal/domain/domErr"
+	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/domain/repo"
 	"context"
 	"errors"
@@ -18,6 +19,10 @@ func NewIncrementQuantityUC(repo repo.UserAchievementRepo, achRepo repo.Achievem
 		repo:    repo,
 		achRepo: achRepo,
 	}
+}
+
+func (uc *IncrementQuantityUC) Category() models.ActionTrigger {
+	return models.EventAchievement
 }
 
 func (uc *IncrementQuantityUC) Handle(ctx context.Context, e services.Event) error {

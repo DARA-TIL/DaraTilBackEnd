@@ -11,7 +11,7 @@ func GormUserActivityToDomain(activity gormModels.UserActivity) models.UserActiv
 		Time:       activity.CreatedAt,
 		UserID:     activity.UserID,
 		Action:     activity.Action,
-		EntityType: activity.EntityType,
+		EntityType: models.EventEntityType(activity.EntityType),
 		EntityID:   activity.EntityID,
 	}
 }
@@ -19,7 +19,7 @@ func UserActivityToGorm(activity models.UserActivity) gormModels.UserActivity {
 	return gormModels.UserActivity{
 		UserID:     activity.UserID,
 		Action:     activity.Action,
-		EntityType: activity.EntityType,
+		EntityType: string(activity.EntityType),
 		EntityID:   activity.EntityID,
 	}
 }

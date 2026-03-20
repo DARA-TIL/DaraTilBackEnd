@@ -2,7 +2,6 @@ package folkloreUC
 
 import (
 	"DaraTilBackendV2/internal/application/services"
-	"DaraTilBackendV2/internal/application/utils"
 	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/domain/repo"
 	"context"
@@ -15,13 +14,12 @@ type ToggleLikeResult struct {
 }
 
 type ToggleLikeUC struct {
-	repo                repo.FolkloreRepo
-	userActivityService *services.UserActivityService
-	publisher           services.Publisher
+	repo      repo.FolkloreRepo
+	publisher services.Publisher
 }
 
-func NewToggleLikeUC(repo repo.FolkloreRepo, uas *services.UserActivityService, pub services.Publisher) *ToggleLikeUC {
-	return &ToggleLikeUC{repo: repo, userActivityService: uas, publisher: pub}
+func NewToggleLikeUC(repo repo.FolkloreRepo, pub services.Publisher) *ToggleLikeUC {
+	return &ToggleLikeUC{repo: repo, publisher: pub}
 }
 
 func (uc *ToggleLikeUC) Execute(ctx context.Context, folkloreID, userID uint) (*ToggleLikeResult, error) {
@@ -38,14 +36,11 @@ func (uc *ToggleLikeUC) Execute(ctx context.Context, folkloreID, userID uint) (*
 			act = models.Folklore_disliked
 		}
 		uc.publisher.NotifySubscribers(ctx, services.Event{
-			Action: act,
-			UserID: userID,
+			Action:     act,
+			UserID:     userID,
+			EntityID:   folkloreID,
+			EntityType: models.FolkloreEntityType,
 		})
-		streak, err := uc.userActivityService.LogActivityWithStreak(ctx, act, "folklore", userID, folkloreID)
-		if err != nil {
-			utils.ErrLoggerUserActivity(err)
-		}
-		res.Streak = streak
 	}
 	if err != nil {
 		return nil, err
