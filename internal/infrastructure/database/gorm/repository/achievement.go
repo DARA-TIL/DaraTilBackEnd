@@ -57,7 +57,7 @@ func (a AchievementRepository) GetByID(ctx context.Context, userID, id uint) (*m
 
 func (a AchievementRepository) GetAll(ctx context.Context, userID uint) ([]models.Achievement, error) {
 	var gormAchievements []gormModels.Achievement
-	err := a.db.WithContext(ctx).Preload("UserAchievements", "user_id = ?", userID).Find(&gormAchievements).Error
+	err := a.db.WithContext(ctx).Order("action ASC, quantity ASC").Preload("UserAchievements", "user_id = ?", userID).Find(&gormAchievements).Error
 	if err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
