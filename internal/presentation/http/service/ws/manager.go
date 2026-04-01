@@ -1,0 +1,131 @@
+package ws
+
+import (
+	"DaraTilBackendV2/internal/application/services"
+	"DaraTilBackendV2/internal/domain/domErr"
+	"DaraTilBackendV2/internal/domain/models"
+	"DaraTilBackendV2/internal/infrastructure/logger"
+	"DaraTilBackendV2/internal/presentation/http/middleware"
+	"DaraTilBackendV2/internal/presentation/http/response"
+	"context"
+	"net/http"
+	"sync"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
+	"go.uber.org/zap"
+)
+
+var (
+	webSocketUpgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
+)
+
+type WebSocketManager struct {
+	ClientList     map[uint]map[string]*Client //uint: userID; string: connID;
+	MaxConnections uint
+	sync.RWMutex
+}
+
+func NewWebSocketManager() *WebSocketManager {
+	return &WebSocketManager{
+		ClientList:     make(map[uint]map[string]*Client),
+		MaxConnections: 5,
+	}
+}
+
+func (h *WebSocketManager) ServeWS(c *gin.Context) {
+	logger.Info("New WS Connection")
+	userID, err := middleware.GetCurrentUserID(c)
+	if err != nil {
+		logger.Error("Get current user id failed", zap.Error(err))
+		response.HandleDomainError(c, domErr.ErrUnauthorized)
+		return
+	}
+	h.RLock()
+	clientsNum := len(h.ClientList[*userID])
+	h.RUnlock()
+	if clientsNum >= int(h.MaxConnections) {
+		response.Fail(c, http.StatusLocked, "max connections reached")
+		logger.Warn("Max connections reached")
+		return
+	}
+	con, err := webSocketUpgrader.Upgrade(c.Writer, c.Request, nil)
+
+	if err != nil {
+		logger.Error("Error upgrading to websocket connection", zap.Error(err))
+		return
+	}
+	client := NewClient(con, h, *userID)
+	h.AddClient(client)
+
+	go client.WriteMessages()
+	go client.ReadMessages()
+}
+
+func (h *WebSocketManager) AddClient(client *Client) {
+	h.Lock()
+	defer h.Unlock()
+	if _, ok := h.ClientList[client.userID]; !ok {
+		h.ClientList[client.userID] = make(map[string]*Client)
+	}
+
+	h.ClientList[client.userID][client.connID] = client
+}
+func (h *WebSocketManager) RemoveClient(client *Client) {
+	h.Lock()
+	defer h.Unlock()
+	if _, ok := h.ClientList[client.userID]; ok {
+		delete(h.ClientList[client.userID], client.connID)
+		if len(h.ClientList[client.userID]) == 0 {
+			delete(h.ClientList, client.userID)
+		}
+	}
+}
+
+func (h *WebSocketManager) Handle(ctx context.Context, notif services.NotificationPayload) {
+	not := notif.GetNotification()
+	h.RLock()
+	clientCons, ok := h.ClientList[not.UserID] //ClientConnections
+	if !ok {
+		h.RUnlock()
+		logger.Error("user is not connected", zap.Uint("user_id", not.UserID))
+		return
+	}
+	clients := make([]*Client, 0, len(clientCons))
+	for _, c := range clientCons {
+		clients = append(clients, c)
+	}
+	h.RUnlock()
+	if not.Type == models.UserLogOut {
+		h.DisconnectClients(clients)
+		return
+	}
+
+	h.SendToClients(clients, notif)
+
+}
+
+func (h *WebSocketManager) SendToClients(clients []*Client, notif services.NotificationPayload) {
+	not := notif.GetNotification()
+	for _, c := range clients {
+		select {
+		case c.egress <- notif:
+		default:
+			logger.Warn("client egress is full",
+				zap.Uint("user_id", not.UserID),
+				zap.String("conn_id", c.connID),
+			)
+		}
+	}
+}
+func (h *WebSocketManager) DisconnectClients(clients []*Client) {
+	for _, client := range clients {
+		client.Close()
+	}
+}

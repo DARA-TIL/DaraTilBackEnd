@@ -42,6 +42,6 @@ func (uc *GetByIDUC) Execute(ctx context.Context, folkloreID uint) (*GetFolklore
 		EntityID:   folkloreID,
 		EntityType: models.FolkloreEntityType,
 	}
-	uc.Publisher.NotifySubscribers(ctx, event)
+	uc.Publisher.Publish(ctx, event)
 	return res, nil
 }

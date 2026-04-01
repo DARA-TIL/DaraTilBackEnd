@@ -29,7 +29,6 @@ func (uc *IssueTokenUC) Execute(ctx context.Context, meta models.TokenMeta, user
 	}
 	now := time.Now()
 	refreshExp := now.Add(time.Hour * time.Duration(uc.cfg.Jwt.JwtRefreshExpiresHours))
-
 	token := models2.Token{
 		UserID:           userClaims.UserID,
 		RefreshTokenHash: utils.HashToken(tokens.RefreshToken),

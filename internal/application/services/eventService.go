@@ -11,7 +11,7 @@ type Subscriber interface {
 }
 
 type Publisher interface {
-	NotifySubscribers(ctx context.Context, e Event)
+	Publish(ctx context.Context, e Event)
 	AddSubscriber(s Subscriber)
 }
 

@@ -8,6 +8,15 @@ const (
 	RU Language = "RU"
 )
 
+type NotificationTrigger string
+
+const (
+	StreakIncrease NotificationTrigger = "streakIncrease"
+	StreakReset    NotificationTrigger = "streakReset"
+	Achieved       NotificationTrigger = "achieved"
+	UserLogOut     NotificationTrigger = "userLogOut"
+)
+
 type ActionTrigger string
 
 const (

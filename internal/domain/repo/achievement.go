@@ -16,7 +16,7 @@ type AchievementRepo interface {
 type UserAchievementRepo interface {
 	Create(ctx context.Context, ua models.UserAchievement) error
 	Update(ctx context.Context, ua models.UserAchievement) error
-	IncrementQuantity(ctx context.Context, userID uint, action models.Actions) error
+	IncrementQuantity(ctx context.Context, userID uint, action models.Actions) ([]models.UserAchievement, error)
 	CreateMissingUserAchievements(ctx context.Context, userID uint, action models.Actions) error
 	Delete(ctx context.Context, id uint) error
 	GetByUserID(ctx context.Context, userID uint) ([]models.UserAchievement, error)

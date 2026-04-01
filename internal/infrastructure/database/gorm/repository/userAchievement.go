@@ -5,9 +5,11 @@ import (
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/errhandlers"
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/gormModels"
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/gormModels/gormMappers"
+	"DaraTilBackendV2/internal/infrastructure/logger"
 	"context"
 	"errors"
 
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -35,7 +37,8 @@ func (u UserAchievementRepository) Update(ctx context.Context, ua models.UserAch
 	return nil
 }
 
-func (u UserAchievementRepository) IncrementQuantity(ctx context.Context, userID uint, action models.Actions) error {
+func (u UserAchievementRepository) IncrementQuantity(ctx context.Context, userID uint, action models.Actions) ([]models.UserAchievement, error) {
+	var updated []gormModels.UserAchievement
 	err := u.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		err := tx.Exec(
 			`UPDATE user_achievements ua
@@ -48,7 +51,7 @@ func (u UserAchievementRepository) IncrementQuantity(ctx context.Context, userID
 		if err != nil {
 			return err
 		}
-		err = tx.Exec(
+		err = tx.Raw(
 			`UPDATE user_achievements ua
 				SET achieved = true
 				FROM achievements a
@@ -56,16 +59,19 @@ func (u UserAchievementRepository) IncrementQuantity(ctx context.Context, userID
 				AND a.action = ?
 				AND ua.user_id = ?
 				AND ua.achieved = ?
-				AND ua.quantity >= a.quantity`, action, userID, false).Error
+				AND ua.quantity >= a.quantity
+				RETURNING ua.id, ua.user_id, ua.achievement_id, ua.quantity, ua.achieved`, action, userID, false).Scan(&updated).Error
 		if err != nil {
-			return err
+			logger.Error("error while increasing achievement quantity", zap.Error(err))
+			return errhandlers.DBErrHandler(err)
 		}
 		return nil
 	})
 	if err != nil {
-		return errhandlers.DBErrHandler(err)
+		return nil, errhandlers.DBErrHandler(err)
 	}
-	return nil
+	updDom := gormMappers.GormUserAchievementsToDomain(updated)
+	return updDom, nil
 }
 
 func (u UserAchievementRepository) Delete(ctx context.Context, id uint) error {

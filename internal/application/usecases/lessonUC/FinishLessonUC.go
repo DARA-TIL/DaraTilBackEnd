@@ -23,7 +23,7 @@ func (uc *FinishLessonUC) Execute(ctx context.Context, lesRes models.LessonResul
 		return nil, 0, err
 	}
 	if lessonResult.Pass {
-		uc.Publisher.NotifySubscribers(ctx, services.Event{
+		uc.Publisher.Publish(ctx, services.Event{
 			Action:     models.Lesson_completed,
 			UserID:     lesRes.UserID,
 			EntityType: models.LessonEntityType,

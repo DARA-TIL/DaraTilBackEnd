@@ -29,6 +29,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/service/test"
 	"DaraTilBackendV2/internal/presentation/http/service/user"
 	"DaraTilBackendV2/internal/presentation/http/service/userActivity"
+	"DaraTilBackendV2/internal/presentation/http/service/ws"
 )
 
 type Container struct {
@@ -44,6 +45,7 @@ type Container struct {
 	AchievementHandler     *achievement.AchievementHandler
 	UserAchievementHandler *achievement.UserAchievementHandler
 	ActionRuleHandler      *actionRule.ActionRuleHandler
+	WebSocketHandler       *ws.WebSocketManager
 }
 
 func NewContainer(cfg *config.Config) *Container {
@@ -73,7 +75,7 @@ func NewContainer(cfg *config.Config) *Container {
 	geminiAI := gemini.NewGeminiAI(cfg)
 
 	//UserActivityService
-	StreakService := services.NewStreakService(streakRepo)
+	streakService := services.NewStreakService(streakRepo)
 	userActivityService := services.NewUserActivityService(userActivityRepo)
 
 	publisher := services.NewActionPublisher(actionRuleRepo)
@@ -103,7 +105,7 @@ func NewContainer(cfg *config.Config) *Container {
 
 	publisher.AddSubscriber(increaseUserAchievementSub)
 	publisher.AddSubscriber(userActivityService)
-	publisher.AddSubscriber(StreakService)
+	publisher.AddSubscriber(streakService)
 
 	// User UCs
 	createUserUC := userUC.NewCreateUC(userRepo)
@@ -215,7 +217,7 @@ func NewContainer(cfg *config.Config) *Container {
 		findTokenUC,
 		revokeJwtUC,
 		getUserByIDUC,
-		StreakService,
+		streakService,
 		cfg,
 	)
 
@@ -229,7 +231,7 @@ func NewContainer(cfg *config.Config) *Container {
 		issueTokenUC,
 		getByUsernameUC,
 		getLikedFolkloreUC,
-		StreakService,
+		streakService,
 		cfg,
 	)
 
@@ -341,6 +343,10 @@ func NewContainer(cfg *config.Config) *Container {
 	)
 
 	userActivityHandler := userActivity.NewUserActivityHandler(userActivityService)
+	wsHandler := ws.NewWebSocketManager()
+	streakService.AddSubscriber(wsHandler)
+	increaseUserAchievementSub.AddSubscriber(wsHandler)
+	jwtHandler.AddSubscriber(wsHandler)
 	return &Container{
 		UserHandler:            userHandler,
 		JwtHandler:             jwtHandler,
@@ -354,5 +360,6 @@ func NewContainer(cfg *config.Config) *Container {
 		AchievementHandler:     achievementHandler,
 		UserAchievementHandler: userAchievementHandler,
 		ActionRuleHandler:      actionRuleHandler,
+		WebSocketHandler:       wsHandler,
 	}
 }

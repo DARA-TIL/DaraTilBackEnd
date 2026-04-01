@@ -21,7 +21,7 @@ func NewActionPublisher(ar repo.ActionRuleRepo) *ActionPublisher {
 	}
 }
 
-func (a *ActionPublisher) NotifySubscribers(ctx context.Context, e Event) {
+func (a *ActionPublisher) Publish(ctx context.Context, e Event) {
 	rules, err := a.ActionRulesRepo.GetByAction(ctx, e.Action)
 	if err != nil {
 		logger.Error("Error getting action rules", zap.Error(err))
@@ -53,5 +53,4 @@ func (a *ActionPublisher) AddSubscriber(s Subscriber) {
 	a.Subscribers[models.Level_upgraded] = append(a.Subscribers[models.Level_upgraded], s)
 	a.Subscribers[models.Region_slang_readed] = append(a.Subscribers[models.Region_slang_readed], s)
 	a.Subscribers[models.Region_tradition_readed] = append(a.Subscribers[models.Region_tradition_readed], s)
-
 }

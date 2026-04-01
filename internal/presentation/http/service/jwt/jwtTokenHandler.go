@@ -12,6 +12,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/dto/dtoMappers"
 	"DaraTilBackendV2/internal/presentation/http/middleware"
 	"DaraTilBackendV2/internal/presentation/http/response"
+	"context"
 	"net/http"
 	"time"
 
@@ -27,6 +28,7 @@ type JwtTokenHandler struct {
 	FindByIdUC        *userUC.GetByIdUC
 	UserStreakService *services.StreakService
 	cfg               *config.Config
+	NotifSub          services.NotificationSubscriber
 }
 
 func NewJwtTokenHandler(createUc *jwtTokenUC.CreateUC, findUc *jwtTokenUC.FindUC,
@@ -281,6 +283,10 @@ func (h *JwtTokenHandler) Logout(c *gin.Context) {
 	}
 
 	deleteCookie()
+	h.Notify(c.Request.Context(), services.Notification{
+		Type:   models.UserLogOut,
+		UserID: claims.UserID,
+	})
 	logger.Info("Logout successful",
 		zap.Uint("user_id", claims.UserID),
 	)
@@ -325,4 +331,12 @@ func (h *JwtTokenHandler) GetMe(c *gin.Context) {
 		Streak: services.StreakResultToString(streak),
 	}
 	c.JSON(http.StatusOK, resp)
+}
+
+func (h *JwtTokenHandler) Notify(ctx context.Context, notif services.NotificationPayload) {
+	h.NotifSub.Handle(ctx, notif)
+}
+
+func (h *JwtTokenHandler) AddSubscriber(sub services.NotificationSubscriber) {
+	h.NotifSub = sub
 }

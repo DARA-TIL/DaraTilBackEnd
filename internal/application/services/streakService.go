@@ -39,7 +39,8 @@ func StreakResultToString(streakResult StreakUpdateResult) string {
 }
 
 type StreakService struct {
-	repo repo.StreakRepo
+	repo     repo.StreakRepo
+	NotifSub NotificationSubscriber
 }
 
 func NewStreakService(repo repo.StreakRepo) *StreakService {
@@ -67,6 +68,13 @@ func (s *StreakService) Handle(ctx context.Context, e Event) error {
 			logger.Error("Failed to create new Streak", zap.Error(err))
 			return err
 		}
+		s.Notify(ctx, StreakNotification{
+			Notification: Notification{
+				Type:   models.StreakIncrease,
+				UserID: e.UserID,
+			},
+			Streak: 1,
+		})
 		return nil
 	}
 	if err != nil {
@@ -82,6 +90,17 @@ func (s *StreakService) Handle(ctx context.Context, e Event) error {
 			logger.Error("Failed to increment user streak", zap.Error(err))
 			return err
 		}
+		str, err := s.repo.GetByUserID(ctx, e.UserID)
+		if err != nil {
+			logger.Error("Failed to get user streak", zap.Error(err))
+		}
+		s.Notify(ctx, StreakNotification{
+			Notification: Notification{
+				Type:   models.StreakIncrease,
+				UserID: e.UserID,
+			},
+			Streak: str.CurrentStreak,
+		})
 		return nil
 	}
 	logger.Info("Staring new user streak", zap.Uint("user_id", e.UserID))
@@ -90,6 +109,13 @@ func (s *StreakService) Handle(ctx context.Context, e Event) error {
 		logger.Error("Failed to start user streak", zap.Error(err))
 		return err
 	}
+	s.Notify(ctx, StreakNotification{
+		Notification: Notification{
+			Type:   models.StreakIncrease,
+			UserID: e.UserID,
+		},
+		Streak: 1,
+	})
 	return nil
 }
 
@@ -103,6 +129,13 @@ func (s *StreakService) CheckStreak(ctx context.Context, userID uint) (StreakUpd
 		if err != nil {
 			return NoChange, err
 		}
+		s.Notify(ctx, StreakNotification{
+			Notification: Notification{
+				Type:   models.StreakIncrease,
+				UserID: userID,
+			},
+			Streak: 0,
+		})
 		return Created, nil
 	}
 	if err != nil {
@@ -114,7 +147,20 @@ func (s *StreakService) CheckStreak(ctx context.Context, userID uint) (StreakUpd
 		if err != nil {
 			return NoChange, err
 		}
+		s.Notify(ctx, StreakNotification{
+			Notification: Notification{
+				Type:   models.StreakReset,
+				UserID: userID,
+			},
+			Streak: 0,
+		})
 		return Reset, nil
 	}
 	return NoChange, nil
+}
+func (s *StreakService) Notify(ctx context.Context, notif NotificationPayload) {
+	s.NotifSub.Handle(ctx, notif)
+}
+func (s *StreakService) AddSubscriber(sub NotificationSubscriber) {
+	s.NotifSub = sub
 }

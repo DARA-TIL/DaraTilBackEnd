@@ -1,6 +1,7 @@
 package repository
 
 import (
+	errs "DaraTilBackendV2/internal/domain/domErr"
 	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/errhandlers"
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/gormModels"
@@ -40,12 +41,15 @@ func (j *JwtRepository) Find(ctx context.Context, userId uint, refreshToken stri
 }
 
 func (j *JwtRepository) Revoke(ctx context.Context, userId uint, refreshToken string) error {
-	if err := j.db.WithContext(ctx).Model(&gormModels.Token{}).Where("user_id = ? AND refresh_token_hash = ? AND is_revoked = ?", userId, refreshToken, false).Updates(map[string]interface{}{
+	res := j.db.WithContext(ctx).Model(&gormModels.Token{}).Where("user_id = ? AND refresh_token_hash = ? AND is_revoked = ?", userId, refreshToken, false).Updates(map[string]interface{}{
 		"last_used":  time.Now(),
 		"is_revoked": true,
-	}).Error; err != nil {
-		return errhandlers.DBErrHandler(err)
+	})
+	if res.Error != nil {
+		return errhandlers.DBErrHandler(res.Error)
+	}
+	if res.RowsAffected == 0 {
+		return errs.ErrNotFound
 	}
 	return nil
-
 }

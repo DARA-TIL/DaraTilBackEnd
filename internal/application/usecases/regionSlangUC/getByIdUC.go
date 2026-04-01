@@ -35,7 +35,7 @@ func (uc *GetByIDUC) Execute(ctx context.Context, id uint) (GetSlangResult, erro
 		utils.ErrLoggerUserActivity(errors.New("cannot get user ID"))
 		return ret, nil
 	}
-	uc.publisher.NotifySubscribers(ctx, services.Event{
+	uc.publisher.Publish(ctx, services.Event{
 		Action:     models.Region_slang_readed,
 		UserID:     userID,
 		EntityID:   id,

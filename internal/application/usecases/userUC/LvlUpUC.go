@@ -22,7 +22,7 @@ func (u *LvlUpUC) Execute(ctx context.Context, userId uint, xpAdded int) models.
 		return lvlRet
 	}
 	if lvlRet.IsLvlUp {
-		u.publisher.NotifySubscribers(ctx, services.Event{
+		u.publisher.Publish(ctx, services.Event{
 			Action:     models.Level_upgraded,
 			UserID:     userId,
 			EntityType: models.UserEntityType,

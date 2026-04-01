@@ -35,7 +35,7 @@ func (uc *ToggleLikeUC) Execute(ctx context.Context, folkloreID, userID uint) (*
 		} else {
 			act = models.Folklore_disliked
 		}
-		uc.publisher.NotifySubscribers(ctx, services.Event{
+		uc.publisher.Publish(ctx, services.Event{
 			Action:     act,
 			UserID:     userID,
 			EntityID:   folkloreID,

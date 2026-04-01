@@ -110,6 +110,7 @@ func (a *App) setupRoutes() {
 	actionRulesRoute.Use(middleware.AuthMiddleware(a.cfg))
 	actionRulesRoute.Use(middleware.RequireRole("admin"))
 	actionRule.RegisterRoutes(actionRulesRoute, a.container.ActionRuleHandler)
+	api.GET("/ws", middleware.AuthMiddleware(a.cfg), a.container.WebSocketHandler.ServeWS)
 	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 }

@@ -33,7 +33,7 @@ func (uc *GetByIDUC) Execute(ctx context.Context, id uint) (GetTraditionResult, 
 		logger.Warn("userId not found in context")
 		return resp, nil
 	}
-	uc.publisher.NotifySubscribers(ctx, services.Event{
+	uc.publisher.Publish(ctx, services.Event{
 		Action:     models.Region_slang_readed,
 		UserID:     userID,
 		EntityID:   id,
