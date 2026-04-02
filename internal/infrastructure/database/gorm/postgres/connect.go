@@ -20,9 +20,19 @@ func NewPostgresRepository(cfg *config.Config) *PostgresRepository {
 		log.Printf("Database Connection Failed: %v", err)
 		panic("failed to connect database")
 	}
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Printf("Database Connection Failed: %v", err)
+		panic("failed to connect database")
+		return nil
+	}
+	if err := sqlDB.Ping(); err != nil {
+		log.Printf("Database Connection Failed: %v", err)
+		panic("failed to connect database")
+		return nil
+	}
 	log.Printf("Database Connection Established")
 	log.Printf("Starting Database Migration")
-	err = AutoMigration(db)
 	if err != nil {
 		log.Printf("Database Migration Failed: %v", err)
 		panic("database migration failed")

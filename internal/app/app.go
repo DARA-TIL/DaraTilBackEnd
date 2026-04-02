@@ -13,6 +13,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/service/test"
 	"DaraTilBackendV2/internal/presentation/http/service/user"
 	"DaraTilBackendV2/internal/presentation/http/service/userActivity"
+	"context"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -50,8 +51,11 @@ func (a *App) setupMiddleware() {
 
 func (a *App) setupRoutes() {
 	api := a.router.Group("/api")
-	authLimiter := middleware.NewIPRateLimiter(rate.Every(time.Minute/5), 3)
-	generalLimiter := middleware.NewIPRateLimiter(rate.Every(time.Minute/60), 20)
+	authLimiter := middleware.NewIPRateLimiter(rate.Every(time.Minute/5), 20*time.Minute, 3)
+	generalLimiter := middleware.NewIPRateLimiter(rate.Every(time.Minute/60), 20*time.Minute, 20)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	authLimiter.StartCleanup(ctx, 5*time.Minute)
 
 	//Auth
 	auth := api.Group("/auth")

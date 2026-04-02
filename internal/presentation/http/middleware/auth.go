@@ -93,7 +93,6 @@ func RequireRole(requiredRoles ...string) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
 		if len(requiredRoles) == 0 {
 			logger.Error("Required roles is empty")
 			response.HandleDomainError(c, domErr.ErrUnauthorized)
@@ -107,6 +106,7 @@ func RequireRole(requiredRoles ...string) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+		fmt.Println("UserRole", claims.Role)
 		for _, role := range requiredRoles {
 			if role == claims.Role {
 				logger.Info("User doing protected action for", zap.String("role", role))

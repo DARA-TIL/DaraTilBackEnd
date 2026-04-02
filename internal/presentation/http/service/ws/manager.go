@@ -2,6 +2,7 @@ package ws
 
 import (
 	"DaraTilBackendV2/internal/application/services"
+	"DaraTilBackendV2/internal/config"
 	"DaraTilBackendV2/internal/domain/domErr"
 	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/infrastructure/logger"
@@ -9,6 +10,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/response"
 	"context"
 	"net/http"
+	"slices"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -16,26 +18,37 @@ import (
 	"go.uber.org/zap"
 )
 
-var (
-	webSocketUpgrader = websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
-		CheckOrigin: func(r *http.Request) bool {
-			return true
-		},
-	}
-)
-
 type WebSocketManager struct {
-	ClientList     map[uint]map[string]*Client //uint: userID; string: connID;
-	MaxConnections uint
+	ClientList        map[uint]map[string]*Client //uint: userID; string: connID;
+	MaxConnections    uint
+	websocketUpgrader *websocket.Upgrader
 	sync.RWMutex
 }
 
-func NewWebSocketManager() *WebSocketManager {
+func NewWebSocketManager(cfg *config.Config) *WebSocketManager {
+	webSocketUpgrader := websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			origin := r.Header.Get("Origin")
+			if cfg.WSSecurity.AllowedOrigins == nil || len(cfg.WSSecurity.AllowedOrigins) == 0 {
+				logger.Warn("No Allowed origins, app will not check origins")
+				return true
+			}
+			if origin == "" {
+				logger.Error("origin is empty")
+				return false
+			}
+			if slices.Contains(cfg.WSSecurity.AllowedOrigins, origin) {
+				return true
+			}
+			return false
+		},
+	}
 	return &WebSocketManager{
-		ClientList:     make(map[uint]map[string]*Client),
-		MaxConnections: 5,
+		ClientList:        make(map[uint]map[string]*Client),
+		MaxConnections:    5,
+		websocketUpgrader: &webSocketUpgrader,
 	}
 }
 
@@ -55,7 +68,7 @@ func (h *WebSocketManager) ServeWS(c *gin.Context) {
 		logger.Warn("Max connections reached")
 		return
 	}
-	con, err := webSocketUpgrader.Upgrade(c.Writer, c.Request, nil)
+	con, err := h.websocketUpgrader.Upgrade(c.Writer, c.Request, nil)
 
 	if err != nil {
 		logger.Error("Error upgrading to websocket connection", zap.Error(err))

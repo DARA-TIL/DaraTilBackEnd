@@ -38,7 +38,7 @@ func (a *ActionPublisher) Publish(ctx context.Context, e Event) {
 			}
 			err := sub.Handle(ctx, e)
 			if err != nil {
-				logger.Error("error while handling subscriber", zap.Any("action", e.Action), zap.Error(err))
+				logger.Error("error while handling subscriber", zap.Any("action", e.Action), zap.Any("category", sub.Category()), zap.Error(err))
 			}
 			logger.Info("subscriber handled succesfully", zap.Any("action", e.Action), zap.Any("category", sub.Category()))
 		}

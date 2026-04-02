@@ -1,57 +1,88 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
 )
 
 type IPRateLimiter struct {
-	ips map[string]*rate.Limiter
-	mu  *sync.RWMutex
+	ips map[string]*Visitor
+	mu  sync.RWMutex
 	r   rate.Limit
+	ttl time.Duration
 	b   int
 }
 
-func NewIPRateLimiter(rateLimit rate.Limit, b int) *IPRateLimiter {
+type Visitor struct {
+	limiter  *rate.Limiter
+	lastSeen time.Time
+}
+
+func NewIPRateLimiter(rateLimit rate.Limit, ttl time.Duration, b int) *IPRateLimiter {
 	return &IPRateLimiter{
-		ips: make(map[string]*rate.Limiter),
-		mu:  &sync.RWMutex{},
+		ips: make(map[string]*Visitor),
+		mu:  sync.RWMutex{},
 		r:   rateLimit,
+		ttl: ttl,
 		b:   b,
 	}
 }
 
-func (rl *IPRateLimiter) AddIP(ip string) *rate.Limiter {
+func (rl *IPRateLimiter) Cleanup() {
+	cutoff := time.Now().Add(-rl.ttl)
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
-	rl.ips[ip] = rate.NewLimiter(rl.r, rl.b)
-	return rl.ips[ip]
+	for ip, v := range rl.ips {
+		if v.lastSeen.Before(cutoff) {
+			delete(rl.ips, ip)
+		}
+	}
 }
 
-func (rl *IPRateLimiter) DelIP(ip string) {
+func (rl *IPRateLimiter) StartCleanup(ctx context.Context, interval time.Duration) {
+	ticker := time.NewTicker(interval)
+
+	go func() {
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				rl.Cleanup()
+			}
+		}
+	}()
+}
+
+func (rl *IPRateLimiter) GetVisitor(ip string) *Visitor {
+	now := time.Now()
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
-	delete(rl.ips, ip)
-}
-func (rl *IPRateLimiter) GetRL(ip string) *rate.Limiter {
-	rl.mu.RLock()
-	limiter, ok := rl.ips[ip]
+	visitor, ok := rl.ips[ip]
 	if !ok {
-		rl.mu.RUnlock()
-		return rl.AddIP(ip)
+		visitor = &Visitor{
+			limiter:  rate.NewLimiter(rl.r, rl.b),
+			lastSeen: now,
+		}
+		rl.ips[ip] = visitor
+		return visitor
 	}
-	rl.mu.RUnlock()
-	return limiter
+	visitor.lastSeen = now
+	return visitor
 }
 
 func RateLimiter(lim *IPRateLimiter) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		limiter := lim.GetRL(c.ClientIP())
-		if !limiter.Allow() {
-			c.JSON(http.StatusTooManyRequests, "Rate limit exceeded")
+		visitor := lim.GetVisitor(c.ClientIP())
+		if !visitor.limiter.Allow() {
+			c.JSON(http.StatusTooManyRequests, gin.H{"error": "rate limited"})
 			c.Abort()
 			return
 		}

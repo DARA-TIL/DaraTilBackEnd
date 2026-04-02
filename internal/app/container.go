@@ -343,7 +343,7 @@ func NewContainer(cfg *config.Config) *Container {
 	)
 
 	userActivityHandler := userActivity.NewUserActivityHandler(userActivityService)
-	wsHandler := ws.NewWebSocketManager()
+	wsHandler := ws.NewWebSocketManager(cfg)
 	streakService.AddSubscriber(wsHandler)
 	increaseUserAchievementSub.AddSubscriber(wsHandler)
 	jwtHandler.AddSubscriber(wsHandler)

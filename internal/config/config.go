@@ -13,13 +13,25 @@ import (
 )
 
 type Config struct {
-	Server   ServerConfig
-	Database DatabaseConfig
-	Jwt      JWTConfig
-	Oauth    OauthConfig
-	Session  SessionConfig
-	Smtp     SmtpConfig
-	Gemini   GeminiConfig
+	Server          ServerConfig
+	Database        DatabaseConfig
+	Jwt             JWTConfig
+	Oauth           OauthConfig
+	Session         SessionConfig
+	Smtp            SmtpConfig
+	Gemini          GeminiConfig
+	SessionSecurity SessionSecurity
+	WSSecurity      WSSecurity
+}
+
+type WSSecurity struct {
+	AllowedOrigins []string `envconfig:"ALLOWED_ORIGINS"`
+}
+
+type SessionSecurity struct {
+	HttpOnly bool `envconfig:"SESSION_HTTP_ONLY" default:"true"`
+	Secure   bool `envconfig:"SESSION_HTTP_SECURE" default:"false"`
+	SameSite int  `envconfig:"SESSION_HTTP_SAME_SITE" default:"2"`
 }
 
 type ServerConfig struct {
@@ -97,12 +109,15 @@ func (c *Config) SetupSessionStore() {
 		log.Fatal("SESSION_SECRET is not set")
 	}
 	store := sessions.NewCookieStore([]byte(secret))
+	httpOnly := c.SessionSecurity.HttpOnly
+	secure := c.SessionSecurity.Secure
+	sameSite := c.SessionSecurity.SameSite
 	store.Options = &sessions.Options{
 		Path:     "/",
 		MaxAge:   86400 * 7,
-		HttpOnly: true,
-		Secure:   false, // ВАЖНО
-		SameSite: http.SameSiteLaxMode,
+		HttpOnly: httpOnly,
+		Secure:   secure, // ВАЖНО
+		SameSite: http.SameSite(sameSite),
 	}
 	gothic.Store = store
 }
