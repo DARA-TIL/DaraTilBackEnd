@@ -51,7 +51,7 @@ func (a *App) setupMiddleware() {
 
 func (a *App) setupRoutes() {
 	api := a.router.Group("/api")
-	authLimiter := middleware.NewIPRateLimiter(rate.Every(time.Minute/5), 20*time.Minute, 3)
+	authLimiter := middleware.NewIPRateLimiter(rate.Every(time.Minute/20), 20*time.Minute, 10)
 	generalLimiter := middleware.NewIPRateLimiter(rate.Every(time.Minute/60), 20*time.Minute, 20)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
