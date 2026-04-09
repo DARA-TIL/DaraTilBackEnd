@@ -568,6 +568,22 @@ definitions:
       username:
         type: string
     type: object
+  dto.WordExplain:
+    properties:
+      block:
+        type: string
+      lang:
+        type: string
+      word:
+        type: string
+    type: object
+  dto.WordExplainResult:
+    properties:
+      context:
+        type: string
+      result:
+        type: string
+    type: object
   jwt.RefreshRequest:
     properties:
       refreshToken:
@@ -627,7 +643,7 @@ definitions:
         example: "123456"
         type: string
     type: object
-host: daratilback.onrender.com
+host: localhost:8080
 info:
   contact: {}
   description: Api server for DaraTil PLatform
@@ -1078,6 +1094,45 @@ paths:
       summary: Get User Activities
       tags:
       - Activity
+  /assistant/explainWord:
+    post:
+      consumes:
+      - application/json
+      description: Explaining of the word in its context by the help of AI
+      parameters:
+      - description: Word Request with its block
+        in: body
+        name: wordReq
+        required: true
+        schema:
+          $ref: '#/definitions/dto.WordExplain'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.WordExplainResult'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get Explaining of the word in its context
+      tags:
+      - Assistant
   /auth/login:
     post:
       consumes:
@@ -4182,7 +4237,7 @@ paths:
       tags:
       - UserAchievement
 schemes:
-- https
+- http
 securityDefinitions:
   BearerAuth:
     in: header

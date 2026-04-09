@@ -32,7 +32,6 @@ func NewPostgresRepository(cfg *config.Config) *PostgresRepository {
 		return nil
 	}
 	log.Printf("Database Connection Established")
-	log.Printf("Starting Database Migration")
 	if err != nil {
 		log.Printf("Database Migration Failed: %v", err)
 		panic("database migration failed")

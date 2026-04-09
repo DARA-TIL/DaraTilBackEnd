@@ -16,12 +16,14 @@ import (
 	"DaraTilBackendV2/internal/application/usecases/regionUC/regionTranslationsUC"
 	"DaraTilBackendV2/internal/application/usecases/testUC"
 	"DaraTilBackendV2/internal/application/usecases/userUC"
+	"DaraTilBackendV2/internal/application/usecases/wordExpainUC"
 	"DaraTilBackendV2/internal/config"
 	"DaraTilBackendV2/internal/infrastructure/ai/gemini"
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/postgres"
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/repository"
 	"DaraTilBackendV2/internal/presentation/http/service/achievement"
 	"DaraTilBackendV2/internal/presentation/http/service/actionRule"
+	"DaraTilBackendV2/internal/presentation/http/service/assistant"
 	"DaraTilBackendV2/internal/presentation/http/service/folklore"
 	"DaraTilBackendV2/internal/presentation/http/service/jwt"
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
@@ -46,6 +48,7 @@ type Container struct {
 	UserAchievementHandler *achievement.UserAchievementHandler
 	ActionRuleHandler      *actionRule.ActionRuleHandler
 	WebSocketHandler       *ws.WebSocketManager
+	Assistant              *assistant.Assistant
 }
 
 func NewContainer(cfg *config.Config) *Container {
@@ -77,7 +80,6 @@ func NewContainer(cfg *config.Config) *Container {
 	//UserActivityService
 	streakService := services.NewStreakService(streakRepo)
 	userActivityService := services.NewUserActivityService(userActivityRepo)
-
 	publisher := services.NewActionPublisher(actionRuleRepo)
 
 	// ActionRuleUCS
@@ -131,6 +133,9 @@ func NewContainer(cfg *config.Config) *Container {
 	getLikedFolkloreUC := folkloreUC.NewGetLikedFolkloreUC(folkloreRepo)
 	toggleLikeFolkloreUC := folkloreUC.NewToggleLikeUC(folkloreRepo, publisher)
 	updateFolkloreUC := folkloreUC.NewUpdateUC(folkloreRepo, geminiAI)
+
+	//AssistantUCS
+	wordExplainUC := wordExpainUC.NewWordExplainUC(geminiAI)
 
 	//LessonUCS
 	createLessonUC := lessonUC.NewCreateUC(lessonRepo)
@@ -341,6 +346,7 @@ func NewContainer(cfg *config.Config) *Container {
 		getAllActionRuleUC,
 		getActionRuleByActionUC,
 	)
+	assistantHandler := assistant.NewAssistant(wordExplainUC)
 
 	userActivityHandler := userActivity.NewUserActivityHandler(userActivityService)
 	wsHandler := ws.NewWebSocketManager(cfg)
@@ -361,5 +367,6 @@ func NewContainer(cfg *config.Config) *Container {
 		UserAchievementHandler: userAchievementHandler,
 		ActionRuleHandler:      actionRuleHandler,
 		WebSocketHandler:       wsHandler,
+		Assistant:              assistantHandler,
 	}
 }

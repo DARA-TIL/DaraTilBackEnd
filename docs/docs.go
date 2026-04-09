@@ -692,6 +692,66 @@ const docTemplate = `{
                 }
             }
         },
+        "/assistant/explainWord": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Explaining of the word in its context by the help of AI",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Assistant"
+                ],
+                "summary": "Get Explaining of the word in its context",
+                "parameters": [
+                    {
+                        "description": "Word Request with its block",
+                        "name": "wordReq",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.WordExplain"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.WordExplainResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Authenticate user and return access token",
@@ -6242,6 +6302,31 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.WordExplain": {
+            "type": "object",
+            "properties": {
+                "block": {
+                    "type": "string"
+                },
+                "lang": {
+                    "type": "string"
+                },
+                "word": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.WordExplainResult": {
+            "type": "object",
+            "properties": {
+                "context": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "string"
+                }
+            }
+        },
         "jwt.RefreshRequest": {
             "type": "object",
             "properties": {
@@ -6332,9 +6417,9 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "0.2",
-	Host:             "daratilback.onrender.com",
+	Host:             "localhost:8080",
 	BasePath:         "/api",
-	Schemes:          []string{"https"},
+	Schemes:          []string{"http"},
 	Title:            "DaraTil Backend",
 	Description:      "Api server for DaraTil PLatform",
 	InfoInstanceName: "swagger",

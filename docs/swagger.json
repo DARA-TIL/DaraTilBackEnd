@@ -1,6 +1,6 @@
 {
     "schemes": [
-        "https"
+        "http"
     ],
     "swagger": "2.0",
     "info": {
@@ -9,7 +9,7 @@
         "contact": {},
         "version": "0.2"
     },
-    "host": "daratilback.onrender.com",
+    "host": "localhost:8080",
     "basePath": "/api",
     "paths": {
         "/achievement/create": {
@@ -681,6 +681,66 @@
                     },
                     "500": {
                         "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/assistant/explainWord": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Explaining of the word in its context by the help of AI",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Assistant"
+                ],
+                "summary": "Get Explaining of the word in its context",
+                "parameters": [
+                    {
+                        "description": "Word Request with its block",
+                        "name": "wordReq",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.WordExplain"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.WordExplainResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -6235,6 +6295,31 @@
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.WordExplain": {
+            "type": "object",
+            "properties": {
+                "block": {
+                    "type": "string"
+                },
+                "lang": {
+                    "type": "string"
+                },
+                "word": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.WordExplainResult": {
+            "type": "object",
+            "properties": {
+                "context": {
+                    "type": "string"
+                },
+                "result": {
                     "type": "string"
                 }
             }

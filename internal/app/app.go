@@ -7,6 +7,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/middleware"
 	"DaraTilBackendV2/internal/presentation/http/service/achievement"
 	"DaraTilBackendV2/internal/presentation/http/service/actionRule"
+	"DaraTilBackendV2/internal/presentation/http/service/assistant"
 	"DaraTilBackendV2/internal/presentation/http/service/folklore"
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
 	"DaraTilBackendV2/internal/presentation/http/service/region"
@@ -131,6 +132,13 @@ func (a *App) setupRoutes() {
 	actionRulesRoute.Use(middleware.RequireRole("admin"))
 	actionRulesRoute.Use(middleware.RateLimiter(generalLimiter))
 	actionRule.RegisterRoutes(actionRulesRoute, a.container.ActionRuleHandler)
+
+	//Assistant
+	assistantRoute := api.Group("/assistant")
+	assistantRoute.Use(middleware.AuthMiddleware(a.cfg))
+	assistantRoute.Use(middleware.RateLimiter(generalLimiter))
+	assistant.RegisterRoutes(assistantRoute, a.container.Assistant)
+
 	api.GET("/ws", middleware.AuthMiddleware(a.cfg), a.container.WebSocketHandler.ServeWS)
 	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
