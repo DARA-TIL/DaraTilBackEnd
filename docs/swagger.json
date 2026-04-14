@@ -1,6 +1,6 @@
 {
     "schemes": [
-        "http"
+        "https"
     ],
     "swagger": "2.0",
     "info": {
@@ -9,7 +9,7 @@
         "contact": {},
         "version": "0.2"
     },
-    "host": "localhost:8080",
+    "host": "daratilback.onrender.com",
     "basePath": "/api",
     "paths": {
         "/achievement/achieved": {
@@ -6621,7 +6621,8 @@
                 "folklore_readed",
                 "level_upgraded",
                 "region_slang_readed",
-                "region_tradition_readed"
+                "region_tradition_readed",
+                "word_learned"
             ],
             "x-enum-varnames": [
                 "Lesson_completed",
@@ -6630,7 +6631,8 @@
                 "Folklore_readed",
                 "Level_upgraded",
                 "Region_slang_readed",
-                "Region_tradition_readed"
+                "Region_tradition_readed",
+                "Word_Learned"
             ]
         },
         "models.EventEntityType": {

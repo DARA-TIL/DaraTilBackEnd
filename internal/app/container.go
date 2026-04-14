@@ -5,6 +5,7 @@ import (
 	"DaraTilBackendV2/internal/application/usecases/achievementUC"
 	"DaraTilBackendV2/internal/application/usecases/achievementUC/userAchievementUC"
 	"DaraTilBackendV2/internal/application/usecases/actionRuleUC"
+	"DaraTilBackendV2/internal/application/usecases/assistantUC"
 	"DaraTilBackendV2/internal/application/usecases/folkloreUC"
 	"DaraTilBackendV2/internal/application/usecases/jwtTokenUC"
 	"DaraTilBackendV2/internal/application/usecases/lessonUC"
@@ -17,8 +18,8 @@ import (
 	"DaraTilBackendV2/internal/application/usecases/testUC"
 	"DaraTilBackendV2/internal/application/usecases/userProfileUC"
 	"DaraTilBackendV2/internal/application/usecases/userUC"
-	"DaraTilBackendV2/internal/application/usecases/wordExpainUC"
 	"DaraTilBackendV2/internal/config"
+	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/infrastructure/ai/gemini"
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/postgres"
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/repository"
@@ -110,10 +111,6 @@ func NewContainer(cfg *config.Config) *Container {
 	increaseUserAchievementSub := userAchievementUC.NewIncrementQuantityUC(userAchievementRepo, achievementRepo)
 	getUaByUserIDUC := userAchievementUC.NewGetByUserIDUC(userAchievementRepo)
 
-	publisher.AddSubscriber(increaseUserAchievementSub)
-	publisher.AddSubscriber(userActivityService)
-	publisher.AddSubscriber(streakService)
-
 	// User UCs
 	createUserUC := userUC.NewCreateUC(userRepo)
 	getAllUsersUC := userUC.NewGetAllUC(userRepo)
@@ -126,8 +123,7 @@ func NewContainer(cfg *config.Config) *Container {
 	//User Profile UCS
 	createUserProfileUC := userProfileUC.NewCreateUC(userProfileRepo)
 	getProfileByUserIDUC := userProfileUC.NewGetByUserIDUC(userProfileRepo)
-	//increaseLessonsUC := userProfileUC.NewIncreaseLessonsCompletedUC(userProfileRepo)
-	//increaseWordsUC := userProfileUC.NewIncreaseWordsLearnedUC(userProfileRepo)
+	increaseWordsUC := userProfileUC.NewIncreaseWordsLearnedUC(userProfileRepo)
 	updatePinAchUC := userProfileUC.NewUpdatePinnedAchievementsUC(userProfileRepo)
 
 	// JWT UCs
@@ -147,7 +143,7 @@ func NewContainer(cfg *config.Config) *Container {
 	updateFolkloreUC := folkloreUC.NewUpdateUC(folkloreRepo, geminiAI)
 
 	//AssistantUCS
-	wordExplainUC := wordExpainUC.NewWordExplainUC(geminiAI)
+	wordExplainUC := assistantUC.NewWordExplainUC(geminiAI, publisher)
 
 	//LessonUCS
 	createLessonUC := lessonUC.NewCreateUC(lessonRepo)
@@ -228,6 +224,34 @@ func NewContainer(cfg *config.Config) *Container {
 	getRegionTraditionTranslationByIDUC := regionTraditionTranslationsUC.NewGetByIDUC(regionTraditionTranslationRepo)
 	getTraditionTranslationsByTraditionIDUC := regionTraditionTranslationsUC.NewGetByTraditionIDUC(regionTraditionTranslationRepo)
 	updateRegionTraditionTranslationUC := regionTraditionTranslationsUC.NewUpdateUC(regionTraditionTranslationRepo)
+
+	//Pub Subs
+	publisher.AddSubscribers(
+		increaseUserAchievementSub,
+		models.Lesson_completed,
+		models.Folklore_liked,
+		models.Folklore_disliked,
+		models.Folklore_readed,
+		models.Level_upgraded,
+		models.Region_slang_readed,
+		models.Region_tradition_readed)
+	publisher.AddSubscribers(userActivityService,
+		models.Lesson_completed,
+		models.Folklore_liked,
+		models.Folklore_disliked,
+		models.Folklore_readed,
+		models.Level_upgraded,
+		models.Region_slang_readed,
+		models.Region_tradition_readed)
+	publisher.AddSubscribers(streakService,
+		models.Lesson_completed,
+		models.Folklore_liked,
+		models.Folklore_disliked,
+		models.Folklore_readed,
+		models.Level_upgraded,
+		models.Region_slang_readed,
+		models.Region_tradition_readed)
+	publisher.AddSubscribers(increaseWordsUC, models.Word_Learned)
 	// Handlers
 	jwtHandler := jwt.NewJwtTokenHandler(
 		createTokenUC,

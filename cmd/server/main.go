@@ -12,7 +12,7 @@ import (
 // @version 0.2
 // @description Api server for DaraTil PLatform
 
-// @host https://daratilback.onrender.com
+// @host daratilback.onrender.com
 // @BasePath /api
 // @schemes https
 // @securityDefinitions.apikey BearerAuth

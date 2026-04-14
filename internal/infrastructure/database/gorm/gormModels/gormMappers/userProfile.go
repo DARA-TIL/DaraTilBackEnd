@@ -9,7 +9,6 @@ func UserProfileToDomain(up gormModels.UserProfile) models.UserProfile {
 	return models.UserProfile{
 		UserID:             up.UserID,
 		PinnedAchievements: PinnedAchievementsToDomain(up.PinnedAchievements),
-		LessonsCompleted:   up.LessonsCompleted,
 		WordsLearned:       up.WordsLearned,
 		User:               GormUserToDomain(up.User),
 	}

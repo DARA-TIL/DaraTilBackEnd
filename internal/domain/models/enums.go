@@ -23,6 +23,7 @@ const (
 	EventStreak      ActionTrigger = "streak"
 	EventActivity    ActionTrigger = "activity"
 	EventAchievement ActionTrigger = "achievement"
+	StatsImprovement ActionTrigger = "stats-improvement"
 )
 
 type Actions string
@@ -35,6 +36,7 @@ const (
 	Level_upgraded          Actions = "level_upgraded"
 	Region_slang_readed     Actions = "region_slang_readed"
 	Region_tradition_readed Actions = "region_tradition_readed"
+	Word_Learned            Actions = "word_learned"
 )
 
 type EventEntityType string

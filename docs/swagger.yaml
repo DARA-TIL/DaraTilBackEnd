@@ -625,6 +625,7 @@ definitions:
     - level_upgraded
     - region_slang_readed
     - region_tradition_readed
+    - word_learned
     type: string
     x-enum-varnames:
     - Lesson_completed
@@ -634,6 +635,7 @@ definitions:
     - Level_upgraded
     - Region_slang_readed
     - Region_tradition_readed
+    - Word_Learned
   models.EventEntityType:
     enum:
     - folklore
@@ -670,7 +672,7 @@ definitions:
         example: "123456"
         type: string
     type: object
-host: localhost:8080
+host: daratilback.onrender.com
 info:
   contact: {}
   description: Api server for DaraTil PLatform
@@ -4420,7 +4422,7 @@ paths:
       tags:
       - UserProfile
 schemes:
-- http
+- https
 securityDefinitions:
   BearerAuth:
     in: header

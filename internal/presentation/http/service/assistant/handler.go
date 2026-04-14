@@ -1,10 +1,11 @@
 package assistant
 
 import (
-	"DaraTilBackendV2/internal/application/usecases/wordExpainUC"
+	"DaraTilBackendV2/internal/application/usecases/assistantUC"
 	errs "DaraTilBackendV2/internal/domain/domErr"
 	"DaraTilBackendV2/internal/presentation/dto"
 	"DaraTilBackendV2/internal/presentation/dto/dtoMappers"
+	"DaraTilBackendV2/internal/presentation/http/middleware"
 	"DaraTilBackendV2/internal/presentation/http/response"
 	"net/http"
 
@@ -12,10 +13,10 @@ import (
 )
 
 type Assistant struct {
-	WordExplainUC *wordExpainUC.WordExplainUC
+	WordExplainUC *assistantUC.WordExplainUC
 }
 
-func NewAssistant(wordExplainUC *wordExpainUC.WordExplainUC) *Assistant {
+func NewAssistant(wordExplainUC *assistantUC.WordExplainUC) *Assistant {
 	return &Assistant{
 		WordExplainUC: wordExplainUC,
 	}
@@ -35,14 +36,19 @@ func NewAssistant(wordExplainUC *wordExpainUC.WordExplainUC) *Assistant {
 // @Failure 403 {object} map[string]interface{}
 // @Router /assistant/explainWord [post]
 func (a *Assistant) ExplainWord(c *gin.Context) {
+	userID, err := middleware.GetCurrentUserID(c)
+	if err != nil {
+		response.HandleDomainError(c, errs.ErrUnauthorized)
+		return
+	}
 	var req dto.WordExplain
-	err := c.ShouldBindJSON(&req)
+	err = c.ShouldBindJSON(&req)
 	if err != nil {
 		response.HandleDomainError(c, errs.ErrInvalidInput)
 		return
 	}
 	reqDom := dtoMappers.WordExplainToDomain(req)
-	res, err := a.WordExplainUC.Explain(c.Request.Context(), reqDom)
+	res, err := a.WordExplainUC.Explain(c.Request.Context(), reqDom, *userID)
 	if err != nil {
 		response.HandleDomainError(c, err)
 		return

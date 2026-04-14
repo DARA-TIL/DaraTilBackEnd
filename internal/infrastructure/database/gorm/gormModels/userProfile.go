@@ -6,7 +6,6 @@ type UserProfile struct {
 	gorm.Model
 	UserID             uint                `gorm:"uniqueIndex"`
 	PinnedAchievements []PinnedAchievement `gorm:"foreignKey:UserID;references:UserID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE;"`
-	LessonsCompleted   int                 `gorm:"default:0"`
 	WordsLearned       int                 `gorm:"default:0"`
 	User               User                `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE, onUpdate:CASCADE;"`
 }

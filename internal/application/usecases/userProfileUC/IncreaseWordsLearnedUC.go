@@ -1,6 +1,8 @@
 package userProfileUC
 
 import (
+	"DaraTilBackendV2/internal/application/services"
+	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/domain/repo"
 	"context"
 )
@@ -13,6 +15,9 @@ func NewIncreaseWordsLearnedUC(repo repo.UserProfileRepo) *IncreaseWordsLearnedU
 	return &IncreaseWordsLearnedUC{repo: repo}
 }
 
-func (uc *IncreaseWordsLearnedUC) Execute(ctx context.Context, userID uint) error {
-	return uc.repo.IncreaseWordsLearned(ctx, userID)
+func (uc *IncreaseWordsLearnedUC) Handle(ctx context.Context, e services.Event) error {
+	return uc.repo.IncreaseWordsLearned(ctx, e.UserID)
+}
+func (uc *IncreaseWordsLearnedUC) Category() models.ActionTrigger {
+	return models.StatsImprovement
 }

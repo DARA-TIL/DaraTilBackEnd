@@ -12,7 +12,7 @@ type Subscriber interface {
 
 type Publisher interface {
 	Publish(ctx context.Context, e Event)
-	AddSubscriber(s Subscriber)
+	AddSubscribers(s Subscriber, actions ...models.Actions)
 }
 
 type Event struct {
