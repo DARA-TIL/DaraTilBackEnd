@@ -31,6 +31,11 @@ definitions:
     - action
     - rules
     type: object
+  dto.CreateUserProfile:
+    properties:
+      userId:
+        type: integer
+    type: object
   dto.FinishLessonResponse:
     properties:
       lessonResult:
@@ -544,6 +549,28 @@ definitions:
       username:
         type: string
     type: object
+  dto.UserProfile:
+    properties:
+      lessonsCompleted:
+        type: integer
+      pinnedAchievements:
+        items:
+          $ref: '#/definitions/dto.Achievement'
+        type: array
+      user:
+        $ref: '#/definitions/dto.User'
+      userId:
+        type: integer
+      wordsLearned:
+        type: integer
+    type: object
+  dto.UserProfileUpdate:
+    properties:
+      pinnedAchievementIds:
+        items:
+          type: integer
+        type: array
+    type: object
   dto.UserProgress:
     properties:
       XpForNextLevel:
@@ -650,6 +677,38 @@ info:
   title: DaraTil Backend
   version: "0.2"
 paths:
+  /achievement/achieved:
+    get:
+      description: Get achieved achievement details for current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.Achievement'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get achieved achievements for user
+      tags:
+      - Achievement
   /achievement/create:
     post:
       consumes:
@@ -4236,6 +4295,130 @@ paths:
       summary: Update user achievement
       tags:
       - UserAchievement
+  /userProfile/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a user profile.
+      parameters:
+      - description: User profile creation payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUserProfile'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            type: string
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create user profile
+      tags:
+      - UserProfile
+  /userProfile/getByUserId/{id}:
+    get:
+      description: Returns a user profile by user ID.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User profile
+          schema:
+            $ref: '#/definitions/dto.UserProfile'
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user profile by user ID
+      tags:
+      - UserProfile
+  /userProfile/updatePinnedAchievements:
+    patch:
+      consumes:
+      - application/json
+      description: Updates pinned achievements in the user profile.
+      parameters:
+      - description: Pinned achievements update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserProfileUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            type: string
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update pinned achievements
+      tags:
+      - UserProfile
 schemes:
 - http
 securityDefinitions:

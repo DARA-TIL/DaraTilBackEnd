@@ -15,6 +15,7 @@ import (
 	"DaraTilBackendV2/internal/application/usecases/regionUC"
 	"DaraTilBackendV2/internal/application/usecases/regionUC/regionTranslationsUC"
 	"DaraTilBackendV2/internal/application/usecases/testUC"
+	"DaraTilBackendV2/internal/application/usecases/userProfileUC"
 	"DaraTilBackendV2/internal/application/usecases/userUC"
 	"DaraTilBackendV2/internal/application/usecases/wordExpainUC"
 	"DaraTilBackendV2/internal/config"
@@ -31,6 +32,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/service/test"
 	"DaraTilBackendV2/internal/presentation/http/service/user"
 	"DaraTilBackendV2/internal/presentation/http/service/userActivity"
+	"DaraTilBackendV2/internal/presentation/http/service/userProfile"
 	"DaraTilBackendV2/internal/presentation/http/service/ws"
 )
 
@@ -49,6 +51,7 @@ type Container struct {
 	ActionRuleHandler      *actionRule.ActionRuleHandler
 	WebSocketHandler       *ws.WebSocketManager
 	Assistant              *assistant.Assistant
+	UserProfileHandler     *userProfile.UserProfileHandler
 }
 
 func NewContainer(cfg *config.Config) *Container {
@@ -74,6 +77,7 @@ func NewContainer(cfg *config.Config) *Container {
 	achievementRepo := repository.NewAchievementRepository(db)
 	userAchievementRepo := repository.NewUserAchievementRepository(db)
 	actionRuleRepo := repository.NewActionRuleRepository(db)
+	userProfileRepo := repository.NewUserProfileRepository(db)
 	//AI
 	geminiAI := gemini.NewGeminiAI(cfg)
 
@@ -96,6 +100,7 @@ func NewContainer(cfg *config.Config) *Container {
 	getAllAchievementUC := achievementUC.NewGetAllUC(achievementRepo)
 	getAchievementByIDUC := achievementUC.NewGetByIDUC(achievementRepo)
 	updateAchievementUC := achievementUC.NewUpdateUC(achievementRepo)
+	getAchievedUC := achievementUC.NewGetAchievedUC(achievementRepo)
 
 	//UserAchievementsUCs
 	createUserAchievementUC := userAchievementUC.NewCreateUC(userAchievementRepo)
@@ -117,6 +122,13 @@ func NewContainer(cfg *config.Config) *Container {
 	lvlUpUC := userUC.NewLvlUpUC(userRepo, publisher)
 	updateUC := userUC.NewUpdateUC(userRepo)
 	getByUsernameUC := userUC.NewGetByUsernameUC(userRepo)
+
+	//User Profile UCS
+	createUserProfileUC := userProfileUC.NewCreateUC(userProfileRepo)
+	getProfileByUserIDUC := userProfileUC.NewGetByUserIDUC(userProfileRepo)
+	//increaseLessonsUC := userProfileUC.NewIncreaseLessonsCompletedUC(userProfileRepo)
+	//increaseWordsUC := userProfileUC.NewIncreaseWordsLearnedUC(userProfileRepo)
+	updatePinAchUC := userProfileUC.NewUpdatePinnedAchievementsUC(userProfileRepo)
 
 	// JWT UCs
 	createTokenUC := jwtTokenUC.NewCreateUC(jwtRepo)
@@ -328,6 +340,7 @@ func NewContainer(cfg *config.Config) *Container {
 		getAllAchievementUC,
 		getAchievementByIDUC,
 		updateAchievementUC,
+		getAchievedUC,
 	)
 
 	userAchievementHandler := achievement.NewUserAchievementHandler(
@@ -336,6 +349,12 @@ func NewContainer(cfg *config.Config) *Container {
 		getUserAchievementByIDUC,
 		getUaByUserIDUC,
 		updateUserAchievementUC,
+	)
+
+	userProfileHandler := userProfile.NewUserProfileHandler(
+		createUserProfileUC,
+		getProfileByUserIDUC,
+		updatePinAchUC,
 	)
 
 	actionRuleHandler := actionRule.NewActionRuleHandler(
@@ -368,5 +387,6 @@ func NewContainer(cfg *config.Config) *Container {
 		ActionRuleHandler:      actionRuleHandler,
 		WebSocketHandler:       wsHandler,
 		Assistant:              assistantHandler,
+		UserProfileHandler:     userProfileHandler,
 	}
 }

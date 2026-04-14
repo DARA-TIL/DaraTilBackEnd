@@ -73,3 +73,17 @@ func (a AchievementRepository) GetByAction(ctx context.Context, action models.Ac
 	ach := gormMappers.GormAchievementsToDomain(gormAchievements)
 	return ach, nil
 }
+func (a AchievementRepository) GetAchieved(ctx context.Context, userID uint) ([]models.Achievement, error) {
+	var gormAchievements []gormModels.Achievement
+
+	err := a.db.WithContext(ctx).
+		Model(&gormModels.Achievement{}).Preload("UserAchievements", "user_id = ?", userID).
+		Joins("JOIN user_achievements ua ON ua.achievement_id = achievements.id").
+		Where("ua.user_id = ? AND ua.achieved = ?", userID, true).
+		Find(&gormAchievements).Error
+	if err != nil {
+		return nil, errhandlers.DBErrHandler(err)
+	}
+
+	return gormMappers.GormAchievementsToDomain(gormAchievements), nil
+}

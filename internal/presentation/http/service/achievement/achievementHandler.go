@@ -16,11 +16,12 @@ import (
 )
 
 type AchievementHandler struct {
-	CreateUC  *achievementUC.CreateUC
-	DeleteUC  *achievementUC.DeleteUC
-	GetAllUC  *achievementUC.GetAllUC
-	GetByIDUC *achievementUC.GetByIDUC
-	UpdateUC  *achievementUC.UpdateUC
+	CreateUC      *achievementUC.CreateUC
+	DeleteUC      *achievementUC.DeleteUC
+	GetAllUC      *achievementUC.GetAllUC
+	GetByIDUC     *achievementUC.GetByIDUC
+	UpdateUC      *achievementUC.UpdateUC
+	GetAchievedUC *achievementUC.GetAchievedUC
 }
 
 func NewAchievementHandler(
@@ -29,13 +30,15 @@ func NewAchievementHandler(
 	getAllUC *achievementUC.GetAllUC,
 	getByIDUC *achievementUC.GetByIDUC,
 	updateUC *achievementUC.UpdateUC,
+	getAchievedUC *achievementUC.GetAchievedUC,
 ) *AchievementHandler {
 	return &AchievementHandler{
-		CreateUC:  createUC,
-		DeleteUC:  deleteUC,
-		GetAllUC:  getAllUC,
-		GetByIDUC: getByIDUC,
-		UpdateUC:  updateUC,
+		CreateUC:      createUC,
+		DeleteUC:      deleteUC,
+		GetAllUC:      getAllUC,
+		GetByIDUC:     getByIDUC,
+		UpdateUC:      updateUC,
+		GetAchievedUC: getAchievedUC,
 	}
 }
 
@@ -185,4 +188,31 @@ func (h *AchievementHandler) Update(c *gin.Context) {
 		return
 	}
 	response.Success(c, 200, "success")
+}
+
+// GetAchieved godoc
+// @Summary Get achieved achievements for user
+// @Description Get achieved achievement details for current user
+// @Tags Achievement
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {array} dto.Achievement
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /achievement/achieved [get]
+func (h *AchievementHandler) GetAchieved(c *gin.Context) {
+	userID, err := middleware.GetCurrentUserID(c)
+	if err != nil {
+		response.HandleDomainError(c, err)
+		return
+	}
+	ach, err := h.GetAchievedUC.Execute(c.Request.Context(), *userID)
+	if err != nil {
+		logger.Error("[ACHIEVEMENT] GetAll failed", zap.Error(err))
+		response.HandleDomainError(c, err)
+		return
+	}
+	achDto := dtoMappers.AchievementsToDTO(ach)
+	response.Success(c, 200, achDto)
 }

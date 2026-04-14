@@ -37,6 +37,12 @@ func (u *UserRepository) Create(ctx context.Context, user models.User) (*models.
 		if err := tx.Create(&userStreak).Error; err != nil {
 			return err
 		}
+		userProfile := gormModels.UserProfile{
+			UserID: userGorm.ID,
+		}
+		if err := tx.Create(&userProfile).Error; err != nil {
+			return err
+		}
 		return nil
 	})
 	if err != nil {

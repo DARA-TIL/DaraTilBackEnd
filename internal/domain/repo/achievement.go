@@ -12,6 +12,7 @@ type AchievementRepo interface {
 	GetByID(ctx context.Context, userID, id uint) (*models.Achievement, error)
 	GetAll(ctx context.Context, userID uint) ([]models.Achievement, error)
 	GetByAction(ctx context.Context, action models.Actions) ([]models.Achievement, error)
+	GetAchieved(ctx context.Context, userID uint) ([]models.Achievement, error)
 }
 type UserAchievementRepo interface {
 	Create(ctx context.Context, ua models.UserAchievement) error

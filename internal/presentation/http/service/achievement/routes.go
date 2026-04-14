@@ -12,6 +12,7 @@ func RegisterAchievementRoutes(r *gin.RouterGroup, h *AchievementHandler) {
 	r.GET("/getById/:id", h.GetByID)
 	r.PATCH("/update", middleware.RequireRole("admin"), h.Update)
 	r.DELETE("/delete/:id", middleware.RequireRole("admin"), h.Delete)
+	r.GET("/achieved", h.GetAchieved)
 }
 func RegisterUserAchievementRoutes(r *gin.RouterGroup, h *UserAchievementHandler) {
 	r.POST("/create", h.Create)

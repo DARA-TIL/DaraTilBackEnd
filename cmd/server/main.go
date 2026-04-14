@@ -12,9 +12,9 @@ import (
 // @version 0.2
 // @description Api server for DaraTil PLatform
 
-// @host localhost:8080
+// @host https://daratilback.onrender.com
 // @BasePath /api
-// @schemes http
+// @schemes https
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization

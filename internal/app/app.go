@@ -14,6 +14,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/service/test"
 	"DaraTilBackendV2/internal/presentation/http/service/user"
 	"DaraTilBackendV2/internal/presentation/http/service/userActivity"
+	"DaraTilBackendV2/internal/presentation/http/service/userProfile"
 	"context"
 	"time"
 
@@ -138,6 +139,12 @@ func (a *App) setupRoutes() {
 	assistantRoute.Use(middleware.AuthMiddleware(a.cfg))
 	assistantRoute.Use(middleware.RateLimiter(generalLimiter))
 	assistant.RegisterRoutes(assistantRoute, a.container.Assistant)
+
+	//UserProfile
+	userProfileRoute := api.Group("/userProfile")
+	userProfileRoute.Use(middleware.AuthMiddleware(a.cfg))
+	userProfileRoute.Use(middleware.RateLimiter(generalLimiter))
+	userProfile.RegisterRoutes(userProfileRoute, a.container.UserProfileHandler)
 
 	api.GET("/ws", middleware.AuthMiddleware(a.cfg), a.container.WebSocketHandler.ServeWS)
 	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
