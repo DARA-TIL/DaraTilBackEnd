@@ -6,6 +6,7 @@ import (
 	"DaraTilBackendV2/internal/application/usecases/achievementUC/userAchievementUC"
 	"DaraTilBackendV2/internal/application/usecases/actionRuleUC"
 	"DaraTilBackendV2/internal/application/usecases/assistantUC"
+	"DaraTilBackendV2/internal/application/usecases/dictionaryUC"
 	"DaraTilBackendV2/internal/application/usecases/folkloreUC"
 	"DaraTilBackendV2/internal/application/usecases/jwtTokenUC"
 	"DaraTilBackendV2/internal/application/usecases/lessonUC"
@@ -26,6 +27,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/service/achievement"
 	"DaraTilBackendV2/internal/presentation/http/service/actionRule"
 	"DaraTilBackendV2/internal/presentation/http/service/assistant"
+	"DaraTilBackendV2/internal/presentation/http/service/dictionary"
 	"DaraTilBackendV2/internal/presentation/http/service/folklore"
 	"DaraTilBackendV2/internal/presentation/http/service/jwt"
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
@@ -53,6 +55,7 @@ type Container struct {
 	WebSocketHandler       *ws.WebSocketManager
 	Assistant              *assistant.Assistant
 	UserProfileHandler     *userProfile.UserProfileHandler
+	DictionaryHandler      *dictionary.DictionaryHandler
 }
 
 func NewContainer(cfg *config.Config) *Container {
@@ -79,6 +82,7 @@ func NewContainer(cfg *config.Config) *Container {
 	userAchievementRepo := repository.NewUserAchievementRepository(db)
 	actionRuleRepo := repository.NewActionRuleRepository(db)
 	userProfileRepo := repository.NewUserProfileRepository(db)
+	dictionaryRepo := repository.NewDictionaryRepository(db)
 	//AI
 	geminiAI := gemini.NewGeminiAI(cfg)
 
@@ -142,8 +146,16 @@ func NewContainer(cfg *config.Config) *Container {
 	toggleLikeFolkloreUC := folkloreUC.NewToggleLikeUC(folkloreRepo, publisher)
 	updateFolkloreUC := folkloreUC.NewUpdateUC(folkloreRepo, geminiAI)
 
+	//DictionaryUCs
+	createDictionaryUC := dictionaryUC.NewCreateUC(dictionaryRepo)
+	updateDictionaryUC := dictionaryUC.NewUpdateUC(dictionaryRepo)
+	deleteDictionaryUC := dictionaryUC.NewDeleteUC(dictionaryRepo)
+	getAllDictionaryUC := dictionaryUC.NewGetAllUC(dictionaryRepo)
+	getByIDDictionaryUC := dictionaryUC.NewGetByIDUC(dictionaryRepo)
+	getWordDictionaryUC := dictionaryUC.NewGetWordUC(dictionaryRepo)
+
 	//AssistantUCS
-	wordExplainUC := assistantUC.NewWordExplainUC(geminiAI, publisher)
+	wordExplainUC := assistantUC.NewWordExplainUC(geminiAI, publisher, dictionaryRepo)
 
 	//LessonUCS
 	createLessonUC := lessonUC.NewCreateUC(lessonRepo)
@@ -389,6 +401,14 @@ func NewContainer(cfg *config.Config) *Container {
 		getAllActionRuleUC,
 		getActionRuleByActionUC,
 	)
+	dictionaryHandler := dictionary.NewDictionaryHandler(
+		createDictionaryUC,
+		updateDictionaryUC,
+		deleteDictionaryUC,
+		getAllDictionaryUC,
+		getByIDDictionaryUC,
+		getWordDictionaryUC,
+	)
 	assistantHandler := assistant.NewAssistant(wordExplainUC)
 
 	userActivityHandler := userActivity.NewUserActivityHandler(userActivityService)
@@ -412,5 +432,6 @@ func NewContainer(cfg *config.Config) *Container {
 		WebSocketHandler:       wsHandler,
 		Assistant:              assistantHandler,
 		UserProfileHandler:     userProfileHandler,
+		DictionaryHandler:      dictionaryHandler,
 	}
 }

@@ -5,16 +5,15 @@ import (
 	"DaraTilBackendV2/internal/presentation/dto"
 )
 
-func WordExplainToDomain(we dto.WordExplain) models.WordExplain {
-	return models.WordExplain{
+func WordExplainToDomain(we dto.WordExplain) models.WordRequest {
+	return models.WordRequest{
 		Word:  we.Word,
 		Block: we.Block,
-		Lang:  we.Lang,
 	}
 }
-func WordExplainResultToDto(wer models.WordExplainResult) dto.WordExplainResult {
+func WordExplainResultToDto(wer models.WordExplainResult, lang models.Language) dto.WordExplainResult {
 	return dto.WordExplainResult{
-		Result:  wer.Result,
-		Context: wer.Context,
+		Result:  wer.WordTranslations[lang],
+		Context: wer.WordExplainingTranslations[lang],
 	}
 }

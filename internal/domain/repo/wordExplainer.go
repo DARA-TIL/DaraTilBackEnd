@@ -6,5 +6,5 @@ import (
 )
 
 type WordExplainer interface {
-	WordExplain(ctx context.Context, word models.WordExplain) (*models.WordExplainResult, error)
+	WordExplain(ctx context.Context, word models.WordRequest) (*models.WordExplainResult, error)
 }

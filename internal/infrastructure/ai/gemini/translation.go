@@ -26,42 +26,76 @@ func NewGeminiAI(cfg *config.Config) *AiGemini {
 	return &AiGemini{client: client}
 }
 
-func (ai *AiGemini) WordExplain(ctx context.Context, word models.WordExplain) (*models.WordExplainResult, error) {
+func (ai *AiGemini) WordExplain(ctx context.Context, word models.WordRequest) (*models.WordExplainResult, error) {
 	textQuery := fmt.Sprintf(
 		`You are a language-learning assistant.
 
-				Your task is to explain the meaning of a selected word based on the context block where it appears.
+				Your task is to explain the meaning of a selected word only in the context of the provided block and return the result in three languages: Kazakh, Russian, and English.
 				
 				Input:
 				- word: "%s"
 				- block: "%s"
-				- lang: "%s"
 				
 				Instructions:
 				1. Analyze the selected word only in the context of the provided block.
-				2. Detect its meaning in this specific context.
-				3. Return a short, clear explanation suitable for a learner.
-				4. If the word has multiple meanings, choose only the meaning that matches the block.
-				5. Return the answer in the language specified by "lang".
-				6. Keep the explanation concise and educational.
-				7. Also provide part of speech, translation, and one simple example sentence.
-				8. If the word is unknown, unclear, or the context is insufficient, say so briefly.`,
-		word.Word, word.Block, word.Lang,
+				2. Determine the meaning of the word in this specific context.
+				3. Return a JSON object only.
+				4. Provide:
+				   - "wordTranslations": direct translations of the selected word into Kazakh, Russian, and English.
+				   - "wordExplainingTranslations": short learner-friendly explanations of the word's meaning in this context in Kazakh, Russian, and English.
+				5. Keep each explanation concise, clear, and educational.
+				6. If the word is unknown, unclear, or the context is insufficient, still return valid JSON and briefly state that the meaning is unclear in each explanation field.
+				7. Do not include any extra fields, comments, markdown, or formatting outside the JSON object.
+				
+				Important:
+				- Choose only the meaning that matches the given block.
+				- Do not list multiple meanings.
+				- Keep the explanations short and simple for language learners.`,
+		word.Word, word.Block,
 	)
 	answerConfig := &genai.GenerateContentConfig{
 		ResponseMIMEType: "application/json",
 		ResponseJsonSchema: map[string]any{
 			"type": "object",
 			"properties": map[string]any{
-				"result": map[string]any{
-					"type":        "string",
-					"description": "The name in kazakh language",
+				"wordTranslations": map[string]any{
+					"type": "object",
+					"properties": map[string]any{
+						"KZ": map[string]any{
+							"type":        "string",
+							"description": "Translation of the word in Kazakh",
+						},
+						"RU": map[string]any{
+							"type":        "string",
+							"description": "Translation of the word in Russian",
+						},
+						"EN": map[string]any{
+							"type":        "string",
+							"description": "Translation of the word in English",
+						},
+					},
+					"required": []string{"KZ", "RU", "EN"},
 				},
-				"context": map[string]any{
-					"type":        "string",
-					"description": "example or context where this word can be used",
+				"wordExplainingTranslations": map[string]any{
+					"type": "object",
+					"properties": map[string]any{
+						"KZ": map[string]any{
+							"type":        "string",
+							"description": "Explanation or usage context in Kazakh",
+						},
+						"RU": map[string]any{
+							"type":        "string",
+							"description": "Explanation or usage context in Russian",
+						},
+						"EN": map[string]any{
+							"type":        "string",
+							"description": "Explanation or usage context in English",
+						},
+					},
+					"required": []string{"KZ", "RU", "EN"},
 				},
 			},
+			"required": []string{"wordTranslations", "wordExplainingTranslations"},
 		},
 	}
 	res, err := ai.client.Models.GenerateContent(ctx, "gemini-2.5-flash", genai.Text(textQuery), answerConfig)

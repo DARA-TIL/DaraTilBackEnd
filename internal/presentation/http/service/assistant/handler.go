@@ -53,6 +53,6 @@ func (a *Assistant) ExplainWord(c *gin.Context) {
 		response.HandleDomainError(c, err)
 		return
 	}
-	resFto := dtoMappers.WordExplainResultToDto(*res)
+	resFto := dtoMappers.WordExplainResultToDto(*res, req.Lang)
 	response.Success(c, http.StatusOK, resFto)
 }

@@ -1,9 +1,11 @@
 package dto
 
+import "DaraTilBackendV2/internal/domain/models"
+
 type WordExplain struct {
-	Word  string `json:"word"`
-	Block string `json:"block"`
-	Lang  string `json:"lang"`
+	Word  string          `json:"word"`
+	Block string          `json:"block"`
+	Lang  models.Language `json:"lang"`
 }
 
 type WordExplainResult struct {
