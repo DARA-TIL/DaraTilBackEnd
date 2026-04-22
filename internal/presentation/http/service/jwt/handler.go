@@ -283,7 +283,7 @@ func (h *JwtTokenHandler) Logout(c *gin.Context) {
 	}
 
 	deleteCookie()
-	h.Notify(c.Request.Context(), services.Notification{
+	h.Notify(c.Request.Context(), &services.Notification{
 		Type:   models.UserLogOut,
 		UserID: claims.UserID,
 	})

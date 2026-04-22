@@ -10,4 +10,5 @@ var (
 	ErrInvalidInput = errors.New("invalid input")  // 422
 	ErrInternal     = errors.New("internal error") //500
 	ErrBadRequest   = errors.New("bad request")    //400
+	ErrAi           = errors.New("there is problems with ai")
 )

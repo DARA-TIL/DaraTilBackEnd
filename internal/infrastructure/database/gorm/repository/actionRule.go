@@ -18,7 +18,7 @@ func NewActionRuleRepository(db *gorm.DB) *ActionRuleRepository {
 	return &ActionRuleRepository{db: db}
 }
 
-func (a ActionRuleRepository) Create(ctx context.Context, actionRule models.ActionRule) error {
+func (a *ActionRuleRepository) Create(ctx context.Context, actionRule models.ActionRule) error {
 	model, err := gormMappers.ToModel(actionRule)
 	if err != nil {
 		return err
@@ -31,7 +31,7 @@ func (a ActionRuleRepository) Create(ctx context.Context, actionRule models.Acti
 	return nil
 }
 
-func (a ActionRuleRepository) CreateMulti(ctx context.Context, actionRules []models.ActionRule) error {
+func (a *ActionRuleRepository) CreateMulti(ctx context.Context, actionRules []models.ActionRule) error {
 	var modelsList []gormModels.ActionRule
 
 	for _, rule := range actionRules {
@@ -49,7 +49,7 @@ func (a ActionRuleRepository) CreateMulti(ctx context.Context, actionRules []mod
 	return nil
 }
 
-func (a ActionRuleRepository) Update(ctx context.Context, actionRule models.ActionRule) error {
+func (a *ActionRuleRepository) Update(ctx context.Context, actionRule models.ActionRule) error {
 	model, err := gormMappers.ToModel(actionRule)
 	if err != nil {
 		return err
@@ -64,7 +64,7 @@ func (a ActionRuleRepository) Update(ctx context.Context, actionRule models.Acti
 	return nil
 }
 
-func (a ActionRuleRepository) Delete(ctx context.Context, action models.Actions) error {
+func (a *ActionRuleRepository) Delete(ctx context.Context, action models.Actions) error {
 	if err := a.db.WithContext(ctx).
 		Where("action = ?", action).
 		Delete(&gormModels.ActionRule{}).Error; err != nil {
@@ -74,7 +74,7 @@ func (a ActionRuleRepository) Delete(ctx context.Context, action models.Actions)
 	return nil
 }
 
-func (a ActionRuleRepository) GetAll(ctx context.Context) ([]models.ActionRule, error) {
+func (a *ActionRuleRepository) GetAll(ctx context.Context) ([]models.ActionRule, error) {
 	var gormRules []gormModels.ActionRule
 
 	if err := a.db.WithContext(ctx).Find(&gormRules).Error; err != nil {
@@ -94,7 +94,7 @@ func (a ActionRuleRepository) GetAll(ctx context.Context) ([]models.ActionRule, 
 	return result, nil
 }
 
-func (a ActionRuleRepository) GetByAction(ctx context.Context, action models.Actions) (models.ActionRule, error) {
+func (a *ActionRuleRepository) GetByAction(ctx context.Context, action models.Actions) (models.ActionRule, error) {
 	var gormRule gormModels.ActionRule
 
 	if err := a.db.WithContext(ctx).

@@ -7,8 +7,8 @@ import (
 
 const LessonAvailable = "available"
 
-func LessonToDTO(lesson models.Lesson) dto.LessonDTO {
-	return dto.LessonDTO{
+func LessonToDTO(lesson models.Lesson) dto.Lesson {
+	return dto.Lesson{
 		ID:            lesson.ID,
 		Name:          lesson.Name,
 		Description:   lesson.Description,
@@ -21,16 +21,16 @@ func LessonToDTO(lesson models.Lesson) dto.LessonDTO {
 	}
 }
 
-func LessonsToDTO(lessons []models.Lesson) []dto.LessonDTO {
-	var result []dto.LessonDTO
+func LessonsToDTO(lessons []models.Lesson) []dto.Lesson {
+	var result []dto.Lesson
 	for _, lesson := range lessons {
 		result = append(result, LessonToDTO(lesson))
 	}
 	return result
 }
 
-func LessonBlockToDTO(block models.LessonBlock) dto.LessonBlockDTO {
-	return dto.LessonBlockDTO{
+func LessonBlockToDTO(block models.LessonBlock) dto.LessonBlock {
+	return dto.LessonBlock{
 		ID:          block.ID,
 		Name:        block.Name,
 		ContentType: block.ContentType,
@@ -41,14 +41,14 @@ func LessonBlockToDTO(block models.LessonBlock) dto.LessonBlockDTO {
 	}
 }
 
-func LessonBlocksToDTO(blocks []models.LessonBlock) []dto.LessonBlockDTO {
-	var result []dto.LessonBlockDTO
+func LessonBlocksToDTO(blocks []models.LessonBlock) []dto.LessonBlock {
+	var result []dto.LessonBlock
 	for _, block := range blocks {
 		result = append(result, LessonBlockToDTO(block))
 	}
 	return result
 }
-func UpdateLessonDTOToDomain(dto dto.UpdateLessonDTO) models.UpdateLessonFields {
+func UpdateLessonDTOToDomain(dto dto.UpdateLesson) models.UpdateLessonFields {
 	return models.UpdateLessonFields{
 		Name:          dto.Name,
 		Description:   dto.Description,
@@ -58,7 +58,7 @@ func UpdateLessonDTOToDomain(dto dto.UpdateLessonDTO) models.UpdateLessonFields 
 		RequiredLevel: dto.RequiredLevel,
 	}
 }
-func UpdateLessonBlockDTOToDomain(dto dto.UpdateLessonBlockDTO) models.UpdateLessonBLockFields {
+func UpdateLessonBlockDTOToDomain(dto dto.UpdateLessonBlock) models.UpdateLessonBLockFields {
 	return models.UpdateLessonBLockFields{
 		Name:        dto.Name,
 		ContentType: dto.ContentType,
@@ -68,7 +68,7 @@ func UpdateLessonBlockDTOToDomain(dto dto.UpdateLessonBlockDTO) models.UpdateLes
 		LessonID:    dto.LessonID,
 	}
 }
-func LessonDTOToDomain(dto dto.LessonDTO) models.Lesson {
+func LessonDTOToDomain(dto dto.Lesson) models.Lesson {
 	return models.Lesson{
 		ID:            dto.ID,
 		Name:          dto.Name,
@@ -80,14 +80,7 @@ func LessonDTOToDomain(dto dto.LessonDTO) models.Lesson {
 		Blocks:        LessonBlocksDTOToDomain(dto.Blocks),
 	}
 }
-func LessonsDTOToDomain(dtos []dto.LessonDTO) []models.Lesson {
-	var result []models.Lesson
-	for _, lesson := range dtos {
-		result = append(result, LessonDTOToDomain(lesson))
-	}
-	return result
-}
-func LessonBlockDTOToDomain(dto dto.LessonBlockDTO) models.LessonBlock {
+func LessonBlockDTOToDomain(dto dto.LessonBlock) models.LessonBlock {
 	return models.LessonBlock{
 		ID:          dto.ID,
 		Name:        dto.Name,
@@ -98,7 +91,7 @@ func LessonBlockDTOToDomain(dto dto.LessonBlockDTO) models.LessonBlock {
 		Position:    dto.Position,
 	}
 }
-func LessonBlocksDTOToDomain(dto []dto.LessonBlockDTO) []models.LessonBlock {
+func LessonBlocksDTOToDomain(dto []dto.LessonBlock) []models.LessonBlock {
 	var result []models.LessonBlock
 	for _, block := range dto {
 		result = append(result, LessonBlockDTOToDomain(block))
@@ -106,17 +99,6 @@ func LessonBlocksDTOToDomain(dto []dto.LessonBlockDTO) []models.LessonBlock {
 	return result
 }
 
-func DTOLessonResultToDomain(testRes dto.LessonResult) models.LessonResult {
-	return models.LessonResult{
-		ID:       testRes.ID,
-		UserID:   testRes.UserID,
-		LessonID: testRes.LessonID,
-		TestID:   testRes.TestID,
-		Result:   testRes.Result,
-		Pass:     testRes.Pass,
-		PassTime: testRes.PassTime,
-	}
-}
 func LessonResultToDTO(testRes models.LessonResult) dto.LessonResult {
 	return dto.LessonResult{
 		ID:       testRes.ID,

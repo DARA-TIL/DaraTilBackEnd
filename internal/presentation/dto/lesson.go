@@ -4,21 +4,21 @@ import (
 	"time"
 )
 
-type LessonDTO struct {
-	ID            uint             `json:"id"`
-	Name          string           `json:"name"`
-	Description   string           `json:"description"`
-	ImageUrl      string           `json:"imageUrl"`
-	Author        string           `json:"author"`
-	Reward        int              `json:"reward"`
-	RequiredLevel int              `json:"requiredLevel"`
-	LessonStatus  string           `json:"lessonStatus"`
-	Blocks        []LessonBlockDTO `json:"blocks"`
-	Results       []LessonResult   `json:"results"`
-	BestResult    *LessonResult    `json:"bestResult,omitempty"`
+type Lesson struct {
+	ID            uint           `json:"id"`
+	Name          string         `json:"name"`
+	Description   string         `json:"description"`
+	ImageUrl      string         `json:"imageUrl"`
+	Author        string         `json:"author"`
+	Reward        int            `json:"reward"`
+	RequiredLevel int            `json:"requiredLevel"`
+	LessonStatus  string         `json:"lessonStatus"`
+	Blocks        []LessonBlock  `json:"blocks"`
+	Results       []LessonResult `json:"results"`
+	BestResult    *LessonResult  `json:"bestResult,omitempty"`
 }
 
-type LessonBlockDTO struct {
+type LessonBlock struct {
 	ID          uint   `json:"id"`
 	Name        string `json:"name"`
 	ContentType string `json:"contentType"`
@@ -28,7 +28,7 @@ type LessonBlockDTO struct {
 	Position    int    `json:"position"`
 }
 
-type UpdateLessonDTO struct {
+type UpdateLesson struct {
 	Name          *string `json:"name,omitempty"`
 	Description   *string `json:"description,omitempty"`
 	ImageUrl      *string `json:"imageUrl,omitempty"`
@@ -37,7 +37,7 @@ type UpdateLessonDTO struct {
 	RequiredLevel *int    `json:"requiredLevel,omitempty"`
 }
 
-type UpdateLessonBlockDTO struct {
+type UpdateLessonBlock struct {
 	Name        *string `json:"name,omitempty"`
 	ContentType *string `json:"contentType,omitempty"`
 	ContentUrl  *string `json:"contentUrl,omitempty"`

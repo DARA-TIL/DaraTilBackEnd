@@ -68,7 +68,7 @@ func (s *StreakService) Handle(ctx context.Context, e Event) error {
 			logger.Error("Failed to create new Streak", zap.Error(err))
 			return err
 		}
-		s.Notify(ctx, StreakNotification{
+		s.Notify(ctx, &StreakNotification{
 			Notification: Notification{
 				Type:   models.StreakIncrease,
 				UserID: e.UserID,
@@ -94,7 +94,7 @@ func (s *StreakService) Handle(ctx context.Context, e Event) error {
 		if err != nil {
 			logger.Error("Failed to get user streak", zap.Error(err))
 		}
-		s.Notify(ctx, StreakNotification{
+		s.Notify(ctx, &StreakNotification{
 			Notification: Notification{
 				Type:   models.StreakIncrease,
 				UserID: e.UserID,
@@ -109,7 +109,7 @@ func (s *StreakService) Handle(ctx context.Context, e Event) error {
 		logger.Error("Failed to start user streak", zap.Error(err))
 		return err
 	}
-	s.Notify(ctx, StreakNotification{
+	s.Notify(ctx, &StreakNotification{
 		Notification: Notification{
 			Type:   models.StreakIncrease,
 			UserID: e.UserID,
@@ -129,7 +129,7 @@ func (s *StreakService) CheckStreak(ctx context.Context, userID uint) (StreakUpd
 		if err != nil {
 			return NoChange, err
 		}
-		s.Notify(ctx, StreakNotification{
+		s.Notify(ctx, &StreakNotification{
 			Notification: Notification{
 				Type:   models.StreakIncrease,
 				UserID: userID,
@@ -147,7 +147,7 @@ func (s *StreakService) CheckStreak(ctx context.Context, userID uint) (StreakUpd
 		if err != nil {
 			return NoChange, err
 		}
-		s.Notify(ctx, StreakNotification{
+		s.Notify(ctx, &StreakNotification{
 			Notification: Notification{
 				Type:   models.StreakReset,
 				UserID: userID,

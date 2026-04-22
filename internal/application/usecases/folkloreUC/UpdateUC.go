@@ -1,10 +1,14 @@
 package folkloreUC
 
 import (
+	errs "DaraTilBackendV2/internal/domain/domErr"
 	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/domain/repo"
+	"DaraTilBackendV2/internal/infrastructure/logger"
 	"context"
 	"fmt"
+
+	"go.uber.org/zap"
 )
 
 type UpdateUC struct {
@@ -24,7 +28,8 @@ func (uc *UpdateUC) Execute(ctx context.Context, folkloreID uint, fields models.
 		query := fmt.Sprintf("name" + *fields.Name + "\ncontent:" + *fields.Content)
 		translation, err := uc.translator.Translate(context.Background(), query)
 		if err != nil {
-			return nil, err
+			logger.Error("error while translating word", zap.Error(err))
+			return nil, errs.ErrAi
 		}
 		kz := models.FolkloreTranslation{
 			Language:    "kz",

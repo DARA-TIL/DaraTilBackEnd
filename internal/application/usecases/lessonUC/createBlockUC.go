@@ -14,6 +14,6 @@ func NewCreateBlockUC(repo repo.LessonRepo) *CreateBlockUC {
 	return &CreateBlockUC{repo: repo}
 }
 
-func (u *CreateBlockUC) Execute(ctx context.Context, block models.LessonBlock) (*models.LessonBlock, error) {
-	return u.repo.CreateBlock(ctx, block)
+func (uc *CreateBlockUC) Execute(ctx context.Context, block models.LessonBlock) (*models.LessonBlock, error) {
+	return uc.repo.CreateBlock(ctx, block)
 }

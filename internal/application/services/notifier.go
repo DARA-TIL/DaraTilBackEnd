@@ -23,8 +23,8 @@ type Notification struct {
 	Type   models.NotificationTrigger
 }
 
-func (n Notification) GetNotification() Notification {
-	return n
+func (n *Notification) GetNotification() Notification {
+	return *n
 }
 
 type StreakNotification struct {
@@ -32,7 +32,7 @@ type StreakNotification struct {
 	Streak int
 }
 
-func (n StreakNotification) GetNotification() Notification {
+func (n *StreakNotification) GetNotification() Notification {
 	return n.Notification
 }
 
@@ -41,6 +41,6 @@ type AchievementNotification struct {
 	AchievementID uint
 }
 
-func (n AchievementNotification) GetNotification() Notification {
+func (n *AchievementNotification) GetNotification() Notification {
 	return n.Notification
 }

@@ -14,6 +14,6 @@ func NewCreateOptionUC(repo repo.TestRepo) *CreateOptionUC {
 	return &CreateOptionUC{repo: repo}
 }
 
-func (h *CreateOptionUC) Execute(ctx context.Context, option models.QuestionOption) (*models.QuestionOption, error) {
-	return h.repo.CreateOption(ctx, option)
+func (uc *CreateOptionUC) Execute(ctx context.Context, option models.QuestionOption) (*models.QuestionOption, error) {
+	return uc.repo.CreateOption(ctx, option)
 }

@@ -14,7 +14,7 @@ type UpdateUC struct {
 func NewUpdateUC(repo repo.LessonRepo) *UpdateUC {
 	return &UpdateUC{repo: repo}
 }
-func (u UpdateUC) Execute(ctx context.Context, id uint, updFields models.UpdateLessonFields) (*models.Lesson, error) {
+func (uc *UpdateUC) Execute(ctx context.Context, id uint, updFields models.UpdateLessonFields) (*models.Lesson, error) {
 	upd := utils.UpdateLessonFields(updFields)
-	return u.repo.Update(ctx, id, upd)
+	return uc.repo.Update(ctx, id, upd)
 }

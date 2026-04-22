@@ -87,8 +87,8 @@ func NewLessonHandler(
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body dto.LessonDTO true "Lesson payload"
-// @Success 201 {object} dto.LessonDTO "Created lesson"
+// @Param request body dto.Lesson true "Lesson payload"
+// @Success 201 {object} dto.Lesson "Created lesson"
 // @Failure 400 {object} map[string]interface{} "Bad request"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
@@ -96,7 +96,7 @@ func NewLessonHandler(
 func (h *LessonHandler) CreateLesson(c *gin.Context) {
 	logger.Info("Create lesson request started")
 
-	var body dto.LessonDTO
+	var body dto.Lesson
 	err := c.ShouldBindJSON(&body)
 	if err != nil {
 		logger.Warn("Invalid lesson input")
@@ -123,7 +123,7 @@ func (h *LessonHandler) CreateLesson(c *gin.Context) {
 // @Tags Lesson
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {array} dto.LessonDTO "Lessons list"
+// @Success 200 {array} dto.Lesson "Lessons list"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /lesson/getAll [get]
@@ -208,7 +208,7 @@ func (h *LessonHandler) GetLessons(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Lesson ID"
-// @Success 200 {object} dto.LessonDTO "Lesson with results"
+// @Success 200 {object} dto.Lesson "Lesson with results"
 // @Failure 400 {object} map[string]interface{} "Bad request"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 423 {object} map[string]interface{} "User level is not enough for this lesson"
@@ -285,8 +285,8 @@ func (h *LessonHandler) GetLessonByID(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Lesson ID"
-// @Param request body dto.UpdateLessonDTO true "Lesson update payload"
-// @Success 200 {object} dto.LessonDTO "Updated lesson"
+// @Param request body dto.UpdateLesson true "Lesson update payload"
+// @Success 200 {object} dto.Lesson "Updated lesson"
 // @Failure 400 {object} map[string]interface{} "Bad request"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 404 {object} map[string]interface{} "Not found"
@@ -302,7 +302,7 @@ func (h *LessonHandler) UpdateLesson(c *gin.Context) {
 		return
 	}
 
-	var body dto.UpdateLessonDTO
+	var body dto.UpdateLesson
 	if err := c.ShouldBindJSON(&body); err != nil {
 		logger.Warn("Invalid lesson update input")
 		response.HandleDomainError(c, errs.ErrBadRequest)
@@ -363,8 +363,8 @@ func (h *LessonHandler) DeleteLesson(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body dto.LessonBlockDTO true "Lesson block payload"
-// @Success 201 {object} dto.LessonBlockDTO "Created block"
+// @Param request body dto.LessonBlock true "Lesson block payload"
+// @Success 201 {object} dto.LessonBlock "Created block"
 // @Failure 400 {object} map[string]interface{} "Bad request"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
@@ -372,7 +372,7 @@ func (h *LessonHandler) DeleteLesson(c *gin.Context) {
 func (h *LessonHandler) CreateBlock(c *gin.Context) {
 	logger.Info("Create lesson block request started")
 
-	var body dto.LessonBlockDTO
+	var body dto.LessonBlock
 	if err := c.ShouldBindJSON(&body); err != nil {
 		logger.Warn("Invalid lesson block input")
 		response.HandleDomainError(c, errs.ErrBadRequest)
@@ -434,8 +434,8 @@ func (h *LessonHandler) DeleteBlock(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Lesson block ID"
-// @Param request body dto.UpdateLessonBlockDTO true "Lesson block update payload"
-// @Success 200 {object} dto.LessonBlockDTO "Updated block"
+// @Param request body dto.UpdateLessonBlock true "Lesson block update payload"
+// @Success 200 {object} dto.LessonBlock "Updated block"
 // @Failure 400 {object} map[string]interface{} "Bad request"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 422 {object} map[string]interface{} "lesson block position and lesson id is required"
@@ -452,7 +452,7 @@ func (h *LessonHandler) UpdateBlock(c *gin.Context) {
 		return
 	}
 
-	var body dto.UpdateLessonBlockDTO
+	var body dto.UpdateLessonBlock
 	if err := c.ShouldBindJSON(&body); err != nil {
 		logger.Warn("Invalid lesson block update input")
 		response.HandleDomainError(c, errs.ErrBadRequest)

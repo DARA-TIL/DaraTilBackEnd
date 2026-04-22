@@ -15,6 +15,6 @@ func NewDeleteBlockUC(repo repo.LessonRepo) *DeleteBlockUC {
 	}
 }
 
-func (u *DeleteBlockUC) Execute(ctx context.Context, id uint) error {
-	return u.repo.DeleteBlock(ctx, id)
+func (uc *DeleteBlockUC) Execute(ctx context.Context, id uint) error {
+	return uc.repo.DeleteBlock(ctx, id)
 }

@@ -55,7 +55,7 @@ func (c *Client) WriteMessages() {
 		case message := <-c.egress:
 			_ = c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			switch n := message.(type) {
-			case services.AchievementNotification:
+			case *services.AchievementNotification:
 				err := c.conn.WriteJSON(AchievementNotification{
 					Notification: Notification{
 						UserID: n.UserID,
@@ -67,7 +67,7 @@ func (c *Client) WriteMessages() {
 					logger.Error("connection closed", zap.Error(err))
 					return
 				}
-			case services.StreakNotification:
+			case *services.StreakNotification:
 				err := c.conn.WriteJSON(StreakNotification{
 					Notification: Notification{
 						UserID: n.UserID,

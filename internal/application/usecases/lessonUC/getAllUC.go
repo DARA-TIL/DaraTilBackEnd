@@ -13,6 +13,6 @@ type GetAllUC struct {
 func NewGetAllUC(repo repo.LessonRepo) *GetAllUC {
 	return &GetAllUC{repo: repo}
 }
-func (u *GetAllUC) Execute(ctx context.Context) ([]models.Lesson, error) {
-	return u.repo.GetAll(ctx)
+func (uc *GetAllUC) Execute(ctx context.Context) ([]models.Lesson, error) {
+	return uc.repo.GetAll(ctx)
 }

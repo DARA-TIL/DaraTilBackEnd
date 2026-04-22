@@ -48,14 +48,14 @@ func NewActionRuleHandler(
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body dto.ActionRuleDTO true "ActionRule payload"
+// @Param request body dto.ActionRule true "ActionRule payload"
 // @Success 201 {string} string
 // @Failure 400 {object} map[string]interface{}
 // @Failure 401 {object} map[string]interface{}
 // @Failure 403 {object} map[string]interface{}
 // @Router /actionRules/create [post]
 func (h *ActionRuleHandler) Create(c *gin.Context) {
-	var body dto.ActionRuleDTO
+	var body dto.ActionRule
 
 	if err := c.ShouldBindJSON(&body); err != nil {
 		logger.Error("[ACTION RULE CREATE] bind error", zap.Error(err))
@@ -81,14 +81,14 @@ func (h *ActionRuleHandler) Create(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body []dto.ActionRuleDTO true "ActionRules payload"
+// @Param request body []dto.ActionRule true "ActionRules payload"
 // @Success 201 {string} string
 // @Failure 400 {object} map[string]interface{}
 // @Failure 401 {object} map[string]interface{}
 // @Failure 403 {object} map[string]interface{}
 // @Router /actionRules/createMulti [post]
 func (h *ActionRuleHandler) CreateMulti(c *gin.Context) {
-	var body []dto.ActionRuleDTO
+	var body []dto.ActionRule
 
 	if err := c.ShouldBindJSON(&body); err != nil {
 		logger.Error("[ACTION RULE CREATE MULTI] bind error", zap.Error(err))
@@ -114,7 +114,7 @@ func (h *ActionRuleHandler) CreateMulti(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body dto.ActionRuleDTO true "ActionRule payload"
+// @Param request body dto.ActionRule true "ActionRule payload"
 // @Success 200 {string} string
 // @Failure 400 {object} map[string]interface{}
 // @Failure 401 {object} map[string]interface{}
@@ -122,7 +122,7 @@ func (h *ActionRuleHandler) CreateMulti(c *gin.Context) {
 // @Failure 404 {object} map[string]interface{}
 // @Router /actionRules/update [patch]
 func (h *ActionRuleHandler) Update(c *gin.Context) {
-	var body dto.ActionRuleDTO
+	var body dto.ActionRule
 
 	if err := c.ShouldBindJSON(&body); err != nil {
 		logger.Error("[ACTION RULE UPDATE] bind error", zap.Error(err))
@@ -176,7 +176,7 @@ func (h *ActionRuleHandler) Delete(c *gin.Context) {
 // @Tags ActionRule
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {array} dto.ActionRuleDTO
+// @Success 200 {array} dto.ActionRule
 // @Failure 401 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
 // @Router /actionRules/getAll [get]
@@ -188,9 +188,9 @@ func (h *ActionRuleHandler) GetAll(c *gin.Context) {
 		return
 	}
 
-	dto := dtoMappers.ActionRulesToDto(rules)
+	arDto := dtoMappers.ActionRulesToDto(rules)
 
-	response.Success(c, http.StatusOK, dto)
+	response.Success(c, http.StatusOK, arDto)
 }
 
 // GetByAction godoc
@@ -200,7 +200,7 @@ func (h *ActionRuleHandler) GetAll(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param action path string true "Action"
-// @Success 200 {object} dto.ActionRuleDTO
+// @Success 200 {object} dto.ActionRule
 // @Failure 400 {object} map[string]interface{}
 // @Failure 401 {object} map[string]interface{}
 // @Failure 404 {object} map[string]interface{}
@@ -222,7 +222,7 @@ func (h *ActionRuleHandler) GetByAction(c *gin.Context) {
 		return
 	}
 
-	dto := dtoMappers.ActionRuleToDTO(rule)
+	arDto := dtoMappers.ActionRuleToDTO(rule)
 
-	response.Success(c, http.StatusOK, dto)
+	response.Success(c, http.StatusOK, arDto)
 }

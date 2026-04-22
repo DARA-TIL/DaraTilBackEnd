@@ -42,6 +42,8 @@ func HandleDomainError(c *gin.Context, err error) {
 		Fail(c, http.StatusConflict, "conflict")
 	case errors.Is(err, errs.ErrInternal):
 		Fail(c, http.StatusInternalServerError, "internal server error")
+	case errors.Is(err, errs.ErrAi):
+		Fail(c, http.StatusInternalServerError, "ai error")
 	default:
 		// неизвестное - не светим
 		Fail(c, http.StatusInternalServerError, "internal server error")

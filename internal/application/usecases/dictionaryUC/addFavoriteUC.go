@@ -2,7 +2,7 @@ package dictionaryUC
 
 import (
 	"DaraTilBackendV2/internal/application/services"
-	"DaraTilBackendV2/internal/application/usecases/helpers"
+	"DaraTilBackendV2/internal/application/utils"
 	errs "DaraTilBackendV2/internal/domain/domErr"
 	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/domain/repo"
@@ -36,7 +36,7 @@ func (uc *AddFavoriteUC) Add(ctx context.Context, req models.WordRequest, userID
 		if !errors.Is(err, errs.ErrNotFound) {
 			return err
 		}
-		word, err := helpers.ExplainAndCreateWord(ctx, userID, req, uc.explainer, uc.dictionaryRepo)
+		word, err := utils.ExplainAndCreateWord(ctx, req, uc.explainer, uc.dictionaryRepo)
 		if err != nil {
 			return err
 		}

@@ -41,7 +41,7 @@ func (uc *IncrementQuantityUC) Handle(ctx context.Context, e services.Event) err
 	}
 	if len(achievements) != 0 {
 		for _, achievement := range achievements {
-			uc.Notify(ctx, services.AchievementNotification{
+			uc.Notify(ctx, &services.AchievementNotification{
 				Notification: services.Notification{
 					UserID: e.UserID,
 					Type:   models.Achieved,
