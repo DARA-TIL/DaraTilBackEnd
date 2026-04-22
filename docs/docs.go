@@ -7374,9 +7374,9 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "0.2",
-	Host:             "localhost:8080",
+	Host:             "daratilback.onrender.com/",
 	BasePath:         "/api",
-	Schemes:          []string{"http"},
+	Schemes:          []string{"https"},
 	Title:            "DaraTil Backend",
 	Description:      "Api server for DaraTil PLatform",
 	InfoInstanceName: "swagger",

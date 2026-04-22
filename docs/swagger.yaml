@@ -709,7 +709,7 @@ definitions:
         example: "123456"
         type: string
     type: object
-host: localhost:8080
+host: daratilback.onrender.com/
 info:
   contact: {}
   description: Api server for DaraTil PLatform
@@ -4868,7 +4868,7 @@ paths:
       tags:
       - UserProfile
 schemes:
-- http
+- https
 securityDefinitions:
   BearerAuth:
     in: header
