@@ -19,23 +19,26 @@ const ContextUserKey = "user"
 
 func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		var tokenStr string
 		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			logger.Error("No Authorization header")
+		authQuery := c.Query("token")
+		if authHeader != "" {
+			parts := strings.SplitN(authHeader, " ", 2)
+			if len(parts) != 2 || parts[0] != "Bearer" {
+				logger.Error("Wrong Authorization header")
+				response.HandleDomainError(c, domErr.ErrUnauthorized)
+				c.Abort()
+				return
+			}
+			tokenStr = parts[1]
+		} else if authQuery != "" {
+			tokenStr = authQuery
+		} else {
+			logger.Error("No token provided")
 			response.HandleDomainError(c, domErr.ErrUnauthorized)
 			c.Abort()
 			return
 		}
-
-		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			logger.Error("Wrong Authorization header")
-			response.HandleDomainError(c, domErr.ErrUnauthorized)
-			c.Abort()
-			return
-		}
-		tokenStr := parts[1]
-
 		claims := &dto.CustomClaims{}
 
 		token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
