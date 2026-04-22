@@ -643,6 +643,11 @@ definitions:
       result:
         type: string
     type: object
+  dto.WordTranslationResult:
+    properties:
+      result:
+        type: string
+    type: object
   jwt.RefreshRequest:
     properties:
       refreshToken:
@@ -704,7 +709,7 @@ definitions:
         example: "123456"
         type: string
     type: object
-host: daratilback.onrender.com
+host: localhost:8080
 info:
   contact: {}
   description: Api server for DaraTil PLatform
@@ -1226,6 +1231,45 @@ paths:
       summary: Get Explaining of the word in its context
       tags:
       - Assistant
+  /assistant/translate:
+    post:
+      consumes:
+      - application/json
+      description: Translate word the word in its context by the help of AI
+      parameters:
+      - description: Word Request with its block
+        in: body
+        name: wordReq
+        required: true
+        schema:
+          $ref: '#/definitions/dto.WordExplain'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.WordTranslationResult'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Translate word
+      tags:
+      - Assistant
   /auth/login:
     post:
       consumes:
@@ -1419,6 +1463,180 @@ paths:
       security:
       - BearerAuth: []
       summary: Delete dictionary word
+      tags:
+      - Dictionary
+  /dictionary/favorite:
+    get:
+      consumes:
+      - application/json
+      description: Returns all dictionary words added to favorites by the current
+        user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.Word'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get current user's favorite words
+      tags:
+      - Dictionary
+    post:
+      consumes:
+      - application/json
+      description: Adds a word to the current user's favorites. If the word does not
+        exist yet, it may be created first based on the provided payload.
+      parameters:
+      - description: Word payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.WordExplain'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add word to favorites by payload
+      tags:
+      - Dictionary
+  /dictionary/favorite/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Removes a dictionary word from the current user's favorites by
+        word id.
+      parameters:
+      - description: Word ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Remove word from favorites
+      tags:
+      - Dictionary
+    post:
+      consumes:
+      - application/json
+      description: Adds an existing dictionary word to the current user's favorites
+        by word id.
+      parameters:
+      - description: Word ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add word to favorites by id
       tags:
       - Dictionary
   /dictionary/getAll:
@@ -4650,7 +4868,7 @@ paths:
       tags:
       - UserProfile
 schemes:
-- https
+- http
 securityDefinitions:
   BearerAuth:
     in: header

@@ -6,11 +6,14 @@ import (
 )
 
 type DictionaryRepo interface {
-	Create(ctx context.Context, w models.Word) error
+	Create(ctx context.Context, w models.Word) (*models.Word, error)
 	Update(ctx context.Context, w models.Word) error
 	Delete(ctx context.Context, id uint) error
 	GetAll(ctx context.Context) ([]models.Word, error)
 	GetExactWord(ctx context.Context, word string, block string) (*models.Word, error)
 	GetWord(ctx context.Context, word string) ([]models.Word, error)
 	GetByID(ctx context.Context, id uint) (*models.Word, error)
+	AddToFavorite(ctx context.Context, wordID, userID uint) error
+	RemoveFromFavorite(ctx context.Context, wordID, userID uint) error
+	GetFavorites(ctx context.Context, userID uint) ([]models.Word, error)
 }

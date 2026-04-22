@@ -153,6 +153,9 @@ func NewContainer(cfg *config.Config) *Container {
 	getAllDictionaryUC := dictionaryUC.NewGetAllUC(dictionaryRepo)
 	getByIDDictionaryUC := dictionaryUC.NewGetByIDUC(dictionaryRepo)
 	getWordDictionaryUC := dictionaryUC.NewGetWordUC(dictionaryRepo)
+	addFavoriteUC := dictionaryUC.NewAddFavoriteUC(geminiAI, publisher, dictionaryRepo)
+	deleteFavoriteUC := dictionaryUC.NewDeleteFavoriteUC(dictionaryRepo)
+	getFavoriteWordsUC := dictionaryUC.NewGetFavoritesUC(dictionaryRepo)
 
 	//AssistantUCS
 	wordExplainUC := assistantUC.NewWordExplainUC(geminiAI, publisher, dictionaryRepo)
@@ -408,6 +411,9 @@ func NewContainer(cfg *config.Config) *Container {
 		getAllDictionaryUC,
 		getByIDDictionaryUC,
 		getWordDictionaryUC,
+		addFavoriteUC,
+		deleteFavoriteUC,
+		getFavoriteWordsUC,
 	)
 	assistantHandler := assistant.NewAssistant(wordExplainUC)
 

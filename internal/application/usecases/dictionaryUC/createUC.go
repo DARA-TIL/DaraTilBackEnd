@@ -15,5 +15,6 @@ func NewCreateUC(repo repo.DictionaryRepo) *CreateUC {
 }
 
 func (uc *CreateUC) Execute(ctx context.Context, word models.Word) error {
-	return uc.repo.Create(ctx, word)
+	_, err := uc.repo.Create(ctx, word)
+	return err
 }

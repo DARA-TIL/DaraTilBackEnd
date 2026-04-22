@@ -12,3 +12,7 @@ type WordExplainResult struct {
 	Result  string `json:"result"`
 	Context string `json:"context"`
 }
+
+type WordTranslationResult struct {
+	Result string `json:"result"`
+}

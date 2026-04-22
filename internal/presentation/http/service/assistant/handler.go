@@ -53,6 +53,43 @@ func (a *Assistant) ExplainWord(c *gin.Context) {
 		response.HandleDomainError(c, err)
 		return
 	}
-	resFto := dtoMappers.WordExplainResultToDto(*res, req.Lang)
-	response.Success(c, http.StatusOK, resFto)
+	resDto := dtoMappers.WordExplainResultToDto(*res, req.Lang)
+	response.Success(c, http.StatusOK, resDto)
+}
+
+// TranslateWord godoc
+// @Summary Translate word
+// @Description Translate word the word in its context by the help of AI
+// @Tags Assistant
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param wordReq body dto.WordExplain true "Word Request with its block"
+// @Success 200 {object} dto.WordTranslationResult
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 403 {object} map[string]interface{}
+// @Router /assistant/translate [post]
+func (a *Assistant) TranslateWord(c *gin.Context) {
+	userID, err := middleware.GetCurrentUserID(c)
+	if err != nil {
+		response.HandleDomainError(c, errs.ErrUnauthorized)
+		return
+	}
+	var req dto.WordExplain
+	err = c.ShouldBindJSON(&req)
+	if err != nil {
+		response.HandleDomainError(c, errs.ErrInvalidInput)
+		return
+	}
+	reqDom := dtoMappers.WordExplainToDomain(req)
+	res, err := a.WordExplainUC.Explain(c.Request.Context(), reqDom, *userID)
+	if err != nil {
+		response.HandleDomainError(c, err)
+		return
+	}
+	resDto := dto.WordTranslationResult{
+		Result: res.WordTranslations[req.Lang],
+	}
+	response.Success(c, http.StatusOK, resDto)
 }

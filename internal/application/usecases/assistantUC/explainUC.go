@@ -2,6 +2,7 @@ package assistantUC
 
 import (
 	"DaraTilBackendV2/internal/application/services"
+	"DaraTilBackendV2/internal/application/usecases/helpers"
 	errs "DaraTilBackendV2/internal/domain/domErr"
 	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/domain/repo"
@@ -30,27 +31,22 @@ func (w *WordExplainUC) Explain(ctx context.Context, req models.WordRequest, use
 	existingWord, dbErr := w.dictionaryRepo.GetExactWord(ctx, req.Word, req.Block)
 	if dbErr != nil {
 		if !errors.Is(dbErr, errs.ErrNotFound) {
+			logger.Error("error getting existing word", zap.String("word", req.Word), zap.Error(dbErr))
 			return nil, dbErr
 		}
-		res, err := w.explainer.WordExplain(ctx, req)
+		logger.Info("word not found, getting info from AI")
+		word, err := helpers.ExplainAndCreateWord(ctx, userID, req, w.explainer, w.dictionaryRepo)
 		if err != nil {
-			logger.Error("error while explaining req", zap.Error(err))
-			return nil, errs.ErrInternal
-		}
-		newWord := models.Word{
-			OriginalWord:               req.Word,
-			Context:                    req.Block,
-			WordTranslations:           res.WordTranslations,
-			WordExplainingTranslations: res.WordExplainingTranslations,
-		}
-		err = w.dictionaryRepo.Create(ctx, newWord)
-		if err != nil {
-			logger.Error("error while creating req", zap.Error(err))
+			return nil, err
 		}
 		w.publisher.Publish(ctx, services.Event{
 			Action: models.Word_Learned,
 			UserID: userID,
 		})
+		res := &models.WordExplainResult{
+			WordTranslations:           word.WordTranslations,
+			WordExplainingTranslations: word.WordExplainingTranslations,
+		}
 		return res, nil
 	}
 	w.publisher.Publish(ctx, services.Event{
