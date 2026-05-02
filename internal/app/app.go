@@ -10,6 +10,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/service/assistant"
 	"DaraTilBackendV2/internal/presentation/http/service/dictionary"
 	"DaraTilBackendV2/internal/presentation/http/service/folklore"
+	"DaraTilBackendV2/internal/presentation/http/service/leaderboard"
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
 	"DaraTilBackendV2/internal/presentation/http/service/region"
 	"DaraTilBackendV2/internal/presentation/http/service/test"
@@ -152,6 +153,11 @@ func (a *App) setupRoutes() {
 	dictionaryRoute.Use(middleware.AuthMiddleware(a.cfg))
 	dictionaryRoute.Use(middleware.RateLimiter(generalLimiter))
 	dictionary.RegisterRoutes(dictionaryRoute, a.container.DictionaryHandler)
+	//Leaderboard
+	leaderboardRoute := api.Group("/leaderboard")
+	leaderboardRoute.Use(middleware.AuthMiddleware(a.cfg))
+	leaderboardRoute.Use(middleware.RateLimiter(generalLimiter))
+	leaderboard.RegisterRoutes(leaderboardRoute, a.container.LeaderboardHandler)
 
 	api.GET("/ws", middleware.AuthMiddleware(a.cfg), a.container.WebSocketHandler.ServeWS)
 	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

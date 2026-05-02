@@ -40,8 +40,10 @@ func (uc *WordExplainUC) Explain(ctx context.Context, req models.WordRequest, us
 			return nil, err
 		}
 		uc.publisher.Publish(ctx, services.Event{
-			Action: models.Word_Learned,
-			UserID: userID,
+			Action:     models.Word_Learned,
+			UserID:     userID,
+			EntityID:   word.ID,
+			EntityType: "word",
 		})
 		res := &models.WordExplainResult{
 			WordTranslations:           word.WordTranslations,

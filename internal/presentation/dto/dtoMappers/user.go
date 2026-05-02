@@ -48,6 +48,14 @@ func UserToDto(user models.User) dto.User {
 	}
 }
 
+func UsersToDto(users []models.User) []dto.User {
+	dtos := make([]dto.User, len(users))
+	for i, user := range users {
+		dtos[i] = UserToDto(user)
+	}
+	return dtos
+}
+
 func StreakToDTO(streak models.Streak) dto.Streak {
 	return dto.Streak{
 		ID:            streak.ID,

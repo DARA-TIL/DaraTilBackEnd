@@ -13,6 +13,13 @@ func UserProfileToDomain(up gormModels.UserProfile) models.UserProfile {
 		User:               GormUserToDomain(up.User),
 	}
 }
+func UserProfilesToDomain(up []gormModels.UserProfile) []models.UserProfile {
+	users := make([]models.UserProfile, len(up))
+	for i, u := range up {
+		users[i] = UserProfileToDomain(u)
+	}
+	return users
+}
 func PinnedAchievementsToDomain(a []gormModels.PinnedAchievement) []models.Achievement {
 	var res []models.Achievement
 	for _, ac := range a {

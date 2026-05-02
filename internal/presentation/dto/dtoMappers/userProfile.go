@@ -14,6 +14,14 @@ func UserProfileToDTO(up models.UserProfile) dto.UserProfile {
 		User:               UserToDto(up.User),
 	}
 }
+func UserProfilesToDTO(ups []models.UserProfile) []dto.UserProfile {
+	upDtos := make([]dto.UserProfile, len(ups))
+	for i, up := range ups {
+		upDtos[i] = UserProfileToDTO(up)
+	}
+	return upDtos
+}
+
 func CreateUserProfileToDomain(dto dto.CreateUserProfile) models.CreateUserProfile {
 	return models.CreateUserProfile{
 		UserID: dto.UserID,

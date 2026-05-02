@@ -29,6 +29,13 @@ func GormUserToDomain(user gormModels.User) models.User {
 		Progress:     GormUserProgressToDomain(user.Progress),
 	}
 }
+func GormUsersToDomain(users []gormModels.User) []models.User {
+	result := make([]models.User, len(users))
+	for i, user := range users {
+		result[i] = GormUserToDomain(user)
+	}
+	return result
+}
 
 func GormUserProgressToDomain(userP gormModels.UserProgress) models.UserProgress {
 	return models.UserProgress{

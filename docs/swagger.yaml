@@ -19,7 +19,7 @@ definitions:
           $ref: '#/definitions/dto.UserAchievement'
         type: array
     type: object
-  dto.ActionRuleDTO:
+  dto.ActionRule:
     properties:
       action:
         type: string
@@ -136,24 +136,7 @@ definitions:
       streak:
         type: string
     type: object
-  dto.LessonBlockDTO:
-    properties:
-      contentText:
-        type: string
-      contentType:
-        type: string
-      contentUrl:
-        type: string
-      id:
-        type: integer
-      lessonId:
-        type: integer
-      name:
-        type: string
-      position:
-        type: integer
-    type: object
-  dto.LessonDTO:
+  dto.Lesson:
     properties:
       author:
         type: string
@@ -161,7 +144,7 @@ definitions:
         $ref: '#/definitions/dto.LessonResult'
       blocks:
         items:
-          $ref: '#/definitions/dto.LessonBlockDTO'
+          $ref: '#/definitions/dto.LessonBlock'
         type: array
       description:
         type: string
@@ -180,6 +163,23 @@ definitions:
           $ref: '#/definitions/dto.LessonResult'
         type: array
       reward:
+        type: integer
+    type: object
+  dto.LessonBlock:
+    properties:
+      contentText:
+        type: string
+      contentType:
+        type: string
+      contentUrl:
+        type: string
+      id:
+        type: integer
+      lessonId:
+        type: integer
+      name:
+        type: string
+      position:
         type: integer
     type: object
   dto.LessonResult:
@@ -446,22 +446,7 @@ definitions:
       type:
         type: string
     type: object
-  dto.UpdateLessonBlockDTO:
-    properties:
-      contentText:
-        type: string
-      contentType:
-        type: string
-      contentUrl:
-        type: string
-      lessonID:
-        type: integer
-      name:
-        type: string
-      position:
-        type: integer
-    type: object
-  dto.UpdateLessonDTO:
+  dto.UpdateLesson:
     properties:
       author:
         type: string
@@ -474,6 +459,21 @@ definitions:
       requiredLevel:
         type: integer
       reward:
+        type: integer
+    type: object
+  dto.UpdateLessonBlock:
+    properties:
+      contentText:
+        type: string
+      contentType:
+        type: string
+      contentUrl:
+        type: string
+      lessonID:
+        type: integer
+      name:
+        type: string
+      position:
         type: integer
     type: object
   dto.User:
@@ -709,7 +709,7 @@ definitions:
         example: "123456"
         type: string
     type: object
-host: daratilback.onrender.com/
+host: daratilback.onrender.com
 info:
   contact: {}
   description: Api server for DaraTil PLatform
@@ -946,7 +946,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.ActionRuleDTO'
+          $ref: '#/definitions/dto.ActionRule'
       produces:
       - application/json
       responses:
@@ -986,7 +986,7 @@ paths:
         required: true
         schema:
           items:
-            $ref: '#/definitions/dto.ActionRuleDTO'
+            $ref: '#/definitions/dto.ActionRule'
           type: array
       produces:
       - application/json
@@ -1071,7 +1071,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.ActionRuleDTO'
+            $ref: '#/definitions/dto.ActionRule'
         "400":
           description: Bad Request
           schema:
@@ -1102,7 +1102,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dto.ActionRuleDTO'
+              $ref: '#/definitions/dto.ActionRule'
             type: array
         "401":
           description: Unauthorized
@@ -1130,7 +1130,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.ActionRuleDTO'
+          $ref: '#/definitions/dto.ActionRule'
       produces:
       - application/json
       responses:
@@ -2004,6 +2004,98 @@ paths:
       summary: Update folklore
       tags:
       - Folklore
+  /leaderboard/{metric}/{limit}:
+    get:
+      description: 'Get leaderboard by metric. Supported metrics: xp, streak.'
+      parameters:
+      - description: Leaderboard metric
+        enum:
+        - xp
+        - streak
+        in: path
+        name: metric
+        required: true
+        type: string
+      - description: Maximum number of users
+        in: path
+        name: limit
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.User'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get leaderboard
+      tags:
+      - Leaderboard
+  /leaderboard/profile/{metric}/{limit}:
+    get:
+      description: 'Get leaderboard based on user profile metrics. Supported metrics:
+        word.'
+      parameters:
+      - description: Profile leaderboard metric
+        enum:
+        - word
+        in: path
+        name: metric
+        required: true
+        type: string
+      - description: Maximum number of profiles
+        in: path
+        name: limit
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.UserProfile'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get profile leaderboard
+      tags:
+      - Leaderboard
   /lesson/create:
     post:
       consumes:
@@ -2015,14 +2107,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.LessonDTO'
+          $ref: '#/definitions/dto.Lesson'
       produces:
       - application/json
       responses:
         "201":
           description: Created lesson
           schema:
-            $ref: '#/definitions/dto.LessonDTO'
+            $ref: '#/definitions/dto.Lesson'
         "400":
           description: Bad request
           schema:
@@ -2054,14 +2146,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.LessonBlockDTO'
+          $ref: '#/definitions/dto.LessonBlock'
       produces:
       - application/json
       responses:
         "201":
           description: Created block
           schema:
-            $ref: '#/definitions/dto.LessonBlockDTO'
+            $ref: '#/definitions/dto.LessonBlock'
         "400":
           description: Bad request
           schema:
@@ -2216,7 +2308,7 @@ paths:
           description: Lessons list
           schema:
             items:
-              $ref: '#/definitions/dto.LessonDTO'
+              $ref: '#/definitions/dto.Lesson'
             type: array
         "401":
           description: Unauthorized
@@ -2249,7 +2341,7 @@ paths:
         "200":
           description: Lesson with results
           schema:
-            $ref: '#/definitions/dto.LessonDTO'
+            $ref: '#/definitions/dto.Lesson'
         "400":
           description: Bad request
           schema:
@@ -2296,14 +2388,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateLessonDTO'
+          $ref: '#/definitions/dto.UpdateLesson'
       produces:
       - application/json
       responses:
         "200":
           description: Updated lesson
           schema:
-            $ref: '#/definitions/dto.LessonDTO'
+            $ref: '#/definitions/dto.Lesson'
         "400":
           description: Bad request
           schema:
@@ -2346,14 +2438,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateLessonBlockDTO'
+          $ref: '#/definitions/dto.UpdateLessonBlock'
       produces:
       - application/json
       responses:
         "200":
           description: Updated block
           schema:
-            $ref: '#/definitions/dto.LessonBlockDTO'
+            $ref: '#/definitions/dto.LessonBlock'
         "400":
           description: Bad request
           schema:

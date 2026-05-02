@@ -9,6 +9,7 @@ import (
 	"DaraTilBackendV2/internal/application/usecases/dictionaryUC"
 	"DaraTilBackendV2/internal/application/usecases/folkloreUC"
 	"DaraTilBackendV2/internal/application/usecases/jwtTokenUC"
+	"DaraTilBackendV2/internal/application/usecases/leaderboardUC"
 	"DaraTilBackendV2/internal/application/usecases/lessonUC"
 	"DaraTilBackendV2/internal/application/usecases/regionSlangUC"
 	"DaraTilBackendV2/internal/application/usecases/regionSlangUC/regionSlangTranslationsUC"
@@ -30,6 +31,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/service/dictionary"
 	"DaraTilBackendV2/internal/presentation/http/service/folklore"
 	"DaraTilBackendV2/internal/presentation/http/service/jwt"
+	"DaraTilBackendV2/internal/presentation/http/service/leaderboard"
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
 	"DaraTilBackendV2/internal/presentation/http/service/region"
 	"DaraTilBackendV2/internal/presentation/http/service/test"
@@ -56,6 +58,7 @@ type Container struct {
 	Assistant              *assistant.Assistant
 	UserProfileHandler     *userProfile.UserProfileHandler
 	DictionaryHandler      *dictionary.DictionaryHandler
+	LeaderboardHandler     *leaderboard.LeaderboardHandler
 }
 
 func NewContainer(cfg *config.Config) *Container {
@@ -83,6 +86,7 @@ func NewContainer(cfg *config.Config) *Container {
 	actionRuleRepo := repository.NewActionRuleRepository(db)
 	userProfileRepo := repository.NewUserProfileRepository(db)
 	dictionaryRepo := repository.NewDictionaryRepository(db)
+	leaderboardRepo := repository.NewLeaderboardRepository(db)
 	//AI
 	geminiAI := gemini.NewGeminiAI(cfg)
 
@@ -240,6 +244,9 @@ func NewContainer(cfg *config.Config) *Container {
 	getTraditionTranslationsByTraditionIDUC := regionTraditionTranslationsUC.NewGetByTraditionIDUC(regionTraditionTranslationRepo)
 	updateRegionTraditionTranslationUC := regionTraditionTranslationsUC.NewUpdateUC(regionTraditionTranslationRepo)
 
+	//LeaderboardUCs
+	leaderboardUseCase := leaderboardUC.NewLeaderboardUC(leaderboardRepo)
+
 	//Pub Subs
 	publisher.AddSubscribers(
 		increaseUserAchievementSub,
@@ -249,7 +256,8 @@ func NewContainer(cfg *config.Config) *Container {
 		models.Folklore_readed,
 		models.Level_upgraded,
 		models.Region_slang_readed,
-		models.Region_tradition_readed)
+		models.Region_tradition_readed,
+		models.Word_Learned)
 	publisher.AddSubscribers(userActivityService,
 		models.Lesson_completed,
 		models.Folklore_liked,
@@ -257,7 +265,8 @@ func NewContainer(cfg *config.Config) *Container {
 		models.Folklore_readed,
 		models.Level_upgraded,
 		models.Region_slang_readed,
-		models.Region_tradition_readed)
+		models.Region_tradition_readed,
+		models.Word_Learned)
 	publisher.AddSubscribers(streakService,
 		models.Lesson_completed,
 		models.Folklore_liked,
@@ -265,7 +274,8 @@ func NewContainer(cfg *config.Config) *Container {
 		models.Folklore_readed,
 		models.Level_upgraded,
 		models.Region_slang_readed,
-		models.Region_tradition_readed)
+		models.Region_tradition_readed,
+		models.Word_Learned)
 	publisher.AddSubscribers(increaseWordsUC, models.Word_Learned)
 	// Handlers
 	jwtHandler := jwt.NewJwtTokenHandler(
@@ -417,6 +427,8 @@ func NewContainer(cfg *config.Config) *Container {
 	)
 	assistantHandler := assistant.NewAssistant(wordExplainUC)
 
+	leaderboardHandler := leaderboard.NewLeaderboardHandler(leaderboardUseCase)
+
 	userActivityHandler := userActivity.NewUserActivityHandler(userActivityService)
 	wsHandler := ws.NewWebSocketManager(cfg)
 	streakService.AddSubscriber(wsHandler)
@@ -439,5 +451,6 @@ func NewContainer(cfg *config.Config) *Container {
 		Assistant:              assistantHandler,
 		UserProfileHandler:     userProfileHandler,
 		DictionaryHandler:      dictionaryHandler,
+		LeaderboardHandler:     leaderboardHandler,
 	}
 }

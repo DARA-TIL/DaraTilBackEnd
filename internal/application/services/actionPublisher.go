@@ -32,10 +32,8 @@ func (a *ActionPublisher) Publish(ctx context.Context, e Event) {
 			err := statsSub.Handle(ctx, e)
 			if err != nil {
 				logger.Error("error while handling subscriber", zap.Any("action", e.Action), zap.Any("category", statsSub.Category()), zap.Error(err))
-				return
 			} else {
 				logger.Info("subscriber handled successfully", zap.Any("action", e.Action), zap.Any("category", statsSub.Category()))
-				return
 			}
 		}
 	}
@@ -49,6 +47,9 @@ func (a *ActionPublisher) Publish(ctx context.Context, e Event) {
 		return
 	}
 	for tr, sub := range actionSubs {
+		if tr == models.StatsImprovement {
+			continue
+		}
 		if !rules.Rules[tr] {
 			continue
 		}

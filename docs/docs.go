@@ -375,7 +375,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.ActionRuleDTO"
+                            "$ref": "#/definitions/dto.ActionRule"
                         }
                     }
                 ],
@@ -437,7 +437,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.ActionRuleDTO"
+                                "$ref": "#/definitions/dto.ActionRule"
                             }
                         }
                     }
@@ -563,7 +563,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.ActionRuleDTO"
+                            "$ref": "#/definitions/dto.ActionRule"
                         }
                     },
                     "400": {
@@ -611,7 +611,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.ActionRuleDTO"
+                                "$ref": "#/definitions/dto.ActionRule"
                             }
                         }
                     },
@@ -657,7 +657,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.ActionRuleDTO"
+                            "$ref": "#/definitions/dto.ActionRule"
                         }
                     }
                 ],
@@ -1977,6 +1977,143 @@ const docTemplate = `{
                 }
             }
         },
+        "/leaderboard/profile/{metric}/{limit}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get leaderboard based on user profile metrics. Supported metrics: word.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Leaderboard"
+                ],
+                "summary": "Get profile leaderboard",
+                "parameters": [
+                    {
+                        "enum": [
+                            "word"
+                        ],
+                        "type": "string",
+                        "description": "Profile leaderboard metric",
+                        "name": "metric",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Maximum number of profiles",
+                        "name": "limit",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.UserProfile"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/leaderboard/{metric}/{limit}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get leaderboard by metric. Supported metrics: xp, streak.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Leaderboard"
+                ],
+                "summary": "Get leaderboard",
+                "parameters": [
+                    {
+                        "enum": [
+                            "xp",
+                            "streak"
+                        ],
+                        "type": "string",
+                        "description": "Leaderboard metric",
+                        "name": "metric",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Maximum number of users",
+                        "name": "limit",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.User"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/lesson/create": {
             "post": {
                 "security": [
@@ -2002,7 +2139,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.LessonDTO"
+                            "$ref": "#/definitions/dto.Lesson"
                         }
                     }
                 ],
@@ -2010,7 +2147,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created lesson",
                         "schema": {
-                            "$ref": "#/definitions/dto.LessonDTO"
+                            "$ref": "#/definitions/dto.Lesson"
                         }
                     },
                     "400": {
@@ -2062,7 +2199,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.LessonBlockDTO"
+                            "$ref": "#/definitions/dto.LessonBlock"
                         }
                     }
                 ],
@@ -2070,7 +2207,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created block",
                         "schema": {
-                            "$ref": "#/definitions/dto.LessonBlockDTO"
+                            "$ref": "#/definitions/dto.LessonBlock"
                         }
                     },
                     "400": {
@@ -2303,7 +2440,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.LessonDTO"
+                                "$ref": "#/definitions/dto.Lesson"
                             }
                         }
                     },
@@ -2352,7 +2489,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Lesson with results",
                         "schema": {
-                            "$ref": "#/definitions/dto.LessonDTO"
+                            "$ref": "#/definitions/dto.Lesson"
                         }
                     },
                     "400": {
@@ -2425,7 +2562,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateLessonDTO"
+                            "$ref": "#/definitions/dto.UpdateLesson"
                         }
                     }
                 ],
@@ -2433,7 +2570,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Updated lesson",
                         "schema": {
-                            "$ref": "#/definitions/dto.LessonDTO"
+                            "$ref": "#/definitions/dto.Lesson"
                         }
                     },
                     "400": {
@@ -2499,7 +2636,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateLessonBlockDTO"
+                            "$ref": "#/definitions/dto.UpdateLessonBlock"
                         }
                     }
                 ],
@@ -2507,7 +2644,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Updated block",
                         "schema": {
-                            "$ref": "#/definitions/dto.LessonBlockDTO"
+                            "$ref": "#/definitions/dto.LessonBlock"
                         }
                     },
                     "400": {
@@ -6318,7 +6455,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.ActionRuleDTO": {
+        "dto.ActionRule": {
             "type": "object",
             "required": [
                 "action",
@@ -6498,33 +6635,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.LessonBlockDTO": {
-            "type": "object",
-            "properties": {
-                "contentText": {
-                    "type": "string"
-                },
-                "contentType": {
-                    "type": "string"
-                },
-                "contentUrl": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "lessonId": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "position": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.LessonDTO": {
+        "dto.Lesson": {
             "type": "object",
             "properties": {
                 "author": {
@@ -6536,7 +6647,7 @@ const docTemplate = `{
                 "blocks": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.LessonBlockDTO"
+                        "$ref": "#/definitions/dto.LessonBlock"
                     }
                 },
                 "description": {
@@ -6564,6 +6675,32 @@ const docTemplate = `{
                     }
                 },
                 "reward": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.LessonBlock": {
+            "type": "object",
+            "properties": {
+                "contentText": {
+                    "type": "string"
+                },
+                "contentType": {
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lessonId": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "position": {
                     "type": "integer"
                 }
             }
@@ -6971,30 +7108,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdateLessonBlockDTO": {
-            "type": "object",
-            "properties": {
-                "contentText": {
-                    "type": "string"
-                },
-                "contentType": {
-                    "type": "string"
-                },
-                "contentUrl": {
-                    "type": "string"
-                },
-                "lessonID": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "position": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.UpdateLessonDTO": {
+        "dto.UpdateLesson": {
             "type": "object",
             "properties": {
                 "author": {
@@ -7013,6 +7127,29 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "reward": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.UpdateLessonBlock": {
+            "type": "object",
+            "properties": {
+                "contentText": {
+                    "type": "string"
+                },
+                "contentType": {
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "type": "string"
+                },
+                "lessonID": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "position": {
                     "type": "integer"
                 }
             }
@@ -7374,7 +7511,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "0.2",
-	Host:             "daratilback.onrender.com/",
+	Host:             "daratilback.onrender.com",
 	BasePath:         "/api",
 	Schemes:          []string{"https"},
 	Title:            "DaraTil Backend",
