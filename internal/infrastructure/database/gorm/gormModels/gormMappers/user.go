@@ -46,3 +46,22 @@ func GormUserProgressToDomain(userP gormModels.UserProgress) models.UserProgress
 		XpForNextLevel: userP.XpForNextLevel,
 	}
 }
+func UsersToGormModel(users []models.User) []gormModels.User {
+	var gormUsers []gormModels.User
+
+	for _, user := range users {
+		gormUsers = append(gormUsers, UserToGormModel(user))
+	}
+
+	return gormUsers
+}
+
+func GormUsersToDomainModel(users []gormModels.User) []models.User {
+	var domainUsers []models.User
+
+	for _, user := range users {
+		domainUsers = append(domainUsers, GormUserToDomain(user))
+	}
+
+	return domainUsers
+}
