@@ -6,15 +6,26 @@ type TimeEvent struct {
 	ID           uint
 	Name         string
 	Description  string
-	RewardFirst  uint
-	RewardSecond uint
-	RewardThird  uint
-	EventType    string
+	RewardFirst  int
+	RewardSecond int
+	RewardThird  int
+	EventType    Actions
 	Duration     time.Duration
 	StartDate    time.Time
 	EndDate      time.Time
-	Users        []User
-	IsActive     bool
+	IsWeekly     bool
+	Participants []TimeEventParticipant
+	Status       TimeEventStatus
+}
+
+type TimeEventParams struct {
+	EventType     *Actions
+	Status        *TimeEventStatus
+	StartDateFrom *time.Time
+	StartDateTo   *time.Time
+	EndDateFrom   *time.Time
+	EndDateTo     *time.Time
+	IsWeekly      *bool
 }
 
 type TimeEventParticipant struct {

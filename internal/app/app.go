@@ -14,10 +14,17 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
 	"DaraTilBackendV2/internal/presentation/http/service/region"
 	"DaraTilBackendV2/internal/presentation/http/service/test"
+	"DaraTilBackendV2/internal/presentation/http/service/timeEvent"
 	"DaraTilBackendV2/internal/presentation/http/service/user"
 	"DaraTilBackendV2/internal/presentation/http/service/userActivity"
 	"DaraTilBackendV2/internal/presentation/http/service/userProfile"
 	"context"
+	"errors"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -159,6 +166,19 @@ func (a *App) setupRoutes() {
 	leaderboardRoute.Use(middleware.RateLimiter(generalLimiter))
 	leaderboard.RegisterRoutes(leaderboardRoute, a.container.LeaderboardHandler)
 
+	//TimeEvent
+	timeEventRoute := api.Group("/timeEvent")
+
+	timeEventRoute.Use(middleware.AuthMiddleware(a.cfg))
+	timeEventRoute.Use(middleware.RateLimiter(generalLimiter))
+	timeEvent.RegisterRoutes(timeEventRoute, a.container.TimeEventHandler)
+
+	timeEventParticipantRoute := api.Group("/timeEventParticipant")
+
+	timeEventParticipantRoute.Use(middleware.AuthMiddleware(a.cfg))
+	timeEventParticipantRoute.Use(middleware.RateLimiter(generalLimiter))
+	timeEvent.RegisterTimeEventParticipantRoutes(timeEventParticipantRoute, a.container.TimeEventParticipantHandler)
+
 	api.GET("/ws", middleware.AuthMiddleware(a.cfg), a.container.WebSocketHandler.ServeWS)
 	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
@@ -168,7 +188,38 @@ func (a *App) Run() {
 	logger.Init(true)
 	a.setupMiddleware()
 	a.setupRoutes()
+	err := a.container.CronScheduler.RegisterJobs()
+	if err != nil {
+		log.Fatal("failed to register cron jobs: ", err)
+	}
+	a.container.CronScheduler.Start()
+	server := &http.Server{
+		Addr:    ":" + a.cfg.Server.Port,
+		Handler: a.router,
+	}
+	go func() {
+		logger.Info("App started:", zap.String("port", a.cfg.Server.Port))
 
-	logger.Info("App started:", zap.String("port", a.cfg.Server.Port))
-	_ = a.router.Run(":" + a.cfg.Server.Port)
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			logger.Error("HTTP server error", zap.Error(err))
+		}
+	}()
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		os.Interrupt)
+	<-quit
+	logger.Info("Shutting down app...")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	a.container.CronScheduler.Stop(ctx)
+
+	if err := server.Shutdown(ctx); err != nil {
+		logger.Error("HTTP server forced to shutdown", zap.Error(err))
+		return
+	}
+
+	logger.Info("App stopped gracefully")
 }

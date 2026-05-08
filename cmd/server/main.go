@@ -11,7 +11,6 @@ import (
 // @title DaraTil Backend
 // @version 0.2
 // @description Api server for DaraTil PLatform
-
 // @host daratilback.onrender.com
 // @BasePath /api
 // @schemes https
@@ -24,7 +23,7 @@ func main() {
 	}
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Println("Failed to load config")
+		log.Fatal("Failed to load config:", err)
 	}
 	app := app.New(cfg)
 	app.Run()

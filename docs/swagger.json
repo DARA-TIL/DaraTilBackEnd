@@ -2682,6 +2682,71 @@
                 }
             }
         },
+        "/region//tradition/{id}/translations": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns all translations for tradition.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "RegionTraditionTranslation"
+                ],
+                "summary": "Get tradition translations by tradition ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "TraditionID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Translations list",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.RegionTraditionsTranslation"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/region/create": {
             "post": {
                 "security": [
@@ -4507,18 +4572,18 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns all translations for tradition.",
+                "description": "Returns all traditions for region.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "RegionTraditionTranslation"
+                    "RegionTradition"
                 ],
-                "summary": "Get tradition translations by tradition ID",
+                "summary": "Get traditions by region ID",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "TraditionID",
+                        "description": "Region ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -4526,11 +4591,11 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Translations list",
+                        "description": "Traditions list",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.RegionTraditionsTranslation"
+                                "$ref": "#/definitions/dto.RegionTraditions"
                             }
                         }
                     },
@@ -5336,6 +5401,719 @@
                         "schema": {
                             "$ref": "#/definitions/dto.Test"
                         }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/timeEvent/": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a list of all time events with optional filters.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TimeEvent"
+                ],
+                "summary": "Get all time events",
+                "parameters": [
+                    {
+                        "enum": [
+                            "lesson_completed",
+                            "folklore_liked",
+                            "folklore_disliked",
+                            "folklore_readed",
+                            "level_upgraded",
+                            "region_slang_readed",
+                            "region_tradition_readed",
+                            "word_learned"
+                        ],
+                        "type": "string",
+                        "description": "Event type",
+                        "name": "eventType",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "started",
+                            "ended",
+                            "waiting",
+                            "canceled"
+                        ],
+                        "type": "string",
+                        "description": "Event status",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start date from. Format: 2026-05-09T00:00:00+05:00",
+                        "name": "startDateFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start date to. Format: 2026-05-10T00:00:00+05:00",
+                        "name": "startDateTo",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date from. Format: 2026-05-09T00:00:00+05:00",
+                        "name": "endDateFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date to. Format: 2026-05-10T00:00:00+05:00",
+                        "name": "endDateTo",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of time events",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.TimeEvent"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates a new time event. Admin access required.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TimeEvent"
+                ],
+                "summary": "Create time event",
+                "parameters": [
+                    {
+                        "description": "Time event create payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateTimeEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created time event",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TimeEvent"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates time event fields. Partial update via nullable fields. Admin access required.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TimeEvent"
+                ],
+                "summary": "Update time event",
+                "parameters": [
+                    {
+                        "description": "Time event update payload. Changing status to Ended is not permitted, use another route",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateTimeEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated time event",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TimeEvent"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/timeEvent/finish/{id}": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Changes Time Event Status to ended. Deactivates participants and gives rewards to winners.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TimeEvent"
+                ],
+                "summary": "FinishTimeEvent",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Time event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "finished successfully"
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/timeEvent/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a time event by ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TimeEvent"
+                ],
+                "summary": "Get time event by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Time event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Time event",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TimeEvent"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a time event by ID. Admin access required.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TimeEvent"
+                ],
+                "summary": "Delete time event",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Time event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/timeEventParticipant/": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates a new participant for a time event.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TimeEventParticipant"
+                ],
+                "summary": "Create time event participant",
+                "parameters": [
+                    {
+                        "description": "Time event participant create payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateTimeEventParticipantRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created time event participant",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TimeEventParticipant"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates time event participant fields. Partial update via nullable fields.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TimeEventParticipant"
+                ],
+                "summary": "Update time event participant",
+                "parameters": [
+                    {
+                        "description": "Time event participant update payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateTimeEventParticipantRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated time event participant",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TimeEventParticipant"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/timeEventParticipant/event/{id}/{limit}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns participants of a time event and updates their places.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TimeEventParticipant"
+                ],
+                "summary": "Get time event participants by event ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Time event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Maximum number of participants",
+                        "name": "limit",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of time event participants",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.TimeEventParticipant"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/timeEventParticipant/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a time event participant by ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TimeEventParticipant"
+                ],
+                "summary": "Get time event participant by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Time event participant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Time event participant",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TimeEventParticipant"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a time event participant by ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TimeEventParticipant"
+                ],
+                "summary": "Delete time event participant",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Time event participant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad request",
@@ -6470,6 +7248,61 @@
                 }
             }
         },
+        "dto.CreateTimeEventParticipantRequest": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "place": {
+                    "type": "integer"
+                },
+                "timeEventId": {
+                    "type": "integer"
+                },
+                "userId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.CreateTimeEventRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "duration": {
+                    "type": "integer"
+                },
+                "endDate": {
+                    "type": "string"
+                },
+                "eventType": {
+                    "$ref": "#/definitions/models.Actions"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "rewardFirst": {
+                    "type": "integer"
+                },
+                "rewardSecond": {
+                    "type": "integer"
+                },
+                "rewardThird": {
+                    "type": "integer"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.TimeEventStatus"
+                }
+            }
+        },
         "dto.CreateUserProfile": {
             "type": "object",
             "properties": {
@@ -7073,6 +7906,76 @@
                 }
             }
         },
+        "dto.TimeEvent": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "duration": {
+                    "type": "integer"
+                },
+                "endDate": {
+                    "type": "string"
+                },
+                "eventType": {
+                    "$ref": "#/definitions/models.Actions"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "participants": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.TimeEventParticipant"
+                    }
+                },
+                "rewardFirst": {
+                    "type": "integer"
+                },
+                "rewardSecond": {
+                    "type": "integer"
+                },
+                "rewardThird": {
+                    "type": "integer"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.TimeEventStatus"
+                }
+            }
+        },
+        "dto.TimeEventParticipant": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "place": {
+                    "type": "integer"
+                },
+                "timeEventId": {
+                    "type": "integer"
+                },
+                "user": {
+                    "$ref": "#/definitions/dto.User"
+                },
+                "userId": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.UpdatableFolkloreFieldsDTO": {
             "type": "object",
             "properties": {
@@ -7148,6 +8051,67 @@
                 },
                 "position": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.UpdateTimeEventParticipantRequest": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "place": {
+                    "type": "integer"
+                },
+                "timeEventId": {
+                    "type": "integer"
+                },
+                "userId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.UpdateTimeEventRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "duration": {
+                    "type": "integer"
+                },
+                "endDate": {
+                    "type": "string"
+                },
+                "eventType": {
+                    "$ref": "#/definitions/models.Actions"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "rewardFirst": {
+                    "type": "integer"
+                },
+                "rewardSecond": {
+                    "type": "integer"
+                },
+                "rewardThird": {
+                    "type": "integer"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.TimeEventStatus"
                 }
             }
         },
@@ -7475,6 +8439,21 @@
                 "KZ",
                 "EN",
                 "RU"
+            ]
+        },
+        "models.TimeEventStatus": {
+            "type": "string",
+            "enum": [
+                "started",
+                "ended",
+                "waiting",
+                "canceled"
+            ],
+            "x-enum-varnames": [
+                "Started",
+                "Ended",
+                "Waiting",
+                "Canceled"
             ]
         },
         "user.ConfirmPasswordChangeRequest": {

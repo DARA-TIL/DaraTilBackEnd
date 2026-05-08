@@ -34,7 +34,7 @@ func (uc *GetByIDUC) Execute(ctx context.Context, id uint) (GetTraditionResult, 
 		return resp, nil
 	}
 	uc.publisher.Publish(ctx, services.Event{
-		Action:     models.Region_slang_readed,
+		Action:     models.Region_tradition_readed,
 		UserID:     userID,
 		EntityID:   id,
 		EntityType: models.TraditionEntityType,

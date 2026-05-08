@@ -116,7 +116,7 @@ func (c *Config) SetupSessionStore() {
 		Path:     "/",
 		MaxAge:   86400 * 7,
 		HttpOnly: httpOnly,
-		Secure:   secure, // ВАЖНО
+		Secure:   secure,
 		SameSite: http.SameSite(sameSite),
 	}
 	gothic.Store = store

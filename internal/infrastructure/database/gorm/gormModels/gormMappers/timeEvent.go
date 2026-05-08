@@ -12,12 +12,12 @@ func TimeEventToGormModel(event models.TimeEvent) gormModels.TimeEvent {
 		RewardFirst:  event.RewardFirst,
 		RewardSecond: event.RewardSecond,
 		RewardThird:  event.RewardThird,
-		EventType:    event.EventType,
+		EventType:    string(event.EventType),
+		IsWeekly:     event.IsWeekly,
 		Duration:     event.Duration,
 		StartDate:    event.StartDate,
 		EndDate:      event.EndDate,
-		Users:        UsersToGormModel(event.Users),
-		IsActive:     event.IsActive,
+		Status:       event.Status,
 	}
 }
 
@@ -29,12 +29,12 @@ func GormTimeEventToDomainModel(event gormModels.TimeEvent) models.TimeEvent {
 		RewardFirst:  event.RewardFirst,
 		RewardSecond: event.RewardSecond,
 		RewardThird:  event.RewardThird,
-		EventType:    event.EventType,
+		EventType:    models.Actions(event.EventType),
 		Duration:     event.Duration,
 		StartDate:    event.StartDate,
 		EndDate:      event.EndDate,
-		Users:        GormUsersToDomainModel(event.Users),
-		IsActive:     event.IsActive,
+		Participants: GormTimeEventParticipantsToDomainModel(event.Participants),
+		Status:       event.Status,
 	}
 }
 

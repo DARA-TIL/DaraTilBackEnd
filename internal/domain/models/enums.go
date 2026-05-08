@@ -24,6 +24,7 @@ const (
 	EventActivity    ActionTrigger = "activity"
 	EventAchievement ActionTrigger = "achievement"
 	StatsImprovement ActionTrigger = "stats-improvement"
+	TimeEventTrigger ActionTrigger = "time-event"
 )
 
 type Actions string
@@ -39,6 +40,8 @@ const (
 	Word_Learned            Actions = "word_learned"
 )
 
+type EventType string
+
 type EventEntityType string
 
 const (
@@ -47,4 +50,13 @@ const (
 	UserEntityType      EventEntityType = "user"
 	SlangEntityType     EventEntityType = "slang"
 	TraditionEntityType EventEntityType = "tradition"
+)
+
+type TimeEventStatus string
+
+const (
+	Started  TimeEventStatus = "started"
+	Ended    TimeEventStatus = "ended"
+	Waiting  TimeEventStatus = "waiting"
+	Canceled TimeEventStatus = "canceled"
 )

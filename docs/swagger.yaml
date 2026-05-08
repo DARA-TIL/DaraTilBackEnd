@@ -31,6 +31,42 @@ definitions:
     - action
     - rules
     type: object
+  dto.CreateTimeEventParticipantRequest:
+    properties:
+      count:
+        type: integer
+      isActive:
+        type: boolean
+      place:
+        type: integer
+      timeEventId:
+        type: integer
+      userId:
+        type: integer
+    type: object
+  dto.CreateTimeEventRequest:
+    properties:
+      description:
+        type: string
+      duration:
+        type: integer
+      endDate:
+        type: string
+      eventType:
+        $ref: '#/definitions/models.Actions'
+      name:
+        type: string
+      rewardFirst:
+        type: integer
+      rewardSecond:
+        type: integer
+      rewardThird:
+        type: integer
+      startDate:
+        type: string
+      status:
+        $ref: '#/definitions/models.TimeEventStatus'
+    type: object
   dto.CreateUserProfile:
     properties:
       userId:
@@ -425,6 +461,52 @@ definitions:
       reward:
         type: integer
     type: object
+  dto.TimeEvent:
+    properties:
+      description:
+        type: string
+      duration:
+        type: integer
+      endDate:
+        type: string
+      eventType:
+        $ref: '#/definitions/models.Actions'
+      id:
+        type: integer
+      name:
+        type: string
+      participants:
+        items:
+          $ref: '#/definitions/dto.TimeEventParticipant'
+        type: array
+      rewardFirst:
+        type: integer
+      rewardSecond:
+        type: integer
+      rewardThird:
+        type: integer
+      startDate:
+        type: string
+      status:
+        $ref: '#/definitions/models.TimeEventStatus'
+    type: object
+  dto.TimeEventParticipant:
+    properties:
+      count:
+        type: integer
+      id:
+        type: integer
+      isActive:
+        type: boolean
+      place:
+        type: integer
+      timeEventId:
+        type: integer
+      user:
+        $ref: '#/definitions/dto.User'
+      userId:
+        type: integer
+    type: object
   dto.UpdatableFolkloreFieldsDTO:
     properties:
       author:
@@ -475,6 +557,46 @@ definitions:
         type: string
       position:
         type: integer
+    type: object
+  dto.UpdateTimeEventParticipantRequest:
+    properties:
+      count:
+        type: integer
+      id:
+        type: integer
+      isActive:
+        type: boolean
+      place:
+        type: integer
+      timeEventId:
+        type: integer
+      userId:
+        type: integer
+    type: object
+  dto.UpdateTimeEventRequest:
+    properties:
+      description:
+        type: string
+      duration:
+        type: integer
+      endDate:
+        type: string
+      eventType:
+        $ref: '#/definitions/models.Actions'
+      id:
+        type: integer
+      name:
+        type: string
+      rewardFirst:
+        type: integer
+      rewardSecond:
+        type: integer
+      rewardThird:
+        type: integer
+      startDate:
+        type: string
+      status:
+        $ref: '#/definitions/models.TimeEventStatus'
     type: object
   dto.User:
     properties:
@@ -697,6 +819,18 @@ definitions:
     - KZ
     - EN
     - RU
+  models.TimeEventStatus:
+    enum:
+    - started
+    - ended
+    - waiting
+    - canceled
+    type: string
+    x-enum-varnames:
+    - Started
+    - Ended
+    - Waiting
+    - Canceled
   user.ConfirmPasswordChangeRequest:
     properties:
       password:
@@ -2476,6 +2610,49 @@ paths:
       summary: Update lesson block
       tags:
       - Lesson
+  /region//tradition/{id}/translations:
+    get:
+      description: Returns all translations for tradition.
+      parameters:
+      - description: TraditionID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Translations list
+          schema:
+            items:
+              $ref: '#/definitions/dto.RegionTraditionsTranslation'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get tradition translations by tradition ID
+      tags:
+      - RegionTraditionTranslation
   /region/{id}/slang:
     get:
       description: Returns all slang entries for region.
@@ -2521,9 +2698,9 @@ paths:
       - RegionSlang
   /region/{id}/traditions:
     get:
-      description: Returns all translations for tradition.
+      description: Returns all traditions for region.
       parameters:
-      - description: TraditionID
+      - description: Region ID
         in: path
         name: id
         required: true
@@ -2532,10 +2709,10 @@ paths:
       - application/json
       responses:
         "200":
-          description: Translations list
+          description: Traditions list
           schema:
             items:
-              $ref: '#/definitions/dto.RegionTraditionsTranslation'
+              $ref: '#/definitions/dto.RegionTraditions'
             type: array
         "400":
           description: Bad request
@@ -2559,9 +2736,9 @@ paths:
             type: object
       security:
       - BearerAuth: []
-      summary: Get tradition translations by tradition ID
+      summary: Get traditions by region ID
       tags:
-      - RegionTraditionTranslation
+      - RegionTradition
   /region/{id}/translations:
     get:
       description: Returns all translations for a region.
@@ -4261,6 +4438,484 @@ paths:
       summary: Update test
       tags:
       - Test
+  /timeEvent/:
+    get:
+      description: Returns a list of all time events with optional filters.
+      parameters:
+      - description: Event type
+        enum:
+        - lesson_completed
+        - folklore_liked
+        - folklore_disliked
+        - folklore_readed
+        - level_upgraded
+        - region_slang_readed
+        - region_tradition_readed
+        - word_learned
+        in: query
+        name: eventType
+        type: string
+      - description: Event status
+        enum:
+        - started
+        - ended
+        - waiting
+        - canceled
+        in: query
+        name: status
+        type: string
+      - description: 'Start date from. Format: 2026-05-09T00:00:00+05:00'
+        in: query
+        name: startDateFrom
+        type: string
+      - description: 'Start date to. Format: 2026-05-10T00:00:00+05:00'
+        in: query
+        name: startDateTo
+        type: string
+      - description: 'End date from. Format: 2026-05-09T00:00:00+05:00'
+        in: query
+        name: endDateFrom
+        type: string
+      - description: 'End date to. Format: 2026-05-10T00:00:00+05:00'
+        in: query
+        name: endDateTo
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of time events
+          schema:
+            items:
+              $ref: '#/definitions/dto.TimeEvent'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all time events
+      tags:
+      - TimeEvent
+    patch:
+      consumes:
+      - application/json
+      description: Updates time event fields. Partial update via nullable fields.
+        Admin access required.
+      parameters:
+      - description: Time event update payload. Changing status to Ended is not permitted,
+          use another route
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateTimeEventRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated time event
+          schema:
+            $ref: '#/definitions/dto.TimeEvent'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update time event
+      tags:
+      - TimeEvent
+    post:
+      consumes:
+      - application/json
+      description: Creates a new time event. Admin access required.
+      parameters:
+      - description: Time event create payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateTimeEventRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created time event
+          schema:
+            $ref: '#/definitions/dto.TimeEvent'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create time event
+      tags:
+      - TimeEvent
+  /timeEvent/{id}:
+    delete:
+      description: Deletes a time event by ID. Admin access required.
+      parameters:
+      - description: Time event ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete time event
+      tags:
+      - TimeEvent
+    get:
+      description: Returns a time event by ID.
+      parameters:
+      - description: Time event ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Time event
+          schema:
+            $ref: '#/definitions/dto.TimeEvent'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get time event by ID
+      tags:
+      - TimeEvent
+  /timeEvent/finish/{id}:
+    post:
+      description: Changes Time Event Status to ended. Deactivates participants and
+        gives rewards to winners.
+      parameters:
+      - description: Time event ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: finished successfully
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: FinishTimeEvent
+      tags:
+      - TimeEvent
+  /timeEventParticipant/:
+    patch:
+      consumes:
+      - application/json
+      description: Updates time event participant fields. Partial update via nullable
+        fields.
+      parameters:
+      - description: Time event participant update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateTimeEventParticipantRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated time event participant
+          schema:
+            $ref: '#/definitions/dto.TimeEventParticipant'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update time event participant
+      tags:
+      - TimeEventParticipant
+    post:
+      consumes:
+      - application/json
+      description: Creates a new participant for a time event.
+      parameters:
+      - description: Time event participant create payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateTimeEventParticipantRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created time event participant
+          schema:
+            $ref: '#/definitions/dto.TimeEventParticipant'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create time event participant
+      tags:
+      - TimeEventParticipant
+  /timeEventParticipant/{id}:
+    delete:
+      description: Deletes a time event participant by ID.
+      parameters:
+      - description: Time event participant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete time event participant
+      tags:
+      - TimeEventParticipant
+    get:
+      description: Returns a time event participant by ID.
+      parameters:
+      - description: Time event participant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Time event participant
+          schema:
+            $ref: '#/definitions/dto.TimeEventParticipant'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get time event participant by ID
+      tags:
+      - TimeEventParticipant
+  /timeEventParticipant/event/{id}/{limit}:
+    get:
+      description: Returns participants of a time event and updates their places.
+      parameters:
+      - description: Time event ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Maximum number of participants
+        in: path
+        name: limit
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of time event participants
+          schema:
+            items:
+              $ref: '#/definitions/dto.TimeEventParticipant'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get time event participants by event ID
+      tags:
+      - TimeEventParticipant
   /user/changePassword/{email}:
     post:
       description: Generates a 6-digit reset code, sends it to the user's email, and

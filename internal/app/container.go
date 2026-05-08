@@ -18,6 +18,8 @@ import (
 	"DaraTilBackendV2/internal/application/usecases/regionUC"
 	"DaraTilBackendV2/internal/application/usecases/regionUC/regionTranslationsUC"
 	"DaraTilBackendV2/internal/application/usecases/testUC"
+	"DaraTilBackendV2/internal/application/usecases/timeEventParticipantUC"
+	"DaraTilBackendV2/internal/application/usecases/timeEventUC"
 	"DaraTilBackendV2/internal/application/usecases/userProfileUC"
 	"DaraTilBackendV2/internal/application/usecases/userUC"
 	"DaraTilBackendV2/internal/config"
@@ -25,6 +27,7 @@ import (
 	"DaraTilBackendV2/internal/infrastructure/ai/gemini"
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/postgres"
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/repository"
+	"DaraTilBackendV2/internal/infrastructure/scheduler"
 	"DaraTilBackendV2/internal/presentation/http/service/achievement"
 	"DaraTilBackendV2/internal/presentation/http/service/actionRule"
 	"DaraTilBackendV2/internal/presentation/http/service/assistant"
@@ -35,6 +38,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
 	"DaraTilBackendV2/internal/presentation/http/service/region"
 	"DaraTilBackendV2/internal/presentation/http/service/test"
+	"DaraTilBackendV2/internal/presentation/http/service/timeEvent"
 	"DaraTilBackendV2/internal/presentation/http/service/user"
 	"DaraTilBackendV2/internal/presentation/http/service/userActivity"
 	"DaraTilBackendV2/internal/presentation/http/service/userProfile"
@@ -42,23 +46,26 @@ import (
 )
 
 type Container struct {
-	UserHandler            *user.UserHandler
-	JwtHandler             *jwt.JwtTokenHandler
-	FolkloreHandler        *folklore.FolkloreHandler
-	LessonHandler          *lesson.LessonHandler
-	TestHandler            *test.TestHandler
-	UserActivityHandler    *userActivity.UserActivityHandler
-	RegionHandler          *region.RegionHandler
-	RegionTraditionHandler *region.RegionTraditionHandler
-	RegionSlangHandler     *region.RegionSlangHandler
-	AchievementHandler     *achievement.AchievementHandler
-	UserAchievementHandler *achievement.UserAchievementHandler
-	ActionRuleHandler      *actionRule.ActionRuleHandler
-	WebSocketHandler       *ws.WebSocketManager
-	Assistant              *assistant.Assistant
-	UserProfileHandler     *userProfile.UserProfileHandler
-	DictionaryHandler      *dictionary.DictionaryHandler
-	LeaderboardHandler     *leaderboard.LeaderboardHandler
+	UserHandler                 *user.UserHandler
+	JwtHandler                  *jwt.JwtTokenHandler
+	FolkloreHandler             *folklore.FolkloreHandler
+	LessonHandler               *lesson.LessonHandler
+	TestHandler                 *test.TestHandler
+	UserActivityHandler         *userActivity.UserActivityHandler
+	RegionHandler               *region.RegionHandler
+	RegionTraditionHandler      *region.RegionTraditionHandler
+	RegionSlangHandler          *region.RegionSlangHandler
+	AchievementHandler          *achievement.AchievementHandler
+	UserAchievementHandler      *achievement.UserAchievementHandler
+	ActionRuleHandler           *actionRule.ActionRuleHandler
+	WebSocketHandler            *ws.WebSocketManager
+	Assistant                   *assistant.Assistant
+	UserProfileHandler          *userProfile.UserProfileHandler
+	DictionaryHandler           *dictionary.DictionaryHandler
+	LeaderboardHandler          *leaderboard.LeaderboardHandler
+	TimeEventHandler            *timeEvent.TimeEventHandler
+	TimeEventParticipantHandler *timeEvent.TimeEventParticipantHandler
+	CronScheduler               *scheduler.CronScheduler
 }
 
 func NewContainer(cfg *config.Config) *Container {
@@ -87,6 +94,8 @@ func NewContainer(cfg *config.Config) *Container {
 	userProfileRepo := repository.NewUserProfileRepository(db)
 	dictionaryRepo := repository.NewDictionaryRepository(db)
 	leaderboardRepo := repository.NewLeaderboardRepository(db)
+	timeEventRepo := repository.NewTimeEventRepository(db)
+	timeEventParticipantRepo := repository.NewTimeEventParticipantRepository(db)
 	//AI
 	geminiAI := gemini.NewGeminiAI(cfg)
 
@@ -244,6 +253,23 @@ func NewContainer(cfg *config.Config) *Container {
 	getTraditionTranslationsByTraditionIDUC := regionTraditionTranslationsUC.NewGetByTraditionIDUC(regionTraditionTranslationRepo)
 	updateRegionTraditionTranslationUC := regionTraditionTranslationsUC.NewUpdateUC(regionTraditionTranslationRepo)
 
+	//TimeEventUCs
+	createTimeEventUC := timeEventUC.NewCreateUC(timeEventRepo)
+	deleteTimeEventUC := timeEventUC.NewDeleteUC(timeEventRepo)
+	updateTimeEventUC := timeEventUC.NewUpdateUC(timeEventRepo)
+	getTimeEventByIDUC := timeEventUC.NewGetbyIDUC(timeEventRepo)
+	getAllTimeEventUC := timeEventUC.NewGetAllUC(timeEventRepo)
+	finishTimeEventUC := timeEventUC.NewFinishTimeEventUC(timeEventRepo, timeEventParticipantRepo, userRepo)
+	updateDueTimeEventsUC := timeEventUC.NewUpdateDueTimeEventsUC(timeEventRepo, finishTimeEventUC)
+	startWeeklyEventUC := timeEventUC.NewStartWeeklyEventUC(timeEventRepo)
+
+	//TimeEventParticipantUCs TimeEP - TimeEventParticipant
+	createTimeEPUC := timeEventParticipantUC.NewCreateUC(timeEventParticipantRepo)
+	updateTimeEPUC := timeEventParticipantUC.NewUpdateUC(timeEventParticipantRepo)
+	deleteTimeEPUC := timeEventParticipantUC.NewDeleteUC(timeEventParticipantRepo)
+	getTimeEPUC := timeEventParticipantUC.NewGetEventParticipantUC(timeEventParticipantRepo)
+	getTimeEPsUC := timeEventParticipantUC.NewGetEventParticipantsUC(timeEventParticipantRepo)
+	increaseTEPUC := timeEventParticipantUC.NewIncreaseTEPStatUC(timeEventParticipantRepo, timeEventRepo)
 	//LeaderboardUCs
 	leaderboardUseCase := leaderboardUC.NewLeaderboardUC(leaderboardRepo)
 
@@ -268,6 +294,15 @@ func NewContainer(cfg *config.Config) *Container {
 		models.Region_tradition_readed,
 		models.Word_Learned)
 	publisher.AddSubscribers(streakService,
+		models.Lesson_completed,
+		models.Folklore_liked,
+		models.Folklore_disliked,
+		models.Folklore_readed,
+		models.Level_upgraded,
+		models.Region_slang_readed,
+		models.Region_tradition_readed,
+		models.Word_Learned)
+	publisher.AddSubscribers(increaseTEPUC,
 		models.Lesson_completed,
 		models.Folklore_liked,
 		models.Folklore_disliked,
@@ -427,6 +462,22 @@ func NewContainer(cfg *config.Config) *Container {
 	)
 	assistantHandler := assistant.NewAssistant(wordExplainUC)
 
+	timeEventHandler := timeEvent.NewTimeEventHandler(
+		createTimeEventUC,
+		updateTimeEventUC,
+		deleteTimeEventUC,
+		getTimeEventByIDUC,
+		getAllTimeEventUC,
+		finishTimeEventUC,
+	)
+	timeEventParticipantHandler := timeEvent.NewTimeEventParticipantHandler(
+		createTimeEPUC,
+		updateTimeEPUC,
+		deleteTimeEPUC,
+		getTimeEPUC,
+		getTimeEPsUC,
+	)
+
 	leaderboardHandler := leaderboard.NewLeaderboardHandler(leaderboardUseCase)
 
 	userActivityHandler := userActivity.NewUserActivityHandler(userActivityService)
@@ -434,23 +485,28 @@ func NewContainer(cfg *config.Config) *Container {
 	streakService.AddSubscriber(wsHandler)
 	increaseUserAchievementSub.AddSubscriber(wsHandler)
 	jwtHandler.AddSubscriber(wsHandler)
+
+	cronScheduler := scheduler.NewCronScheduler(updateDueTimeEventsUC, startWeeklyEventUC)
 	return &Container{
-		UserHandler:            userHandler,
-		JwtHandler:             jwtHandler,
-		FolkloreHandler:        folkloreHandler,
-		LessonHandler:          lessonHandler,
-		TestHandler:            testHandler,
-		UserActivityHandler:    userActivityHandler,
-		RegionHandler:          regionHandler,
-		RegionSlangHandler:     regionSlangHandler,
-		RegionTraditionHandler: regionTraditionHandler,
-		AchievementHandler:     achievementHandler,
-		UserAchievementHandler: userAchievementHandler,
-		ActionRuleHandler:      actionRuleHandler,
-		WebSocketHandler:       wsHandler,
-		Assistant:              assistantHandler,
-		UserProfileHandler:     userProfileHandler,
-		DictionaryHandler:      dictionaryHandler,
-		LeaderboardHandler:     leaderboardHandler,
+		UserHandler:                 userHandler,
+		JwtHandler:                  jwtHandler,
+		FolkloreHandler:             folkloreHandler,
+		LessonHandler:               lessonHandler,
+		TestHandler:                 testHandler,
+		UserActivityHandler:         userActivityHandler,
+		RegionHandler:               regionHandler,
+		RegionSlangHandler:          regionSlangHandler,
+		RegionTraditionHandler:      regionTraditionHandler,
+		AchievementHandler:          achievementHandler,
+		UserAchievementHandler:      userAchievementHandler,
+		ActionRuleHandler:           actionRuleHandler,
+		WebSocketHandler:            wsHandler,
+		Assistant:                   assistantHandler,
+		UserProfileHandler:          userProfileHandler,
+		DictionaryHandler:           dictionaryHandler,
+		LeaderboardHandler:          leaderboardHandler,
+		TimeEventHandler:            timeEventHandler,
+		TimeEventParticipantHandler: timeEventParticipantHandler,
+		CronScheduler:               cronScheduler,
 	}
 }

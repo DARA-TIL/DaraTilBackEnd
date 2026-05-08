@@ -395,7 +395,7 @@ func (h *RegionTraditionHandler) UpdateRegionTraditionTranslation(c *gin.Context
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 404 {object} map[string]interface{} "Not found"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
-// @Router /region/{id}/traditions [get]
+// @Router /region//tradition/{id}/translations [get]
 func (h *RegionTraditionHandler) GetTraditionTranslationsByTraditionID(c *gin.Context) {
 	id, err := utils.GetIdFromParams(c)
 	if err != nil {
