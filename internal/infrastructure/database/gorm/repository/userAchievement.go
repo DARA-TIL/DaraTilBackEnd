@@ -51,6 +51,7 @@ func (u *UserAchievementRepository) IncrementQuantity(ctx context.Context, userI
 		if err != nil {
 			return err
 		}
+		var updatedIDs []uint
 		err = tx.Raw(
 			`UPDATE user_achievements ua
 				SET achieved = true
@@ -60,16 +61,35 @@ func (u *UserAchievementRepository) IncrementQuantity(ctx context.Context, userI
 				AND ua.user_id = ?
 				AND ua.achieved = ?
 				AND ua.quantity >= a.quantity
-				RETURNING ua.id, ua.user_id, ua.achievement_id, ua.quantity, ua.achieved`, action, userID, false).Scan(&updated).Error
+				RETURNING ua.id`,
+			action,
+			userID,
+			false,
+		).Scan(&updatedIDs).Error
 		if err != nil {
 			logger.Error("error while increasing achievement quantity", zap.Error(err))
 			return errhandlers.DBErrHandler(err)
 		}
+
+		if len(updatedIDs) == 0 {
+			return nil
+		}
+
+		err = tx.
+			Preload("Achievement").
+			Where("id IN ?", updatedIDs).
+			Find(&updated).Error
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
+
 	if err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
+
 	updDom := gormMappers.GormUserAchievementsToDomain(updated)
 	return updDom, nil
 }

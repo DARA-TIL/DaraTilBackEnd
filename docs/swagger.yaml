@@ -33,6 +33,8 @@ definitions:
     type: object
   dto.CreateNotificationRequest:
     properties:
+      entityId:
+        type: integer
       message:
         type: string
       scope:
@@ -286,6 +288,8 @@ definitions:
     properties:
       createdAt:
         type: string
+      entityId:
+        type: integer
       id:
         type: integer
       isActive:
@@ -891,12 +895,14 @@ definitions:
     - event
     - streak
     - reward
+    - logOut
     type: string
     x-enum-varnames:
     - NotificationTypeSystem
     - NotificationTypeEvent
     - NotificationTypeStreak
     - NotificationTypeReward
+    - NotifLogOut
   models.TimeEventStatus:
     enum:
     - started
@@ -2698,6 +2704,7 @@ paths:
         - event
         - streak
         - reward
+        - logOut
         in: query
         name: type
         type: string

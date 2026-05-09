@@ -16,4 +16,5 @@ type UserAchievement struct {
 	AchievementID uint
 	Quantity      uint
 	Achieved      bool
+	Achievement   Achievement
 }

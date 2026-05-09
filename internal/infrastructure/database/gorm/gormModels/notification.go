@@ -17,6 +17,7 @@ type Notification struct {
 	UserID *uint  `gorm:"index"`
 
 	IsActive bool `gorm:"not null;default:true"`
+	EntityID *uint
 
 	Reads []NotificationRead `gorm:"foreignKey:NotificationID"`
 }

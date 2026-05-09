@@ -12,8 +12,9 @@ type Notification struct {
 	Message string                  `json:"message"`
 	Type    models.NotificationType `json:"type"`
 
-	Scope  models.NotificationScope `json:"scope"`
-	UserID *uint                    `json:"userId,omitempty"`
+	Scope    models.NotificationScope `json:"scope"`
+	UserID   *uint                    `json:"userId,omitempty"`
+	EntityID *uint                    `json:"entityId,omitempty"`
 
 	IsActive bool `json:"isActive"`
 
@@ -32,8 +33,9 @@ type CreateNotificationRequest struct {
 	Title   string `json:"title" binding:"required"`
 	Message string `json:"message" binding:"required"`
 
-	Type  models.NotificationType  `json:"type" binding:"required"`
-	Scope models.NotificationScope `json:"scope" binding:"required"`
+	Type     models.NotificationType  `json:"type" binding:"required"`
+	Scope    models.NotificationScope `json:"scope" binding:"required"`
+	EntityID *uint                    `json:"entityId,omitempty"`
 
 	UserID *uint `json:"userId,omitempty"`
 }

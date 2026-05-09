@@ -2706,7 +2706,8 @@ const docTemplate = `{
                             "system",
                             "event",
                             "streak",
-                            "reward"
+                            "reward",
+                            "logOut"
                         ],
                         "type": "string",
                         "description": "Notification type",
@@ -7608,6 +7609,9 @@ const docTemplate = `{
                 "type"
             ],
             "properties": {
+                "entityId": {
+                    "type": "integer"
+                },
                 "message": {
                     "type": "string"
                 },
@@ -7987,6 +7991,9 @@ const docTemplate = `{
             "properties": {
                 "createdAt": {
                     "type": "string"
+                },
+                "entityId": {
+                    "type": "integer"
                 },
                 "id": {
                     "type": "integer"
@@ -8896,13 +8903,15 @@ const docTemplate = `{
                 "system",
                 "event",
                 "streak",
-                "reward"
+                "reward",
+                "logOut"
             ],
             "x-enum-varnames": [
                 "NotificationTypeSystem",
                 "NotificationTypeEvent",
                 "NotificationTypeStreak",
-                "NotificationTypeReward"
+                "NotificationTypeReward",
+                "NotifLogOut"
             ]
         },
         "models.TimeEventStatus": {

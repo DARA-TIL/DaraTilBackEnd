@@ -1,8 +1,9 @@
 package ws
 
 import (
-	"DaraTilBackendV2/internal/application/services"
+	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/infrastructure/logger"
+	"DaraTilBackendV2/internal/presentation/dto/dtoMappers"
 	"sync"
 	"time"
 
@@ -30,7 +31,7 @@ type Client struct {
 	handler *WebSocketManager
 	userID  uint
 	connID  string
-	egress  chan services.NotificationPayload
+	egress  chan models.Notification
 	once    sync.Once
 }
 
@@ -40,7 +41,7 @@ func NewClient(conn *websocket.Conn, handler *WebSocketManager, userID uint) *Cl
 		handler: handler,
 		userID:  userID,
 		connID:  uuid.NewString(),
-		egress:  make(chan services.NotificationPayload, 16),
+		egress:  make(chan models.Notification, 16),
 	}
 }
 
@@ -54,33 +55,11 @@ func (c *Client) WriteMessages() {
 		select {
 		case message := <-c.egress:
 			_ = c.conn.SetWriteDeadline(time.Now().Add(writeWait))
-			switch n := message.(type) {
-			case *services.AchievementNotification:
-				err := c.conn.WriteJSON(AchievementNotification{
-					Notification: Notification{
-						UserID: n.UserID,
-						Type:   n.Type,
-					},
-					AchievementID: n.AchievementID,
-				})
-				if err != nil {
-					logger.Error("connection closed", zap.Error(err))
-					return
-				}
-			case *services.StreakNotification:
-				err := c.conn.WriteJSON(StreakNotification{
-					Notification: Notification{
-						UserID: n.UserID,
-						Type:   n.Type,
-					},
-					Streak: n.Streak,
-				})
-				if err != nil {
-					logger.Error("connection closed", zap.Error(err))
-					return
-				}
-			default:
-				logger.Warn("unsupported notification type", zap.Any("type", message))
+			dtoNotification := dtoMappers.NotificationToDto(message)
+			err := c.conn.WriteJSON(dtoNotification)
+			if err != nil {
+				logger.Error("connection closed", zap.Error(err))
+				return
 			}
 		case <-ticker.C:
 			_ = c.conn.SetWriteDeadline(time.Now().Add(writeWait))

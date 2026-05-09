@@ -283,9 +283,9 @@ func (h *JwtTokenHandler) Logout(c *gin.Context) {
 	}
 
 	deleteCookie()
-	h.Notify(c.Request.Context(), &services.Notification{
-		Type:   models.UserLogOut,
-		UserID: claims.UserID,
+	h.Notify(c.Request.Context(), models.Notification{
+		UserID: &claims.UserID,
+		Type:   models.NotifLogOut,
 	})
 	logger.Info("Logout successful",
 		zap.Uint("user_id", claims.UserID),
@@ -333,7 +333,7 @@ func (h *JwtTokenHandler) GetMe(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (h *JwtTokenHandler) Notify(ctx context.Context, notif services.NotificationPayload) {
+func (h *JwtTokenHandler) Notify(ctx context.Context, notif models.Notification) {
 	h.NotifSub.Handle(ctx, notif)
 }
 

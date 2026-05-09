@@ -7,6 +7,7 @@ import (
 	"DaraTilBackendV2/internal/domain/repo"
 	"context"
 	"errors"
+	"fmt"
 )
 
 type IncrementQuantityUC struct {
@@ -41,19 +42,29 @@ func (uc *IncrementQuantityUC) Handle(ctx context.Context, e services.Event) err
 	}
 	if len(achievements) != 0 {
 		for _, achievement := range achievements {
-			uc.Notify(ctx, &services.AchievementNotification{
-				Notification: services.Notification{
-					UserID: e.UserID,
-					Type:   models.Achieved,
-				},
-				AchievementID: achievement.AchievementID,
+			title := fmt.Sprintf("Achievement unlocked: %s", achievement.Achievement.Name)
+
+			message := fmt.Sprintf(
+				"You have unlocked the achievement \"%s\". %s",
+				achievement.Achievement.Name,
+				achievement.Achievement.Description,
+			)
+
+			uc.Notify(ctx, models.Notification{
+				Title:    title,
+				Message:  message,
+				Type:     models.NotificationTypeReward,
+				Scope:    models.NotificationScopeUser,
+				UserID:   &e.UserID,
+				EntityID: &achievement.ID,
+				IsActive: true,
 			})
 		}
 	}
 	return nil
 }
 
-func (uc *IncrementQuantityUC) Notify(ctx context.Context, notif services.NotificationPayload) {
+func (uc *IncrementQuantityUC) Notify(ctx context.Context, notif models.Notification) {
 	uc.notifSub.Handle(ctx, notif)
 }
 

@@ -8,6 +8,7 @@ import (
 	"DaraTilBackendV2/internal/infrastructure/utils"
 	"context"
 	"errors"
+	"fmt"
 
 	"go.uber.org/zap"
 )
@@ -68,13 +69,9 @@ func (s *StreakService) Handle(ctx context.Context, e Event) error {
 			logger.Error("Failed to create new Streak", zap.Error(err))
 			return err
 		}
-		s.Notify(ctx, &StreakNotification{
-			Notification: Notification{
-				Type:   models.StreakIncrease,
-				UserID: e.UserID,
-			},
-			Streak: 1,
-		})
+		notification := buildStreakNotification(e.UserID, 1)
+
+		s.Notify(ctx, notification)
 		return nil
 	}
 	if err != nil {
@@ -94,13 +91,9 @@ func (s *StreakService) Handle(ctx context.Context, e Event) error {
 		if err != nil {
 			logger.Error("Failed to get user streak", zap.Error(err))
 		}
-		s.Notify(ctx, &StreakNotification{
-			Notification: Notification{
-				Type:   models.StreakIncrease,
-				UserID: e.UserID,
-			},
-			Streak: str.CurrentStreak,
-		})
+		notification := buildStreakNotification(e.UserID, str.CurrentStreak)
+
+		s.Notify(ctx, notification)
 		return nil
 	}
 	logger.Info("Staring new user streak", zap.Uint("user_id", e.UserID))
@@ -109,13 +102,9 @@ func (s *StreakService) Handle(ctx context.Context, e Event) error {
 		logger.Error("Failed to start user streak", zap.Error(err))
 		return err
 	}
-	s.Notify(ctx, &StreakNotification{
-		Notification: Notification{
-			Type:   models.StreakIncrease,
-			UserID: e.UserID,
-		},
-		Streak: 1,
-	})
+	notification := buildStreakNotification(e.UserID, 1)
+
+	s.Notify(ctx, notification)
 	return nil
 }
 
@@ -129,13 +118,6 @@ func (s *StreakService) CheckStreak(ctx context.Context, userID uint) (StreakUpd
 		if err != nil {
 			return NoChange, err
 		}
-		s.Notify(ctx, &StreakNotification{
-			Notification: Notification{
-				Type:   models.StreakIncrease,
-				UserID: userID,
-			},
-			Streak: 0,
-		})
 		return Created, nil
 	}
 	if err != nil {
@@ -147,20 +129,39 @@ func (s *StreakService) CheckStreak(ctx context.Context, userID uint) (StreakUpd
 		if err != nil {
 			return NoChange, err
 		}
-		s.Notify(ctx, &StreakNotification{
-			Notification: Notification{
-				Type:   models.StreakReset,
-				UserID: userID,
-			},
-			Streak: 0,
-		})
+		notification := buildStreakNotification(userID, 0)
+
+		s.Notify(ctx, notification)
 		return Reset, nil
 	}
 	return NoChange, nil
 }
-func (s *StreakService) Notify(ctx context.Context, notif NotificationPayload) {
+func (s *StreakService) Notify(ctx context.Context, notif models.Notification) {
+	if s.NotifSub == nil {
+		logger.Warn("notification subscriber is not set")
+		return
+	}
+
 	s.NotifSub.Handle(ctx, notif)
 }
 func (s *StreakService) AddSubscriber(sub NotificationSubscriber) {
 	s.NotifSub = sub
+}
+func buildStreakNotification(userID uint, streak int) models.Notification {
+	title := "Streak updated"
+	message := fmt.Sprintf("Your current streak is %d day(s). Keep going!", streak)
+
+	if streak == 0 {
+		title = "Streak reset"
+		message = "Your streak has been reset. Start again today to build a new streak."
+	}
+
+	return models.Notification{
+		Title:    title,
+		Message:  message,
+		Type:     models.NotificationTypeStreak,
+		Scope:    models.NotificationScopeUser,
+		UserID:   &userID,
+		IsActive: true,
+	}
 }

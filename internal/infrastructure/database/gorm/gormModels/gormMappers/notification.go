@@ -12,6 +12,7 @@ func NotificationToGormModel(notification models.Notification) gormModels.Notifi
 		Type:     string(notification.Type),
 		Scope:    string(notification.Scope),
 		UserID:   notification.UserID,
+		EntityID: notification.EntityID,
 		IsActive: notification.IsActive,
 		Reads:    NotificationReadsToGormModel(notification.Reads),
 	}
@@ -25,6 +26,7 @@ func GormNotificationToDomainModel(notification gormModels.Notification) models.
 		Type:      models.NotificationType(notification.Type),
 		Scope:     models.NotificationScope(notification.Scope),
 		UserID:    notification.UserID,
+		EntityID:  notification.EntityID,
 		IsActive:  notification.IsActive,
 		CreatedAt: notification.CreatedAt,
 		Reads:     GormNotificationReadsToDomainModel(notification.Reads),

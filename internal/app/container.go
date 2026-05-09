@@ -499,9 +499,10 @@ func NewContainer(cfg *config.Config) *Container {
 
 	userActivityHandler := userActivity.NewUserActivityHandler(userActivityService)
 	wsHandler := ws.NewWebSocketManager(cfg)
-	streakService.AddSubscriber(wsHandler)
-	increaseUserAchievementSub.AddSubscriber(wsHandler)
+	streakService.AddSubscriber(createNotificationUC)
+	increaseUserAchievementSub.AddSubscriber(createNotificationUC)
 	jwtHandler.AddSubscriber(wsHandler)
+	createNotificationUC.AddSubscriber(wsHandler)
 
 	cronScheduler := scheduler.NewCronScheduler(updateDueTimeEventsUC, startWeeklyEventUC)
 	return &Container{

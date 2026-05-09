@@ -74,6 +74,7 @@ func GormUserAchievementToDomain(userAchievement gormModels.UserAchievement) mod
 		AchievementID: userAchievement.AchievementID,
 		Quantity:      userAchievement.Quantity,
 		Achieved:      userAchievement.Achieved,
+		Achievement:   GormAchievementToDomain(userAchievement.Achievement),
 	}
 }
 

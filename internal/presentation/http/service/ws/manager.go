@@ -1,7 +1,6 @@
 package ws
 
 import (
-	"DaraTilBackendV2/internal/application/services"
 	"DaraTilBackendV2/internal/config"
 	"DaraTilBackendV2/internal/domain/domErr"
 	"DaraTilBackendV2/internal/domain/models"
@@ -101,13 +100,12 @@ func (h *WebSocketManager) RemoveClient(client *Client) {
 	}
 }
 
-func (h *WebSocketManager) Handle(ctx context.Context, notif services.NotificationPayload) {
-	not := notif.GetNotification()
+func (h *WebSocketManager) Handle(ctx context.Context, notif models.Notification) {
 	h.RLock()
-	clientCons, ok := h.ClientList[not.UserID] //ClientConnections
+	clientCons, ok := h.ClientList[*notif.UserID] //ClientConnections
 	if !ok {
 		h.RUnlock()
-		logger.Error("user is not connected", zap.Uint("user_id", not.UserID))
+		logger.Error("user is not connected", zap.Uint("user_id", *notif.UserID))
 		return
 	}
 	clients := make([]*Client, 0, len(clientCons))
@@ -115,7 +113,7 @@ func (h *WebSocketManager) Handle(ctx context.Context, notif services.Notificati
 		clients = append(clients, c)
 	}
 	h.RUnlock()
-	if not.Type == models.UserLogOut {
+	if notif.Type == models.NotifLogOut {
 		h.DisconnectClients(clients)
 		return
 	}
@@ -124,14 +122,13 @@ func (h *WebSocketManager) Handle(ctx context.Context, notif services.Notificati
 
 }
 
-func (h *WebSocketManager) SendToClients(clients []*Client, notif services.NotificationPayload) {
-	not := notif.GetNotification()
+func (h *WebSocketManager) SendToClients(clients []*Client, notif models.Notification) {
 	for _, c := range clients {
 		select {
 		case c.egress <- notif:
 		default:
 			logger.Warn("client egress is full",
-				zap.Uint("user_id", not.UserID),
+				zap.Uint("user_id", *notif.UserID),
 				zap.String("conn_id", c.connID),
 			)
 		}

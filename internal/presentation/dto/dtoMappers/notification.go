@@ -20,8 +20,9 @@ func NotificationToDto(notification models.Notification) dto.Notification {
 		Message: notification.Message,
 		Type:    notification.Type,
 
-		Scope:  notification.Scope,
-		UserID: notification.UserID,
+		Scope:    notification.Scope,
+		UserID:   notification.UserID,
+		EntityID: notification.EntityID,
 
 		IsActive:  notification.IsActive,
 		CreatedAt: notification.CreatedAt,
@@ -55,6 +56,7 @@ func NotificationFromCreateRequest(req dto.CreateNotificationRequest) models.Not
 		Type:     req.Type,
 		Scope:    req.Scope,
 		UserID:   req.UserID,
+		EntityID: req.EntityID,
 		IsActive: true,
 	}
 }

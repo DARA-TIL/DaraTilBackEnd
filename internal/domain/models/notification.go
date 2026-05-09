@@ -18,6 +18,7 @@ const (
 	NotificationTypeEvent  NotificationType = "event"
 	NotificationTypeStreak NotificationType = "streak"
 	NotificationTypeReward NotificationType = "reward"
+	NotifLogOut            NotificationType = "logOut"
 )
 
 type Notification struct {
@@ -32,8 +33,8 @@ type Notification struct {
 
 	IsActive  bool
 	CreatedAt time.Time
-
-	Reads []NotificationRead
+	EntityID  *uint
+	Reads     []NotificationRead
 }
 type NotificationRead struct {
 	ID uint

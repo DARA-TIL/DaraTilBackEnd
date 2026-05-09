@@ -2703,7 +2703,8 @@
                             "system",
                             "event",
                             "streak",
-                            "reward"
+                            "reward",
+                            "logOut"
                         ],
                         "type": "string",
                         "description": "Notification type",
@@ -7605,6 +7606,9 @@
                 "type"
             ],
             "properties": {
+                "entityId": {
+                    "type": "integer"
+                },
                 "message": {
                     "type": "string"
                 },
@@ -7984,6 +7988,9 @@
             "properties": {
                 "createdAt": {
                     "type": "string"
+                },
+                "entityId": {
+                    "type": "integer"
                 },
                 "id": {
                     "type": "integer"
@@ -8893,13 +8900,15 @@
                 "system",
                 "event",
                 "streak",
-                "reward"
+                "reward",
+                "logOut"
             ],
             "x-enum-varnames": [
                 "NotificationTypeSystem",
                 "NotificationTypeEvent",
                 "NotificationTypeStreak",
-                "NotificationTypeReward"
+                "NotificationTypeReward",
+                "NotifLogOut"
             ]
         },
         "models.TimeEventStatus": {
