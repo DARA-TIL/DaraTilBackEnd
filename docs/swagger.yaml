@@ -31,6 +31,24 @@ definitions:
     - action
     - rules
     type: object
+  dto.CreateNotificationRequest:
+    properties:
+      message:
+        type: string
+      scope:
+        $ref: '#/definitions/models.NotificationScope'
+      title:
+        type: string
+      type:
+        $ref: '#/definitions/models.NotificationType'
+      userId:
+        type: integer
+    required:
+    - message
+    - scope
+    - title
+    - type
+    type: object
   dto.CreateTimeEventParticipantRequest:
     properties:
       count:
@@ -263,6 +281,29 @@ definitions:
         type: string
       user:
         $ref: '#/definitions/dto.User'
+    type: object
+  dto.Notification:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: integer
+      isActive:
+        type: boolean
+      isRead:
+        type: boolean
+      message:
+        type: string
+      readAt:
+        type: string
+      scope:
+        $ref: '#/definitions/models.NotificationScope'
+      title:
+        type: string
+      type:
+        $ref: '#/definitions/models.NotificationType'
+      userId:
+        type: integer
     type: object
   dto.Question:
     properties:
@@ -558,6 +599,23 @@ definitions:
       position:
         type: integer
     type: object
+  dto.UpdateNotificationRequest:
+    properties:
+      id:
+        type: integer
+      isActive:
+        type: boolean
+      message:
+        type: string
+      scope:
+        $ref: '#/definitions/models.NotificationScope'
+      title:
+        type: string
+      type:
+        $ref: '#/definitions/models.NotificationType'
+    required:
+    - id
+    type: object
   dto.UpdateTimeEventParticipantRequest:
     properties:
       count:
@@ -819,6 +877,26 @@ definitions:
     - KZ
     - EN
     - RU
+  models.NotificationScope:
+    enum:
+    - user
+    - global
+    type: string
+    x-enum-varnames:
+    - NotificationScopeUser
+    - NotificationScopeGlobal
+  models.NotificationType:
+    enum:
+    - system
+    - event
+    - streak
+    - reward
+    type: string
+    x-enum-varnames:
+    - NotificationTypeSystem
+    - NotificationTypeEvent
+    - NotificationTypeStreak
+    - NotificationTypeReward
   models.TimeEventStatus:
     enum:
     - started
@@ -843,7 +921,7 @@ definitions:
         example: "123456"
         type: string
     type: object
-host: daratilback.onrender.com
+host: localhost:8080
 info:
   contact: {}
   description: Api server for DaraTil PLatform
@@ -2610,6 +2688,239 @@ paths:
       summary: Update lesson block
       tags:
       - Lesson
+  /notifications/:
+    get:
+      description: Returns notifications with optional filters.
+      parameters:
+      - description: Notification type
+        enum:
+        - system
+        - event
+        - streak
+        - reward
+        in: query
+        name: type
+        type: string
+      - description: Notification scope
+        enum:
+        - user
+        - global
+        in: query
+        name: scope
+        type: string
+      - description: Only unread notifications
+        in: query
+        name: notSeen
+        type: boolean
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of notifications
+          schema:
+            items:
+              $ref: '#/definitions/dto.Notification'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all notifications
+      tags:
+      - Notification
+    patch:
+      consumes:
+      - application/json
+      description: Updates notification fields. Partial update via nullable fields.
+        Admin access required.
+      parameters:
+      - description: Notification update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateNotificationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated notification
+          schema:
+            $ref: '#/definitions/dto.Notification'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update notification
+      tags:
+      - Notification
+    post:
+      consumes:
+      - application/json
+      description: Creates a new notification. Admin access required.
+      parameters:
+      - description: Notification create payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateNotificationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created notification
+          schema:
+            $ref: '#/definitions/dto.Notification'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create notification
+      tags:
+      - Notification
+  /notifications/{id}:
+    delete:
+      description: Deletes a notification by ID. Admin access required.
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete notification
+      tags:
+      - Notification
+    get:
+      description: Returns a notification by ID.
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Notification
+          schema:
+            $ref: '#/definitions/dto.Notification'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get notification by ID
+      tags:
+      - Notification
   /region//tradition/{id}/translations:
     get:
       description: Returns all translations for tradition.
@@ -5615,7 +5926,7 @@ paths:
       tags:
       - UserProfile
 schemes:
-- https
+- http
 securityDefinitions:
   BearerAuth:
     in: header

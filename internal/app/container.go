@@ -11,6 +11,7 @@ import (
 	"DaraTilBackendV2/internal/application/usecases/jwtTokenUC"
 	"DaraTilBackendV2/internal/application/usecases/leaderboardUC"
 	"DaraTilBackendV2/internal/application/usecases/lessonUC"
+	"DaraTilBackendV2/internal/application/usecases/notificationUC"
 	"DaraTilBackendV2/internal/application/usecases/regionSlangUC"
 	"DaraTilBackendV2/internal/application/usecases/regionSlangUC/regionSlangTranslationsUC"
 	"DaraTilBackendV2/internal/application/usecases/regionTraditionsUC"
@@ -36,6 +37,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/service/jwt"
 	"DaraTilBackendV2/internal/presentation/http/service/leaderboard"
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
+	"DaraTilBackendV2/internal/presentation/http/service/notification"
 	"DaraTilBackendV2/internal/presentation/http/service/region"
 	"DaraTilBackendV2/internal/presentation/http/service/test"
 	"DaraTilBackendV2/internal/presentation/http/service/timeEvent"
@@ -65,6 +67,7 @@ type Container struct {
 	LeaderboardHandler          *leaderboard.LeaderboardHandler
 	TimeEventHandler            *timeEvent.TimeEventHandler
 	TimeEventParticipantHandler *timeEvent.TimeEventParticipantHandler
+	NotificationHandler         *notification.NotificationHandler
 	CronScheduler               *scheduler.CronScheduler
 }
 
@@ -96,6 +99,7 @@ func NewContainer(cfg *config.Config) *Container {
 	leaderboardRepo := repository.NewLeaderboardRepository(db)
 	timeEventRepo := repository.NewTimeEventRepository(db)
 	timeEventParticipantRepo := repository.NewTimeEventParticipantRepository(db)
+	notificationRepo := repository.NewNotificationRepository(db)
 	//AI
 	geminiAI := gemini.NewGeminiAI(cfg)
 
@@ -270,6 +274,13 @@ func NewContainer(cfg *config.Config) *Container {
 	getTimeEPUC := timeEventParticipantUC.NewGetEventParticipantUC(timeEventParticipantRepo)
 	getTimeEPsUC := timeEventParticipantUC.NewGetEventParticipantsUC(timeEventParticipantRepo)
 	increaseTEPUC := timeEventParticipantUC.NewIncreaseTEPStatUC(timeEventParticipantRepo, timeEventRepo)
+	//NotificationsUCs
+	createNotificationUC := notificationUC.NewCreateUC(notificationRepo)
+	updateNotificationUC := notificationUC.NewUpdateUC(notificationRepo)
+	deleteNotificationUC := notificationUC.NewDeleteUC(notificationRepo)
+	getNotificationByIDUC := notificationUC.NewGetByIDUC(notificationRepo)
+	getNotificationsUC := notificationUC.NewGetAllUC(notificationRepo)
+
 	//LeaderboardUCs
 	leaderboardUseCase := leaderboardUC.NewLeaderboardUC(leaderboardRepo)
 
@@ -477,7 +488,13 @@ func NewContainer(cfg *config.Config) *Container {
 		getTimeEPUC,
 		getTimeEPsUC,
 	)
-
+	notificationHandler := notification.NewNotificationHandler(
+		createNotificationUC,
+		updateNotificationUC,
+		getNotificationsUC,
+		getNotificationByIDUC,
+		deleteNotificationUC,
+	)
 	leaderboardHandler := leaderboard.NewLeaderboardHandler(leaderboardUseCase)
 
 	userActivityHandler := userActivity.NewUserActivityHandler(userActivityService)
@@ -508,5 +525,6 @@ func NewContainer(cfg *config.Config) *Container {
 		TimeEventHandler:            timeEventHandler,
 		TimeEventParticipantHandler: timeEventParticipantHandler,
 		CronScheduler:               cronScheduler,
+		NotificationHandler:         notificationHandler,
 	}
 }

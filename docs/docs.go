@@ -2685,6 +2685,354 @@ const docTemplate = `{
                 }
             }
         },
+        "/notifications/": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns notifications with optional filters.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Notification"
+                ],
+                "summary": "Get all notifications",
+                "parameters": [
+                    {
+                        "enum": [
+                            "system",
+                            "event",
+                            "streak",
+                            "reward"
+                        ],
+                        "type": "string",
+                        "description": "Notification type",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "user",
+                            "global"
+                        ],
+                        "type": "string",
+                        "description": "Notification scope",
+                        "name": "scope",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Only unread notifications",
+                        "name": "notSeen",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of notifications",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.Notification"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates a new notification. Admin access required.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Notification"
+                ],
+                "summary": "Create notification",
+                "parameters": [
+                    {
+                        "description": "Notification create payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateNotificationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created notification",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Notification"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates notification fields. Partial update via nullable fields. Admin access required.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Notification"
+                ],
+                "summary": "Update notification",
+                "parameters": [
+                    {
+                        "description": "Notification update payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateNotificationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated notification",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Notification"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/notifications/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a notification by ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Notification"
+                ],
+                "summary": "Get notification by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Notification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notification",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Notification"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a notification by ID. Admin access required.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Notification"
+                ],
+                "summary": "Delete notification",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Notification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/region//tradition/{id}/translations": {
             "get": {
                 "security": [
@@ -7251,6 +7599,32 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateNotificationRequest": {
+            "type": "object",
+            "required": [
+                "message",
+                "scope",
+                "title",
+                "type"
+            ],
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "scope": {
+                    "$ref": "#/definitions/models.NotificationScope"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/models.NotificationType"
+                },
+                "userId": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.CreateTimeEventParticipantRequest": {
             "type": "object",
             "properties": {
@@ -7605,6 +7979,41 @@ const docTemplate = `{
                 },
                 "user": {
                     "$ref": "#/definitions/dto.User"
+                }
+            }
+        },
+        "dto.Notification": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "isRead": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "readAt": {
+                    "type": "string"
+                },
+                "scope": {
+                    "$ref": "#/definitions/models.NotificationScope"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/models.NotificationType"
+                },
+                "userId": {
+                    "type": "integer"
                 }
             }
         },
@@ -8057,6 +8466,32 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UpdateNotificationRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "scope": {
+                    "$ref": "#/definitions/models.NotificationScope"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/models.NotificationType"
+                }
+            }
+        },
         "dto.UpdateTimeEventParticipantRequest": {
             "type": "object",
             "properties": {
@@ -8444,6 +8879,32 @@ const docTemplate = `{
                 "RU"
             ]
         },
+        "models.NotificationScope": {
+            "type": "string",
+            "enum": [
+                "user",
+                "global"
+            ],
+            "x-enum-varnames": [
+                "NotificationScopeUser",
+                "NotificationScopeGlobal"
+            ]
+        },
+        "models.NotificationType": {
+            "type": "string",
+            "enum": [
+                "system",
+                "event",
+                "streak",
+                "reward"
+            ],
+            "x-enum-varnames": [
+                "NotificationTypeSystem",
+                "NotificationTypeEvent",
+                "NotificationTypeStreak",
+                "NotificationTypeReward"
+            ]
+        },
         "models.TimeEventStatus": {
             "type": "string",
             "enum": [
@@ -8490,9 +8951,9 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "0.2",
-	Host:             "daratilback.onrender.com",
+	Host:             "localhost:8080",
 	BasePath:         "/api",
-	Schemes:          []string{"https"},
+	Schemes:          []string{"http"},
 	Title:            "DaraTil Backend",
 	Description:      "Api server for DaraTil PLatform",
 	InfoInstanceName: "swagger",

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"DaraTilBackendV2/docs"
 	_ "DaraTilBackendV2/docs"
 	"DaraTilBackendV2/internal/config"
 	"DaraTilBackendV2/internal/infrastructure/logger"
@@ -12,6 +13,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/service/folklore"
 	"DaraTilBackendV2/internal/presentation/http/service/leaderboard"
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
+	"DaraTilBackendV2/internal/presentation/http/service/notification"
 	"DaraTilBackendV2/internal/presentation/http/service/region"
 	"DaraTilBackendV2/internal/presentation/http/service/test"
 	"DaraTilBackendV2/internal/presentation/http/service/timeEvent"
@@ -59,7 +61,23 @@ func (a *App) setupMiddleware() {
 		MaxAge:           12 * time.Hour,
 	}))
 }
+func setupSwagger(r *gin.Engine) {
+	swaggerHost := os.Getenv("SWAGGER_HOST")
+	if swaggerHost == "" {
+		swaggerHost = "localhost:8080"
+	}
 
+	swaggerScheme := os.Getenv("SWAGGER_SCHEME")
+	if swaggerScheme == "" {
+		swaggerScheme = "http"
+	}
+
+	docs.SwaggerInfo.Host = swaggerHost
+	docs.SwaggerInfo.Schemes = []string{swaggerScheme}
+	docs.SwaggerInfo.BasePath = "/api"
+
+	r.GET("/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+}
 func (a *App) setupRoutes() {
 	api := a.router.Group("/api")
 	authLimiter := middleware.NewIPRateLimiter(rate.Every(time.Minute/20), 20*time.Minute, 10)
@@ -179,8 +197,13 @@ func (a *App) setupRoutes() {
 	timeEventParticipantRoute.Use(middleware.RateLimiter(generalLimiter))
 	timeEvent.RegisterTimeEventParticipantRoutes(timeEventParticipantRoute, a.container.TimeEventParticipantHandler)
 
+	notificationsRoute := api.Group("/notifications")
+	notificationsRoute.Use(middleware.AuthMiddleware(a.cfg))
+	notificationsRoute.Use(middleware.RateLimiter(generalLimiter))
+	notification.RegisterRoutes(notificationsRoute, a.container.NotificationHandler)
+
 	api.GET("/ws", middleware.AuthMiddleware(a.cfg), a.container.WebSocketHandler.ServeWS)
-	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	setupSwagger(a.router)
 
 }
 
