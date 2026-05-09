@@ -1,26 +1,31 @@
 package timeEventUC
 
 import (
+	"DaraTilBackendV2/internal/application/services"
 	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/domain/repo"
 	"context"
+	"fmt"
 )
 
 type FinishTimeEventUC struct {
 	timeEventRepo            repo.TimeEventRepo
 	timeEventParticipantRepo repo.TimeEventParticipantRepo
 	userRepo                 repo.UserRepo
+	notifSub                 services.NotificationSubscriber
 }
 
 func NewFinishTimeEventUC(
 	timeEventRepo repo.TimeEventRepo,
 	timeEventParticipantRepo repo.TimeEventParticipantRepo,
 	userRepo repo.UserRepo,
+	notifSub services.NotificationSubscriber,
 ) *FinishTimeEventUC {
 	return &FinishTimeEventUC{
 		timeEventRepo:            timeEventRepo,
 		timeEventParticipantRepo: timeEventParticipantRepo,
 		userRepo:                 userRepo,
+		notifSub:                 notifSub,
 	}
 }
 
@@ -60,6 +65,34 @@ func (uc *FinishTimeEventUC) Execute(ctx context.Context, eventID uint) error {
 		if lvlRet.Err != nil {
 			return lvlRet.Err
 		}
+		eventIDCopy := event.ID
+		userID := winner.UserID
+
+		title := fmt.Sprintf("Event reward: %s", event.Name)
+
+		message := fmt.Sprintf(
+			"You finished in place #%d in \"%s\" and received %d XP.",
+			winner.Place,
+			event.Name,
+			reward,
+		)
+
+		uc.Notify(ctx, models.Notification{
+			Title:    title,
+			Message:  message,
+			Type:     models.NotificationTypeReward,
+			Scope:    models.NotificationScopeUser,
+			UserID:   &userID,
+			EntityID: &eventIDCopy,
+			IsActive: true,
+		})
 	}
 	return nil
+}
+func (uc *FinishTimeEventUC) Notify(ctx context.Context, notif models.Notification) {
+	uc.notifSub.Handle(ctx, notif)
+}
+
+func (uc *FinishTimeEventUC) AddSubscriber(sub services.NotificationSubscriber) {
+	uc.notifSub = sub
 }

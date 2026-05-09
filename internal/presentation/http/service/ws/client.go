@@ -54,6 +54,7 @@ func (c *Client) WriteMessages() {
 	for {
 		select {
 		case message := <-c.egress:
+
 			_ = c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			dtoNotification := dtoMappers.NotificationToDto(message)
 			err := c.conn.WriteJSON(dtoNotification)

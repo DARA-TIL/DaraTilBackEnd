@@ -102,6 +102,10 @@ func (h *WebSocketManager) RemoveClient(client *Client) {
 
 func (h *WebSocketManager) Handle(ctx context.Context, notif models.Notification) {
 	h.RLock()
+	if notif.UserID == nil {
+		logger.Warn("notification user id is nil")
+		return
+	}
 	clientCons, ok := h.ClientList[*notif.UserID] //ClientConnections
 	if !ok {
 		h.RUnlock()

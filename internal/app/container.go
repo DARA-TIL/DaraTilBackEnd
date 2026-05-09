@@ -257,16 +257,6 @@ func NewContainer(cfg *config.Config) *Container {
 	getTraditionTranslationsByTraditionIDUC := regionTraditionTranslationsUC.NewGetByTraditionIDUC(regionTraditionTranslationRepo)
 	updateRegionTraditionTranslationUC := regionTraditionTranslationsUC.NewUpdateUC(regionTraditionTranslationRepo)
 
-	//TimeEventUCs
-	createTimeEventUC := timeEventUC.NewCreateUC(timeEventRepo)
-	deleteTimeEventUC := timeEventUC.NewDeleteUC(timeEventRepo)
-	updateTimeEventUC := timeEventUC.NewUpdateUC(timeEventRepo)
-	getTimeEventByIDUC := timeEventUC.NewGetbyIDUC(timeEventRepo)
-	getAllTimeEventUC := timeEventUC.NewGetAllUC(timeEventRepo)
-	finishTimeEventUC := timeEventUC.NewFinishTimeEventUC(timeEventRepo, timeEventParticipantRepo, userRepo)
-	updateDueTimeEventsUC := timeEventUC.NewUpdateDueTimeEventsUC(timeEventRepo, finishTimeEventUC)
-	startWeeklyEventUC := timeEventUC.NewStartWeeklyEventUC(timeEventRepo)
-
 	//TimeEventParticipantUCs TimeEP - TimeEventParticipant
 	createTimeEPUC := timeEventParticipantUC.NewCreateUC(timeEventParticipantRepo)
 	updateTimeEPUC := timeEventParticipantUC.NewUpdateUC(timeEventParticipantRepo)
@@ -280,7 +270,15 @@ func NewContainer(cfg *config.Config) *Container {
 	deleteNotificationUC := notificationUC.NewDeleteUC(notificationRepo)
 	getNotificationByIDUC := notificationUC.NewGetByIDUC(notificationRepo)
 	getNotificationsUC := notificationUC.NewGetAllUC(notificationRepo)
-
+	//TimeEventUCs
+	createTimeEventUC := timeEventUC.NewCreateUC(timeEventRepo)
+	deleteTimeEventUC := timeEventUC.NewDeleteUC(timeEventRepo)
+	updateTimeEventUC := timeEventUC.NewUpdateUC(timeEventRepo)
+	getTimeEventByIDUC := timeEventUC.NewGetbyIDUC(timeEventRepo)
+	getAllTimeEventUC := timeEventUC.NewGetAllUC(timeEventRepo)
+	finishTimeEventUC := timeEventUC.NewFinishTimeEventUC(timeEventRepo, timeEventParticipantRepo, userRepo, createNotificationUC)
+	updateDueTimeEventsUC := timeEventUC.NewUpdateDueTimeEventsUC(timeEventRepo, finishTimeEventUC)
+	startWeeklyEventUC := timeEventUC.NewStartWeeklyEventUC(timeEventRepo, createNotificationUC)
 	//LeaderboardUCs
 	leaderboardUseCase := leaderboardUC.NewLeaderboardUC(leaderboardRepo)
 

@@ -50,7 +50,7 @@ func (s *CronScheduler) RegisterJobs() error {
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@weekly", func() {
+	_, err = s.cron.AddFunc("@every 30s", func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 		logger.Info("Starting cron job for startWeeklyEvent")

@@ -1,20 +1,23 @@
 package timeEventUC
 
 import (
+	"DaraTilBackendV2/internal/application/services"
 	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/domain/repo"
 	"DaraTilBackendV2/internal/infrastructure/logger"
 	"context"
+	"fmt"
 	"math/rand"
 	"time"
 )
 
 type StartWeeklyEventUC struct {
-	repo repo.TimeEventRepo
+	repo     repo.TimeEventRepo
+	notifSub services.NotificationSubscriber
 }
 
-func NewStartWeeklyEventUC(repo repo.TimeEventRepo) *StartWeeklyEventUC {
-	return &StartWeeklyEventUC{repo: repo}
+func NewStartWeeklyEventUC(repo repo.TimeEventRepo, notifSub services.NotificationSubscriber) *StartWeeklyEventUC {
+	return &StartWeeklyEventUC{repo: repo, notifSub: notifSub}
 }
 
 var weeklyEventActions = []models.Actions{
@@ -70,10 +73,26 @@ func (uc *StartWeeklyEventUC) Execute(ctx context.Context) error {
 		Status:       models.Started,
 	}
 
-	_, err = uc.repo.Create(ctx, event)
+	createdEvent, err := uc.repo.Create(ctx, event)
 	if err != nil {
 		return err
 	}
+	eventID := createdEvent.ID
+
+	uc.Notify(ctx, models.Notification{
+		Title: fmt.Sprintf(
+			"New weekly event: %s",
+			createdEvent.Name,
+		),
+		Message: fmt.Sprintf(
+			"The weekly event \"%s\" has started. Join now and compete for rewards.",
+			createdEvent.Name,
+		),
+		Type:     models.NotificationTypeEvent,
+		Scope:    models.NotificationScopeGlobal,
+		EntityID: &eventID,
+		IsActive: true,
+	})
 	logger.Info("Weekly Event created successfully")
 	return nil
 }
@@ -135,4 +154,15 @@ func startOfISOWeek(t time.Time) time.Time {
 	)
 
 	return startOfDay.AddDate(0, 0, -(weekday - 1))
+}
+func (uc *StartWeeklyEventUC) Notify(ctx context.Context, notif models.Notification) {
+	if uc.notifSub == nil {
+		logger.Warn("No notification subscriber")
+		return
+	}
+	uc.notifSub.Handle(ctx, notif)
+}
+
+func (uc *StartWeeklyEventUC) AddSubscriber(sub services.NotificationSubscriber) {
+	uc.notifSub = sub
 }
