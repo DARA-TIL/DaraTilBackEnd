@@ -156,22 +156,46 @@ func (t *TimeEventRepository) ChangeEventStatus(ctx context.Context, id uint, st
 	return nil
 }
 
-func (t *TimeEventRepository) StartDueEvents(ctx context.Context) error {
+func (t *TimeEventRepository) StartDueEvents(ctx context.Context) ([]models.TimeEvent, error) {
 	now := time.Now()
+
+	var dueEvents []gormModels.TimeEvent
+
 	err := t.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		res := tx.
-			Model(&gormModels.TimeEvent{}).
+		if err := tx.
 			Where("status = ?", string(models.Waiting)).
 			Where("start_date <= ?", now).
-			Update("status", models.Started)
+			Find(&dueEvents).Error; err != nil {
+			return err
+		}
+
+		if len(dueEvents) == 0 {
+			logger.Info("Started Events:", zap.Int("count", 0))
+			return nil
+		}
+
+		ids := make([]uint, 0, len(dueEvents))
+		for _, event := range dueEvents {
+			ids = append(ids, event.ID)
+		}
+
+		res := tx.
+			Model(&gormModels.TimeEvent{}).
+			Where("id IN ?", ids).
+			Update("status", string(models.Started))
+
 		if res.Error != nil {
 			return res.Error
 		}
-		logger.Info("Started Events:", zap.Int64("count:", res.RowsAffected))
+
+		logger.Info("Started Events:", zap.Int64("count", res.RowsAffected))
+
 		return nil
 	})
+
 	if err != nil {
-		return errhandlers.DBErrHandler(err)
+		return nil, errhandlers.DBErrHandler(err)
 	}
-	return nil
+
+	return gormMappers.GormTimeEventsToDomainModel(dueEvents), nil
 }

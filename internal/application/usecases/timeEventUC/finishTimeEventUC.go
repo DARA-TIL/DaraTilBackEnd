@@ -19,13 +19,11 @@ func NewFinishTimeEventUC(
 	timeEventRepo repo.TimeEventRepo,
 	timeEventParticipantRepo repo.TimeEventParticipantRepo,
 	userRepo repo.UserRepo,
-	notifSub services.NotificationSubscriber,
 ) *FinishTimeEventUC {
 	return &FinishTimeEventUC{
 		timeEventRepo:            timeEventRepo,
 		timeEventParticipantRepo: timeEventParticipantRepo,
 		userRepo:                 userRepo,
-		notifSub:                 notifSub,
 	}
 }
 

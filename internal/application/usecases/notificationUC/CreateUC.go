@@ -19,7 +19,14 @@ func NewCreateUC(repo repo.NotificationRepo) *CreateUC {
 	return &CreateUC{repo: repo}
 }
 func (uc *CreateUC) Execute(ctx context.Context, notification models.Notification) (*models.Notification, error) {
-	return uc.repo.Create(ctx, notification)
+	notif, err := uc.repo.Create(ctx, notification)
+	if err != nil {
+		logger.Error("failed to create notification", zap.Error(err))
+		return nil, err
+	}
+	logger.Info("notification created", zap.Any("notification", notif))
+	uc.Notify(ctx, *notif)
+	return notif, nil
 }
 
 func (uc *CreateUC) Handle(ctx context.Context, notif models.Notification) {

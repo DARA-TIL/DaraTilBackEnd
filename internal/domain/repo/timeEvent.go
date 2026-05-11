@@ -12,7 +12,7 @@ type TimeEventRepo interface {
 	GetByID(ctx context.Context, id uint) (*models.TimeEvent, error)
 	GetAll(ctx context.Context, params models.TimeEventParams) ([]models.TimeEvent, error)
 	ChangeEventStatus(ctx context.Context, id uint, status models.TimeEventStatus) error
-	StartDueEvents(ctx context.Context) error
+	StartDueEvents(ctx context.Context) ([]models.TimeEvent, error)
 }
 
 type TimeEventParticipantRepo interface {

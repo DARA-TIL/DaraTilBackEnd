@@ -69,11 +69,21 @@ func (n *NotificationRepository) GetAllNotifications(
 		Model(&gormModels.Notification{})
 
 	if params.UserID != nil {
-		query = query.Where(
-			"(notifications.user_id = ? OR notifications.scope = ?)",
-			*params.UserID,
-			models.NotificationScopeGlobal,
-		)
+		query = query.
+			Joins(`
+				LEFT JOIN notification_reads 
+				ON notification_reads.notification_id = notifications.id 
+				AND notification_reads.user_id = ?
+			`, *params.UserID).
+			Where(
+				"(notifications.user_id = ? OR notifications.scope = ?)",
+				*params.UserID,
+				models.NotificationScopeGlobal,
+			).
+			Where(
+				"(notification_reads.id IS NULL OR notification_reads.is_active = ?)",
+				true,
+			)
 	}
 
 	if params.Scope != nil {
@@ -89,15 +99,10 @@ func (n *NotificationRepository) GetAllNotifications(
 			return nil, errs.ErrBadRequest
 		}
 
-		query = query.
-			Joins(`
-				LEFT JOIN notification_reads 
-				ON notification_reads.notification_id = notifications.id 
-				AND notification_reads.user_id = ?
-			`, *params.UserID).
-			Where("(notification_reads.id IS NULL OR notification_reads.read_at IS NULL)")
+		query = query.Where(
+			"(notification_reads.id IS NULL OR notification_reads.read_at IS NULL)",
+		)
 	}
-
 	query = query.Where("notifications.is_active = ?", true)
 	query = query.Order("notifications.created_at DESC")
 
@@ -236,5 +241,20 @@ func (n *NotificationRepository) CreateReadNotifications(
 		return errhandlers.DBErrHandler(err)
 	}
 
+	return nil
+}
+
+func (n *NotificationRepository) DeleteNotificationForUser(ctx context.Context, notifID, userID uint) error {
+	err := n.db.WithContext(ctx).Model(&gormModels.NotificationRead{}).Where("notification_id = ? AND user_id = ? AND is_active= ?", notifID, userID, true).Update("is_active", false).Error
+	if err != nil {
+		return errhandlers.DBErrHandler(err)
+	}
+	return nil
+}
+func (n *NotificationRepository) DeleteAllNotificationsForUser(ctx context.Context, userID uint) error {
+	err := n.db.WithContext(ctx).Model(&gormModels.NotificationRead{}).Where("user_id = ? AND is_active = ?", userID, true).Update("is_active", false).Error
+	if err != nil {
+		return errhandlers.DBErrHandler(err)
+	}
 	return nil
 }

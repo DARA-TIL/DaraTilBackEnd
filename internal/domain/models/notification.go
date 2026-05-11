@@ -42,6 +42,8 @@ type NotificationRead struct {
 	NotificationID uint
 	UserID         uint
 
+	isActive bool
+
 	ReadAt *time.Time
 
 	Notification Notification

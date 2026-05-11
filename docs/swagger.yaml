@@ -2928,6 +2928,70 @@ paths:
       summary: Get notification by ID
       tags:
       - Notification
+  /notifications/me:
+    delete:
+      description: Deletes or hides all notifications from the current user's notification
+        list.
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete all notifications for current user
+      tags:
+      - Notification
+  /notifications/me/{id}:
+    delete:
+      description: Deletes or hides a notification from the current user's notification
+        list by notification ID.
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Notification not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete notification for current user
+      tags:
+      - Notification
   /region//tradition/{id}/translations:
     get:
       description: Returns all translations for tradition.

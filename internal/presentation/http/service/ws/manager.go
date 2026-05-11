@@ -102,8 +102,8 @@ func (h *WebSocketManager) RemoveClient(client *Client) {
 
 func (h *WebSocketManager) Handle(ctx context.Context, notif models.Notification) {
 	h.RLock()
-	if notif.UserID == nil {
-		logger.Warn("notification user id is nil")
+	if notif.UserID == nil && notif.Scope == models.NotificationScopeGlobal {
+		h.SendToAllClients(notif)
 		return
 	}
 	clientCons, ok := h.ClientList[*notif.UserID] //ClientConnections
@@ -141,5 +141,20 @@ func (h *WebSocketManager) SendToClients(clients []*Client, notif models.Notific
 func (h *WebSocketManager) DisconnectClients(clients []*Client) {
 	for _, client := range clients {
 		client.Close()
+	}
+}
+
+func (h *WebSocketManager) SendToAllClients(notif models.Notification) {
+	for _, clients := range h.ClientList {
+		for _, client := range clients {
+			select {
+			case client.egress <- notif:
+			default:
+				logger.Warn("client egress is full",
+					zap.Uint("user_id", *notif.UserID),
+					zap.String("conn_id", client.connID),
+				)
+			}
+		}
 	}
 }

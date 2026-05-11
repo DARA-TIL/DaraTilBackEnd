@@ -270,13 +270,15 @@ func NewContainer(cfg *config.Config) *Container {
 	deleteNotificationUC := notificationUC.NewDeleteUC(notificationRepo)
 	getNotificationByIDUC := notificationUC.NewGetByIDUC(notificationRepo)
 	getNotificationsUC := notificationUC.NewGetAllUC(notificationRepo)
+	deleteNotificationForUserUC := notificationUC.NewDeleteNotificationForUserUC(notificationRepo)
+	deleteAllNotificationsForUserUC := notificationUC.NewDeleteAllNotificationsForUserUC(notificationRepo)
 	//TimeEventUCs
 	createTimeEventUC := timeEventUC.NewCreateUC(timeEventRepo)
 	deleteTimeEventUC := timeEventUC.NewDeleteUC(timeEventRepo)
 	updateTimeEventUC := timeEventUC.NewUpdateUC(timeEventRepo)
 	getTimeEventByIDUC := timeEventUC.NewGetbyIDUC(timeEventRepo)
 	getAllTimeEventUC := timeEventUC.NewGetAllUC(timeEventRepo)
-	finishTimeEventUC := timeEventUC.NewFinishTimeEventUC(timeEventRepo, timeEventParticipantRepo, userRepo, createNotificationUC)
+	finishTimeEventUC := timeEventUC.NewFinishTimeEventUC(timeEventRepo, timeEventParticipantRepo, userRepo)
 	updateDueTimeEventsUC := timeEventUC.NewUpdateDueTimeEventsUC(timeEventRepo, finishTimeEventUC)
 	startWeeklyEventUC := timeEventUC.NewStartWeeklyEventUC(timeEventRepo, createNotificationUC)
 	//LeaderboardUCs
@@ -492,6 +494,8 @@ func NewContainer(cfg *config.Config) *Container {
 		getNotificationsUC,
 		getNotificationByIDUC,
 		deleteNotificationUC,
+		deleteNotificationForUserUC,
+		deleteAllNotificationsForUserUC,
 	)
 	leaderboardHandler := leaderboard.NewLeaderboardHandler(leaderboardUseCase)
 
@@ -499,6 +503,8 @@ func NewContainer(cfg *config.Config) *Container {
 	wsHandler := ws.NewWebSocketManager(cfg)
 	streakService.AddSubscriber(createNotificationUC)
 	increaseUserAchievementSub.AddSubscriber(createNotificationUC)
+	finishTimeEventUC.AddSubscriber(createNotificationUC)
+	updateDueTimeEventsUC.AddSubscriber(createNotificationUC)
 	jwtHandler.AddSubscriber(wsHandler)
 	createNotificationUC.AddSubscriber(wsHandler)
 

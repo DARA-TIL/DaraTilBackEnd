@@ -12,4 +12,6 @@ type NotificationRepo interface {
 	Update(ctx context.Context, params models.UpdateNotificationParams) (*models.Notification, error)
 	Delete(ctx context.Context, notificationID uint) error
 	CreateReadNotifications(ctx context.Context, notifications []models.Notification, userID uint) error
+	DeleteAllNotificationsForUser(ctx context.Context, userID uint) error
+	DeleteNotificationForUser(ctx context.Context, notifID, userID uint) error
 }

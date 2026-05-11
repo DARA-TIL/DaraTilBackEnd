@@ -39,7 +39,7 @@ func NewCronScheduler(
 }
 
 func (s *CronScheduler) RegisterJobs() error {
-	_, err := s.cron.AddFunc("@every 4h", func() {
+	_, err := s.cron.AddFunc("@every 1h", func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 		logger.Info("Starting cron job for updateDueTimeEvent")
@@ -50,12 +50,13 @@ func (s *CronScheduler) RegisterJobs() error {
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 30s", func() {
+	_, err = s.cron.AddFunc("0 0 * * *", func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
+
 		logger.Info("Starting cron job for startWeeklyEvent")
-		err := s.startWeeklyEventUC.Execute(ctx)
-		if err != nil {
+
+		if err := s.startWeeklyEventUC.Execute(ctx); err != nil {
 			log.Printf("failed to start weekly events: %v", err)
 		}
 	})

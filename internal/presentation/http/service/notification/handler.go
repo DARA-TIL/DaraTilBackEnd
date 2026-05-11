@@ -13,24 +13,30 @@ import (
 )
 
 type NotificationHandler struct {
-	createUC  *notificationUC.CreateUC
-	updateUC  *notificationUC.UpdateUC
-	getAllUC  *notificationUC.GetAllUC
-	getByIDUC *notificationUC.GetByIDUC
-	deleteUC  *notificationUC.DeleteUC
+	createUC                        *notificationUC.CreateUC
+	updateUC                        *notificationUC.UpdateUC
+	getAllUC                        *notificationUC.GetAllUC
+	getByIDUC                       *notificationUC.GetByIDUC
+	deleteUC                        *notificationUC.DeleteUC
+	deleteNotificationForUserUC     *notificationUC.DeleteNotificationForUserUC
+	deleteAllNotificationsForUserUC *notificationUC.DeleteAllNotificationsForUserUC
 }
 
 func NewNotificationHandler(createUC *notificationUC.CreateUC,
 	updateUC *notificationUC.UpdateUC,
 	getAllUC *notificationUC.GetAllUC,
 	getByIDUC *notificationUC.GetByIDUC,
-	deleteUC *notificationUC.DeleteUC) *NotificationHandler {
+	deleteUC *notificationUC.DeleteUC,
+	deleteNotificationForUserUC *notificationUC.DeleteNotificationForUserUC,
+	deleteAllNotificationsForUserUC *notificationUC.DeleteAllNotificationsForUserUC) *NotificationHandler {
 	return &NotificationHandler{
-		createUC:  createUC,
-		updateUC:  updateUC,
-		getAllUC:  getAllUC,
-		getByIDUC: getByIDUC,
-		deleteUC:  deleteUC,
+		createUC:                        createUC,
+		updateUC:                        updateUC,
+		getAllUC:                        getAllUC,
+		getByIDUC:                       getByIDUC,
+		deleteUC:                        deleteUC,
+		deleteNotificationForUserUC:     deleteNotificationForUserUC,
+		deleteAllNotificationsForUserUC: deleteAllNotificationsForUserUC,
 	}
 }
 
@@ -207,6 +213,64 @@ func (h *NotificationHandler) Delete(c *gin.Context) {
 	}
 
 	if err := h.deleteUC.Execute(c.Request.Context(), *id); err != nil {
+		response.HandleDomainError(c, err)
+		return
+	}
+
+	response.Success(c, 204, "deleted successfully")
+}
+
+// DeleteNotificationForUser godoc
+// @Summary Delete notification for current user
+// @Description Deletes or hides a notification from the current user's notification list by notification ID.
+// @Tags Notification
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Notification ID"
+// @Success 204 "No Content"
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Notification not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /notifications/me/{id} [delete]
+func (h *NotificationHandler) DeleteNotificationForUser(c *gin.Context) {
+	id, err := utils.GetIdFromParams(c)
+	if err != nil {
+		response.HandleDomainError(c, errs.ErrInvalidInput)
+		return
+	}
+	userID, err := middleware.GetCurrentUserID(c)
+	if err != nil {
+		response.HandleDomainError(c, errs.ErrUnauthorized)
+		return
+	}
+
+	if err := h.deleteNotificationForUserUC.Execute(c.Request.Context(), *id, *userID); err != nil {
+		response.HandleDomainError(c, err)
+		return
+	}
+
+	response.Success(c, 204, "deleted successfully")
+}
+
+// DeleteAllNotificationsForUser godoc
+// @Summary Delete all notifications for current user
+// @Description Deletes or hides all notifications from the current user's notification list.
+// @Tags Notification
+// @Produce json
+// @Security BearerAuth
+// @Success 204 "No Content"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /notifications/me [delete]
+func (h *NotificationHandler) DeleteAllNotificationsForUser(c *gin.Context) {
+	userID, err := middleware.GetCurrentUserID(c)
+	if err != nil {
+		response.HandleDomainError(c, errs.ErrUnauthorized)
+		return
+	}
+
+	if err := h.deleteAllNotificationsForUserUC.Execute(c.Request.Context(), *userID); err != nil {
 		response.HandleDomainError(c, err)
 		return
 	}

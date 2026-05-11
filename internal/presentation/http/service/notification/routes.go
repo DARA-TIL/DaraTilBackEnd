@@ -13,4 +13,6 @@ func RegisterRoutes(r *gin.RouterGroup, h *NotificationHandler) {
 
 	r.GET("/:id", h.GetByID)
 	r.GET("/", h.GetAll)
+	r.DELETE("/me/:id", h.DeleteNotificationForUser)
+	r.DELETE("/me", h.DeleteAllNotificationsForUser)
 }
