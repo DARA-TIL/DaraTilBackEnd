@@ -1,10 +1,12 @@
 package scheduler
 
 import (
+	"DaraTilBackendV2/internal/application/services"
 	"DaraTilBackendV2/internal/application/usecases/timeEventUC"
 	"DaraTilBackendV2/internal/infrastructure/logger"
 	"context"
 	"log"
+	"os"
 	"time"
 
 	"github.com/robfig/cron/v3"
@@ -14,15 +16,17 @@ type CronScheduler struct {
 	cron                  *cron.Cron
 	updateDueTimeEventsUC *timeEventUC.UpdateDueTimeEventsUC
 	startWeeklyEventUC    *timeEventUC.StartWeeklyEventUC
+	StreakService         *services.StreakService
 }
 
 func NewCronScheduler(
 	updateDueTimeEventsUC *timeEventUC.UpdateDueTimeEventsUC,
 	startWeeklyEventUC *timeEventUC.StartWeeklyEventUC,
+	streakService *services.StreakService,
 ) *CronScheduler {
-	loc, err := time.LoadLocation("Asia/Qyzylorda")
+	loc, err := time.LoadLocation(os.Getenv("LOCATION"))
 	if err != nil {
-		log.Fatal(err)
+		loc = time.Local
 	}
 	c := cron.New(
 		cron.WithLocation(loc),
@@ -35,6 +39,7 @@ func NewCronScheduler(
 		cron:                  c,
 		updateDueTimeEventsUC: updateDueTimeEventsUC,
 		startWeeklyEventUC:    startWeeklyEventUC,
+		StreakService:         streakService,
 	}
 }
 
@@ -58,6 +63,10 @@ func (s *CronScheduler) RegisterJobs() error {
 
 		if err := s.startWeeklyEventUC.Execute(ctx); err != nil {
 			log.Printf("failed to start weekly events: %v", err)
+		}
+
+		if err := s.StreakService.CheckStreaks(ctx); err != nil {
+			log.Printf("failed to check streaks: %v", err)
 		}
 	})
 	if err != nil {

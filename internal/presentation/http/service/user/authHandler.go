@@ -2,7 +2,6 @@ package user
 
 import (
 	models2 "DaraTilBackendV2/internal/application/models"
-	"DaraTilBackendV2/internal/application/services"
 	errs "DaraTilBackendV2/internal/domain/domErr"
 	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/infrastructure/logger"
@@ -151,15 +150,10 @@ func (h *UserHandler) Login(c *gin.Context) {
 		response.HandleDomainError(c, err)
 		return
 	}
-	streak, err := h.UserStreakService.CheckStreak(c.Request.Context(), user.ID)
-	if err != nil {
-		logger.Error("Failed to check streak after login", zap.Error(err))
-	}
 	userDto := dtoMappers.UserToDto(*user)
 	resp := dto.LoginResponse{
 		AccessToken: accessToken,
 		User:        userDto,
-		Streak:      services.StreakResultToString(streak),
 	}
 	response.Success(c, 200, resp)
 }
@@ -314,10 +308,6 @@ func (h *UserHandler) OauthCallback(c *gin.Context, provider string) {
 			zap.Error(err),
 		)
 		return
-	}
-	_, err = h.UserStreakService.CheckStreak(c.Request.Context(), user.ID)
-	if err != nil {
-		logger.Error("Failed to check streak", zap.Error(err))
 	}
 	var redirectURL string
 	if client == "web" {

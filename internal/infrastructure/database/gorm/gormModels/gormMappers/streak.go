@@ -22,3 +22,12 @@ func GormStreakToDomain(streak gormModels.Streak) models.Streak {
 		LastActivity:  streak.LastActivity,
 	}
 }
+func GormStreaksToDomain(streaks []gormModels.Streak) []models.Streak {
+	result := make([]models.Streak, 0, len(streaks))
+
+	for _, streak := range streaks {
+		result = append(result, GormStreakToDomain(streak))
+	}
+
+	return result
+}

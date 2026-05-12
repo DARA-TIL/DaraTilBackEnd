@@ -31,7 +31,7 @@ func (s *StreakRepository) Create(ctx context.Context, streak models.Streak) err
 }
 
 func (s *StreakRepository) Increment(ctx context.Context, userID uint) error {
-	today := utils.TodayUTC()
+	today := utils.TodayInLocation()
 	err := s.db.WithContext(ctx).
 		Model(&gormModels.Streak{}).
 		Where("user_id = ?", userID).
@@ -67,7 +67,7 @@ func (s *StreakRepository) Reset(ctx context.Context, userID uint) error {
 }
 
 func (s *StreakRepository) Start(ctx context.Context, userID uint) error {
-	today := utils.TodayUTC()
+	today := utils.TodayInLocation()
 	err := s.db.WithContext(ctx).
 		Model(&gormModels.Streak{}).
 		Where("user_id = ?", userID).
@@ -80,4 +80,41 @@ func (s *StreakRepository) Start(ctx context.Context, userID uint) error {
 		return errhandlers.DBErrHandler(err)
 	}
 	return nil
+}
+
+func (s *StreakRepository) DailyStreakCheck(ctx context.Context) ([]models.Streak, error) {
+	yesterday := utils.TodayInLocation().AddDate(0, 0, -1)
+	now := utils.TimeNowInLocation()
+	var resetStreaks []gormModels.Streak
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		err := tx.Model(&gormModels.Streak{}).Where("current_streak > 0 AND last_activity < ?", yesterday).Find(&resetStreaks).Error
+		if err != nil {
+			return err
+		}
+		if len(resetStreaks) == 0 {
+			return nil
+		}
+		ids := make([]uint, 0, len(resetStreaks))
+		for _, rs := range resetStreaks {
+			ids = append(ids, rs.ID)
+		}
+		err = tx.Model(&gormModels.Streak{}).
+			Where("id in ?", ids).
+			Updates(map[string]interface{}{
+				"current_streak": 0,
+				"updated_at":     now,
+			}).Error
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, errhandlers.DBErrHandler(err)
+	}
+	if len(resetStreaks) == 0 {
+		return nil, nil
+	}
+	rs := gormMappers.GormStreaksToDomain(resetStreaks)
+	return rs, nil
 }

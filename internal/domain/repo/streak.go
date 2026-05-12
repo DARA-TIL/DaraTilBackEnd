@@ -11,4 +11,5 @@ type StreakRepo interface {
 	GetByUserID(ctx context.Context, userID uint) (*models.Streak, error)
 	Reset(ctx context.Context, userID uint) error
 	Start(ctx context.Context, userID uint) error
+	DailyStreakCheck(ctx context.Context) ([]models.Streak, error)
 }

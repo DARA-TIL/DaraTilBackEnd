@@ -30,7 +30,7 @@ func (uc *CreateUC) Execute(ctx context.Context, notification models.Notificatio
 }
 
 func (uc *CreateUC) Handle(ctx context.Context, notif models.Notification) {
-	notification, err := uc.Execute(ctx, notif)
+	notification, err := uc.repo.Create(ctx, notif)
 	if err != nil {
 		logger.Error("failed to create notification", zap.Error(err))
 		return

@@ -54,7 +54,7 @@ func (s *StreakService) Category() models.ActionTrigger {
 
 func (s *StreakService) Handle(ctx context.Context, e Event) error {
 	logger.Info("Checking User Streak", zap.Uint("user_id", e.UserID))
-	today := utils.TodayUTC()
+	today := utils.TodayInLocation()
 	streak, err := s.repo.GetByUserID(ctx, e.UserID)
 	if errors.Is(err, errs.ErrNotFound) {
 		logger.Info("User Streak not found, creating new one", zap.Uint("user_id", e.UserID))
@@ -108,33 +108,24 @@ func (s *StreakService) Handle(ctx context.Context, e Event) error {
 	return nil
 }
 
-func (s *StreakService) CheckStreak(ctx context.Context, userID uint) (StreakUpdateResult, error) {
-	streak, err := s.repo.GetByUserID(ctx, userID)
-	if errors.Is(err, errs.ErrNotFound) {
-		newStreak := models.Streak{
-			UserID: userID,
-		}
-		err = s.repo.Create(ctx, newStreak)
-		if err != nil {
-			return NoChange, err
-		}
-		return Created, nil
-	}
+func (s *StreakService) CheckStreaks(ctx context.Context) error {
+	resetStreaks, err := s.repo.DailyStreakCheck(ctx)
 	if err != nil {
-		return NoChange, err
+		return err
 	}
-	today := utils.TodayUTC()
-	if !streak.LastActivity.Equal(today) && !today.Equal(streak.LastActivity.AddDate(0, 0, 1)) && streak.CurrentStreak != 0 {
-		err := s.repo.Reset(ctx, userID)
-		if err != nil {
-			return NoChange, err
+	for _, resetStreak := range resetStreaks {
+		notif := models.Notification{
+			Title:    "Streak Reset",
+			Message:  "Your streak has been reset. Start again today to build a new streak.",
+			Type:     models.NotificationTypeStreak,
+			Scope:    models.NotificationScopeUser,
+			UserID:   &resetStreak.UserID,
+			IsActive: true,
 		}
-		notification := buildStreakNotification(userID, 0)
-
-		s.Notify(ctx, notification)
-		return Reset, nil
+		s.Notify(ctx, notif)
 	}
-	return NoChange, nil
+	logger.Info("Finished checking user streaks", zap.Int("reset_streaks_count", len(resetStreaks)))
+	return nil
 }
 func (s *StreakService) Notify(ctx context.Context, notif models.Notification) {
 	if s.NotifSub == nil {

@@ -508,7 +508,7 @@ func NewContainer(cfg *config.Config) *Container {
 	jwtHandler.AddSubscriber(wsHandler)
 	createNotificationUC.AddSubscriber(wsHandler)
 
-	cronScheduler := scheduler.NewCronScheduler(updateDueTimeEventsUC, startWeeklyEventUC)
+	cronScheduler := scheduler.NewCronScheduler(updateDueTimeEventsUC, startWeeklyEventUC, streakService)
 	return &Container{
 		UserHandler:                 userHandler,
 		JwtHandler:                  jwtHandler,

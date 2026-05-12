@@ -39,10 +39,12 @@ func (uc *StartWeeklyEventUC) Execute(ctx context.Context) error {
 	weekStart := startOfISOWeek(now)
 	weekEnd := weekStart.AddDate(0, 0, 7)
 	isWeekly := true
+	started := models.Started
 	existingEvents, err := uc.repo.GetAll(ctx, models.TimeEventParams{
 		StartDateFrom: &weekStart,
 		StartDateTo:   &weekEnd,
 		IsWeekly:      &isWeekly,
+		Status:        &started,
 	})
 	if err != nil {
 		return err
