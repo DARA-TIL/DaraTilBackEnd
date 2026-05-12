@@ -138,16 +138,18 @@ func (t *TimeEventRepository) ChangeEventStatus(ctx context.Context, id uint, st
 		if err := tx.Model(&gormModels.TimeEvent{}).Where("id = ?", id).Update("status", status).Error; err != nil {
 			return err
 		}
-		res := tx.Model(&gormModels.TimeEventParticipant{}).Where("time_event_id = ?", id)
+		res := tx.Model(&gormModels.TimeEventParticipant{}).
+			Where("time_event_id = ?", id).
+			Update("is_active", isActive)
+
 		if res.Error != nil {
 			return res.Error
 		}
-		if res.RowsAffected != 0 {
-			if err := tx.Model(&gormModels.TimeEventParticipant{}).Where("time_event_id = ?", id).Update("is_active", isActive).Error; err != nil {
-				return err
-			}
+
+		if res.RowsAffected == 0 {
 			return nil
 		}
+
 		return nil
 	})
 	if err != nil {
