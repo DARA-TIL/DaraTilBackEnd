@@ -128,7 +128,7 @@ func (h *WebSocketManager) HandleSendMessage(req dto.SendAiChatMessageRequest, c
 		c.SendError(err)
 		return
 	}
-	chatPayload, err := json.Marshal(chat)
+	chatPayload, err := json.Marshal(dtoMappers.AIChatToResponse(*chat))
 	if err != nil {
 		c.SendError(err)
 		return

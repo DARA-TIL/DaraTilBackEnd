@@ -96,18 +96,34 @@ func (r *AIChatMessageRepository) GetRecentByChatID(ctx context.Context, userID 
 		return nil, errs.ErrInvalidInput
 	}
 
+	if limit <= 0 {
+		limit = 20
+	}
+
 	var gormMessages []gormModels.AIChatMessage
 
 	err := r.db.WithContext(ctx).
 		Model(&gormModels.AIChatMessage{}).
-		Joins("JOIN ai_chats ON ai_chats.id = ai_chat_messages.chat_id").
-		Where("ai_chat_messages.chat_id = ? AND ai_chats.user_id = ?", chatID, userID).
+		Joins(`
+			JOIN ai_chats 
+			ON ai_chats.id = ai_chat_messages.chat_id
+			AND ai_chats.deleted_at IS NULL
+		`).
+		Where(`
+			ai_chat_messages.chat_id = ? 
+			AND ai_chats.user_id = ?
+			AND ai_chat_messages.deleted_at IS NULL
+		`, chatID, userID).
+		Order("ai_chat_messages.created_at DESC, ai_chat_messages.id DESC").
 		Limit(limit).
-		Order("ai_chat_messages.created_at DESC").
 		Find(&gormMessages).
 		Error
 	if err != nil {
 		return nil, errhandlers.DBErrHandler(err)
+	}
+
+	for i, j := 0, len(gormMessages)-1; i < j; i, j = i+1, j-1 {
+		gormMessages[i], gormMessages[j] = gormMessages[j], gormMessages[i]
 	}
 
 	messages := gormMappers.GormAIChatMessagesToDomainModel(gormMessages)
