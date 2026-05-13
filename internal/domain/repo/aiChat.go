@@ -17,4 +17,8 @@ type AIChatMessageRepo interface {
 	Create(ctx context.Context, message models.AiChatMessage) (*models.AiChatMessage, error)
 	Delete(ctx context.Context, userID uint, id uint) error
 	GetByChatID(ctx context.Context, userID uint, chatID uint) ([]models.AiChatMessage, error)
+	GetRecentByChatID(ctx context.Context, userID uint, chatID uint, limit int) ([]models.AiChatMessage, error)
+}
+type AIProvider interface {
+	GenerateReply(ctx context.Context, messages []models.AiChatMessage) (string, error)
 }

@@ -9,7 +9,7 @@ func AIChatToGormModel(chat models.AIChat) gormModels.AIChat {
 	return gormModels.AIChat{
 		Name:     chat.Name,
 		UserID:   chat.UserID,
-		Messages: AIChatMessagesToGormModel(chat.Message),
+		Messages: AIChatMessagesToGormModel(chat.Messages),
 	}
 }
 
@@ -31,7 +31,7 @@ func AIChatMessageToGormModel(message models.AiChatMessage) gormModels.AIChatMes
 	return gormModels.AIChatMessage{
 		ChatID:     message.ChatID,
 		Message:    message.Message,
-		SenderType: message.SenderType,
+		SenderType: string(message.SenderType),
 		UserID:     message.UserID,
 	}
 }
@@ -52,10 +52,12 @@ func AIChatMessagesToGormModel(messages []models.AiChatMessage) []gormModels.AIC
 
 func GormAIChatToDomainModel(chat gormModels.AIChat) models.AIChat {
 	return models.AIChat{
-		ID:      chat.ID,
-		Name:    chat.Name,
-		UserID:  chat.UserID,
-		Message: GormAIChatMessagesToDomainModel(chat.Messages),
+		ID:        chat.ID,
+		Name:      chat.Name,
+		UserID:    chat.UserID,
+		Messages:  GormAIChatMessagesToDomainModel(chat.Messages),
+		CreatedAt: chat.CreatedAt,
+		UpdatedAt: chat.UpdatedAt,
 	}
 }
 
@@ -78,9 +80,10 @@ func GormAIChatMessageToDomainModel(message gormModels.AIChatMessage) models.AiC
 		ID:         message.ID,
 		ChatID:     message.ChatID,
 		Message:    message.Message,
-		SenderType: message.SenderType,
+		SenderType: models.SenderType(message.SenderType),
 		UserID:     message.UserID,
 		User:       GormUserPtrToDomainModel(message.User),
+		CreatedAt:  message.CreatedAt,
 	}
 }
 

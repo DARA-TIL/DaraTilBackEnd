@@ -5,6 +5,7 @@ import (
 	"DaraTilBackendV2/internal/application/usecases/achievementUC"
 	"DaraTilBackendV2/internal/application/usecases/achievementUC/userAchievementUC"
 	"DaraTilBackendV2/internal/application/usecases/actionRuleUC"
+	"DaraTilBackendV2/internal/application/usecases/aiChatUC"
 	"DaraTilBackendV2/internal/application/usecases/assistantUC"
 	"DaraTilBackendV2/internal/application/usecases/dictionaryUC"
 	"DaraTilBackendV2/internal/application/usecases/folkloreUC"
@@ -31,6 +32,7 @@ import (
 	"DaraTilBackendV2/internal/infrastructure/scheduler"
 	"DaraTilBackendV2/internal/presentation/http/service/achievement"
 	"DaraTilBackendV2/internal/presentation/http/service/actionRule"
+	"DaraTilBackendV2/internal/presentation/http/service/aiChat"
 	"DaraTilBackendV2/internal/presentation/http/service/assistant"
 	"DaraTilBackendV2/internal/presentation/http/service/dictionary"
 	"DaraTilBackendV2/internal/presentation/http/service/folklore"
@@ -44,31 +46,34 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/service/user"
 	"DaraTilBackendV2/internal/presentation/http/service/userActivity"
 	"DaraTilBackendV2/internal/presentation/http/service/userProfile"
-	"DaraTilBackendV2/internal/presentation/http/service/ws"
+	"DaraTilBackendV2/internal/presentation/http/service/wsAiChat"
+	"DaraTilBackendV2/internal/presentation/http/service/wsNotification"
 )
 
 type Container struct {
-	UserHandler                 *user.UserHandler
-	JwtHandler                  *jwt.JwtTokenHandler
-	FolkloreHandler             *folklore.FolkloreHandler
-	LessonHandler               *lesson.LessonHandler
-	TestHandler                 *test.TestHandler
-	UserActivityHandler         *userActivity.UserActivityHandler
-	RegionHandler               *region.RegionHandler
-	RegionTraditionHandler      *region.RegionTraditionHandler
-	RegionSlangHandler          *region.RegionSlangHandler
-	AchievementHandler          *achievement.AchievementHandler
-	UserAchievementHandler      *achievement.UserAchievementHandler
-	ActionRuleHandler           *actionRule.ActionRuleHandler
-	WebSocketHandler            *ws.WebSocketManager
-	Assistant                   *assistant.Assistant
-	UserProfileHandler          *userProfile.UserProfileHandler
-	DictionaryHandler           *dictionary.DictionaryHandler
-	LeaderboardHandler          *leaderboard.LeaderboardHandler
-	TimeEventHandler            *timeEvent.TimeEventHandler
-	TimeEventParticipantHandler *timeEvent.TimeEventParticipantHandler
-	NotificationHandler         *notification.NotificationHandler
-	CronScheduler               *scheduler.CronScheduler
+	UserHandler                  *user.UserHandler
+	JwtHandler                   *jwt.JwtTokenHandler
+	FolkloreHandler              *folklore.FolkloreHandler
+	LessonHandler                *lesson.LessonHandler
+	TestHandler                  *test.TestHandler
+	UserActivityHandler          *userActivity.UserActivityHandler
+	RegionHandler                *region.RegionHandler
+	RegionTraditionHandler       *region.RegionTraditionHandler
+	RegionSlangHandler           *region.RegionSlangHandler
+	AchievementHandler           *achievement.AchievementHandler
+	UserAchievementHandler       *achievement.UserAchievementHandler
+	ActionRuleHandler            *actionRule.ActionRuleHandler
+	NotificationWebSocketHandler *wsNotification.NotificationWebSocketManager
+	AiChatWebSocketHandler       *wsAiChat.WebSocketManager
+	Assistant                    *assistant.Assistant
+	UserProfileHandler           *userProfile.UserProfileHandler
+	DictionaryHandler            *dictionary.DictionaryHandler
+	LeaderboardHandler           *leaderboard.LeaderboardHandler
+	TimeEventHandler             *timeEvent.TimeEventHandler
+	TimeEventParticipantHandler  *timeEvent.TimeEventParticipantHandler
+	NotificationHandler          *notification.NotificationHandler
+	AIChatHandler                *aiChat.AiChatHandler
+	CronScheduler                *scheduler.CronScheduler
 }
 
 func NewContainer(cfg *config.Config) *Container {
@@ -100,6 +105,8 @@ func NewContainer(cfg *config.Config) *Container {
 	timeEventRepo := repository.NewTimeEventRepository(db)
 	timeEventParticipantRepo := repository.NewTimeEventParticipantRepository(db)
 	notificationRepo := repository.NewNotificationRepository(db)
+	aiChatRepo := repository.NewAIChatRepository(db)
+	aiChatMessageRepo := repository.NewAIChatMessageRepository(db)
 	//AI
 	geminiAI := gemini.NewGeminiAI(cfg)
 
@@ -283,7 +290,19 @@ func NewContainer(cfg *config.Config) *Container {
 	startWeeklyEventUC := timeEventUC.NewStartWeeklyEventUC(timeEventRepo, createNotificationUC)
 	//LeaderboardUCs
 	leaderboardUseCase := leaderboardUC.NewLeaderboardUC(leaderboardRepo)
+	//AIChatUC
+	aiChatCreateUC := aiChatUC.NewCreateUC(aiChatRepo)
+	aiChatDeleteUC := aiChatUC.NewDeleteUC(aiChatRepo)
+	aiChatGetAllUC := aiChatUC.NewGetAllUC(aiChatRepo)
+	aiChatGetByIDUC := aiChatUC.NewGetByIDUC(aiChatRepo)
+	aiChatUpdateUC := aiChatUC.NewUpdateUC(aiChatRepo)
 
+	aiChatGetMessagesUC := aiChatUC.NewGetMessagesUC(aiChatMessageRepo)
+	aiChatSendMessageUC := aiChatUC.NewSendMessageUC(
+		aiChatRepo,
+		aiChatMessageRepo,
+		geminiAI,
+	)
 	//Pub Subs
 	publisher.AddSubscribers(
 		increaseUserAchievementSub,
@@ -497,39 +516,50 @@ func NewContainer(cfg *config.Config) *Container {
 		deleteNotificationForUserUC,
 		deleteAllNotificationsForUserUC,
 	)
+	aiChatHandler := aiChat.NewAiChatHandler(
+		aiChatCreateUC,
+		aiChatGetAllUC,
+		aiChatGetByIDUC,
+		aiChatUpdateUC,
+		aiChatDeleteUC,
+		aiChatGetMessagesUC,
+	)
 	leaderboardHandler := leaderboard.NewLeaderboardHandler(leaderboardUseCase)
 
 	userActivityHandler := userActivity.NewUserActivityHandler(userActivityService)
-	wsHandler := ws.NewWebSocketManager(cfg)
+	notifWsHandler := wsNotification.NewWebSocketManager(cfg)
+	aiChatWsHandler := wsAiChat.NewWebSocketManager(cfg, aiChatSendMessageUC)
 	streakService.AddSubscriber(createNotificationUC)
 	increaseUserAchievementSub.AddSubscriber(createNotificationUC)
 	finishTimeEventUC.AddSubscriber(createNotificationUC)
 	updateDueTimeEventsUC.AddSubscriber(createNotificationUC)
-	jwtHandler.AddSubscriber(wsHandler)
-	createNotificationUC.AddSubscriber(wsHandler)
+	jwtHandler.AddSubscriber(notifWsHandler)
+	createNotificationUC.AddSubscriber(notifWsHandler)
 
 	cronScheduler := scheduler.NewCronScheduler(updateDueTimeEventsUC, startWeeklyEventUC, streakService)
 	return &Container{
-		UserHandler:                 userHandler,
-		JwtHandler:                  jwtHandler,
-		FolkloreHandler:             folkloreHandler,
-		LessonHandler:               lessonHandler,
-		TestHandler:                 testHandler,
-		UserActivityHandler:         userActivityHandler,
-		RegionHandler:               regionHandler,
-		RegionSlangHandler:          regionSlangHandler,
-		RegionTraditionHandler:      regionTraditionHandler,
-		AchievementHandler:          achievementHandler,
-		UserAchievementHandler:      userAchievementHandler,
-		ActionRuleHandler:           actionRuleHandler,
-		WebSocketHandler:            wsHandler,
-		Assistant:                   assistantHandler,
-		UserProfileHandler:          userProfileHandler,
-		DictionaryHandler:           dictionaryHandler,
-		LeaderboardHandler:          leaderboardHandler,
-		TimeEventHandler:            timeEventHandler,
-		TimeEventParticipantHandler: timeEventParticipantHandler,
-		CronScheduler:               cronScheduler,
-		NotificationHandler:         notificationHandler,
+		UserHandler:                  userHandler,
+		JwtHandler:                   jwtHandler,
+		FolkloreHandler:              folkloreHandler,
+		LessonHandler:                lessonHandler,
+		TestHandler:                  testHandler,
+		UserActivityHandler:          userActivityHandler,
+		RegionHandler:                regionHandler,
+		RegionSlangHandler:           regionSlangHandler,
+		RegionTraditionHandler:       regionTraditionHandler,
+		AchievementHandler:           achievementHandler,
+		UserAchievementHandler:       userAchievementHandler,
+		ActionRuleHandler:            actionRuleHandler,
+		NotificationWebSocketHandler: notifWsHandler,
+		AiChatWebSocketHandler:       aiChatWsHandler,
+		Assistant:                    assistantHandler,
+		UserProfileHandler:           userProfileHandler,
+		DictionaryHandler:            dictionaryHandler,
+		LeaderboardHandler:           leaderboardHandler,
+		TimeEventHandler:             timeEventHandler,
+		TimeEventParticipantHandler:  timeEventParticipantHandler,
+		CronScheduler:                cronScheduler,
+		AIChatHandler:                aiChatHandler,
+		NotificationHandler:          notificationHandler,
 	}
 }

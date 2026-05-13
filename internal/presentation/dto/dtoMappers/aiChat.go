@@ -1,6 +1,7 @@
 package dtoMappers
 
 import (
+	"DaraTilBackendV2/internal/application/usecases/aiChatUC"
 	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/presentation/dto"
 )
@@ -12,16 +13,24 @@ func CreateAIChatRequestToDomainModel(req dto.CreateAIChatRequest, userID uint) 
 	}
 }
 
-func UpdateAIChatRequestToDomainName(req dto.UpdateAIChatRequest) string {
-	return req.Name
-}
-
 func AIChatToResponse(chat models.AIChat) dto.AIChatResponse {
+	messages := AIChatMessagesToResponse(chat.Messages)
+
+	var lastMessage *dto.AIChatMessageResponse
+
+	if len(chat.Messages) > 0 {
+		mapped := AIChatMessageToResponse(chat.Messages[0])
+		lastMessage = &mapped
+	}
+
 	return dto.AIChatResponse{
-		ID:       chat.ID,
-		Name:     chat.Name,
-		UserID:   chat.UserID,
-		Messages: AIChatMessagesToResponse(chat.Message),
+		ID:          chat.ID,
+		Name:        chat.Name,
+		UserID:      chat.UserID,
+		Messages:    messages,
+		LastMessage: lastMessage,
+		CreatedAt:   chat.CreatedAt,
+		UpdatedAt:   chat.UpdatedAt,
 	}
 }
 
@@ -39,31 +48,6 @@ func AIChatsToResponse(chats []models.AIChat) []dto.AIChatResponse {
 	return result
 }
 
-func CreateAIChatMessageRequestToDomainModel(
-	req dto.CreateAIChatMessageRequest,
-	userID uint,
-) models.AiChatMessage {
-	return models.AiChatMessage{
-		ChatID:     req.ChatID,
-		Message:    req.Message,
-		SenderType: req.SenderType,
-		UserID:     &userID,
-	}
-}
-
-func CreateAIChatMessageRequestToDomainModelWithChatID(
-	req dto.CreateAIChatMessageRequest,
-	userID uint,
-	chatID uint,
-) models.AiChatMessage {
-	return models.AiChatMessage{
-		ChatID:     chatID,
-		Message:    req.Message,
-		SenderType: req.SenderType,
-		UserID:     &userID,
-	}
-}
-
 func AIChatMessageToResponse(message models.AiChatMessage) dto.AIChatMessageResponse {
 	return dto.AIChatMessageResponse{
 		ID:         message.ID,
@@ -71,6 +55,7 @@ func AIChatMessageToResponse(message models.AiChatMessage) dto.AIChatMessageResp
 		Message:    message.Message,
 		SenderType: message.SenderType,
 		UserID:     message.UserID,
+		CreatedAt:  message.CreatedAt,
 	}
 }
 
@@ -101,5 +86,30 @@ func NewUserMessageDomainModel(chatID uint, userID uint, message string) models.
 		Message:    message,
 		SenderType: "user",
 		UserID:     &userID,
+	}
+}
+func SendMessageResultToResponse(
+	result *aiChatUC.SendMessageResult,
+) *dto.SendMessageResponse {
+	if result == nil {
+		return nil
+	}
+
+	return &dto.SendMessageResponse{
+		Chat:        AIChatToShortResponse(result.Chat),
+		UserMessage: AIChatMessageToResponse(*result.UserMessage),
+		AIMessage:   AIChatMessageToResponse(*result.AIMessage),
+	}
+}
+
+func AIChatToShortResponse(chat *models.AIChat) dto.AIChatShortResponse {
+	if chat == nil {
+		return dto.AIChatShortResponse{}
+	}
+
+	return dto.AIChatShortResponse{
+		ID:     chat.ID,
+		Name:   chat.Name,
+		UserID: chat.UserID,
 	}
 }

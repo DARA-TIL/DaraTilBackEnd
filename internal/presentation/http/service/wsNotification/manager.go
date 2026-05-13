@@ -1,4 +1,4 @@
-package ws
+package wsNotification
 
 import (
 	"DaraTilBackendV2/internal/config"
@@ -17,14 +17,14 @@ import (
 	"go.uber.org/zap"
 )
 
-type WebSocketManager struct {
-	ClientList        map[uint]map[string]*Client //uint: userID; string: connID;
+type NotificationWebSocketManager struct {
+	ClientList        map[uint]map[string]*NotificationClient //uint: userID; string: connID;
 	MaxConnections    uint
 	websocketUpgrader *websocket.Upgrader
 	sync.RWMutex
 }
 
-func NewWebSocketManager(cfg *config.Config) *WebSocketManager {
+func NewWebSocketManager(cfg *config.Config) *NotificationWebSocketManager {
 	webSocketUpgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -44,14 +44,14 @@ func NewWebSocketManager(cfg *config.Config) *WebSocketManager {
 			return false
 		},
 	}
-	return &WebSocketManager{
-		ClientList:        make(map[uint]map[string]*Client),
+	return &NotificationWebSocketManager{
+		ClientList:        make(map[uint]map[string]*NotificationClient),
 		MaxConnections:    5,
 		websocketUpgrader: &webSocketUpgrader,
 	}
 }
 
-func (h *WebSocketManager) ServeWS(c *gin.Context) {
+func (h *NotificationWebSocketManager) ServeWS(c *gin.Context) {
 	logger.Info("New WS Connection")
 	userID, err := middleware.GetCurrentUserID(c)
 	if err != nil {
@@ -80,16 +80,16 @@ func (h *WebSocketManager) ServeWS(c *gin.Context) {
 	go client.ReadMessages()
 }
 
-func (h *WebSocketManager) AddClient(client *Client) {
+func (h *NotificationWebSocketManager) AddClient(client *NotificationClient) {
 	h.Lock()
 	defer h.Unlock()
 	if _, ok := h.ClientList[client.userID]; !ok {
-		h.ClientList[client.userID] = make(map[string]*Client)
+		h.ClientList[client.userID] = make(map[string]*NotificationClient)
 	}
 
 	h.ClientList[client.userID][client.connID] = client
 }
-func (h *WebSocketManager) RemoveClient(client *Client) {
+func (h *NotificationWebSocketManager) RemoveClient(client *NotificationClient) {
 	h.Lock()
 	defer h.Unlock()
 	if _, ok := h.ClientList[client.userID]; ok {
@@ -100,7 +100,7 @@ func (h *WebSocketManager) RemoveClient(client *Client) {
 	}
 }
 
-func (h *WebSocketManager) Handle(ctx context.Context, notif models.Notification) {
+func (h *NotificationWebSocketManager) Handle(ctx context.Context, notif models.Notification) {
 	h.RLock()
 	if notif.UserID == nil && notif.Scope == models.NotificationScopeGlobal {
 		h.SendToAllClients(notif)
@@ -112,7 +112,7 @@ func (h *WebSocketManager) Handle(ctx context.Context, notif models.Notification
 		logger.Error("user is not connected", zap.Uint("user_id", *notif.UserID))
 		return
 	}
-	clients := make([]*Client, 0, len(clientCons))
+	clients := make([]*NotificationClient, 0, len(clientCons))
 	for _, c := range clientCons {
 		clients = append(clients, c)
 	}
@@ -126,7 +126,7 @@ func (h *WebSocketManager) Handle(ctx context.Context, notif models.Notification
 
 }
 
-func (h *WebSocketManager) SendToClients(clients []*Client, notif models.Notification) {
+func (h *NotificationWebSocketManager) SendToClients(clients []*NotificationClient, notif models.Notification) {
 	for _, c := range clients {
 		select {
 		case c.egress <- notif:
@@ -138,13 +138,13 @@ func (h *WebSocketManager) SendToClients(clients []*Client, notif models.Notific
 		}
 	}
 }
-func (h *WebSocketManager) DisconnectClients(clients []*Client) {
+func (h *NotificationWebSocketManager) DisconnectClients(clients []*NotificationClient) {
 	for _, client := range clients {
 		client.Close()
 	}
 }
 
-func (h *WebSocketManager) SendToAllClients(notif models.Notification) {
+func (h *NotificationWebSocketManager) SendToAllClients(notif models.Notification) {
 	for _, clients := range h.ClientList {
 		for _, client := range clients {
 			select {

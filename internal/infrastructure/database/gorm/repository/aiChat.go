@@ -66,11 +66,48 @@ func (r *AIChatRepository) GetAll(ctx context.Context, userID uint) ([]models.AI
 
 	err := r.db.WithContext(ctx).
 		Where("user_id = ?", userID).
-		Order("created_at DESC").
+		Order("created_at DESC, id DESC").
 		Find(&gormChats).
 		Error
 	if err != nil {
 		return nil, errhandlers.DBErrHandler(err)
+	}
+
+	if len(gormChats) == 0 {
+		return []models.AIChat{}, nil
+	}
+
+	chatIDs := make([]uint, 0, len(gormChats))
+	for _, chat := range gormChats {
+		chatIDs = append(chatIDs, chat.ID)
+	}
+
+	var lastMessages []gormModels.AIChatMessage
+
+	err = r.db.WithContext(ctx).
+		Raw(`
+			SELECT DISTINCT ON (chat_id) *
+			FROM ai_chat_messages
+			WHERE chat_id IN ?
+			  AND deleted_at IS NULL
+			ORDER BY chat_id, created_at DESC, id DESC
+		`, chatIDs).
+		Scan(&lastMessages).
+		Error
+	if err != nil {
+		return nil, errhandlers.DBErrHandler(err)
+	}
+
+	lastMessageByChatID := make(map[uint]gormModels.AIChatMessage)
+
+	for _, message := range lastMessages {
+		lastMessageByChatID[message.ChatID] = message
+	}
+
+	for i := range gormChats {
+		if message, ok := lastMessageByChatID[gormChats[i].ID]; ok {
+			gormChats[i].Messages = []gormModels.AIChatMessage{message}
+		}
 	}
 
 	chats := gormMappers.GormAIChatsToDomainModel(gormChats)
@@ -117,6 +154,7 @@ func (r *AIChatRepository) Delete(ctx context.Context, userID uint, id uint) err
 
 	res := r.db.WithContext(ctx).
 		Where("id = ? AND user_id = ?", id, userID).
+		Unscoped().
 		Delete(&gormModels.AIChat{})
 
 	if res.Error != nil {

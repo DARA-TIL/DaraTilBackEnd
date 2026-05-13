@@ -738,6 +738,377 @@
                 }
             }
         },
+        "/ai-chat": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all AI chats of current authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI Chat"
+                ],
+                "summary": "Get all AI chats",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.AIChatResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new AI chat for current authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI Chat"
+                ],
+                "summary": "Create AI chat",
+                "parameters": [
+                    {
+                        "description": "AI chat create request",
+                        "name": "chatReq",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateAIChatRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AIChatResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update AI chat name. User can update only own chats",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI Chat"
+                ],
+                "summary": "Update AI chat",
+                "parameters": [
+                    {
+                        "description": "AI chat update request",
+                        "name": "chatReq",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateAIChatRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AIChatResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/ai-chat/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get one AI chat with messages by chat ID. User can access only own chats",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI Chat"
+                ],
+                "summary": "Get AI chat by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "AI chat ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AIChatResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete AI chat by ID. User can delete only own chats",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI Chat"
+                ],
+                "summary": "Delete AI chat",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "AI chat ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/ai-chat/{id}/messages": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all messages of one AI chat. User can access only own chat messages",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI Chat"
+                ],
+                "summary": "Get AI chat messages",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "AI chat ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.AIChatMessageResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/assistant/explainWord": {
             "post": {
                 "security": [
@@ -7645,6 +8016,58 @@
         }
     },
     "definitions": {
+        "dto.AIChatMessageResponse": {
+            "type": "object",
+            "properties": {
+                "chatId": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "senderType": {
+                    "$ref": "#/definitions/models.SenderType"
+                },
+                "userId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.AIChatResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lastMessage": {
+                    "$ref": "#/definitions/dto.AIChatMessageResponse"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.AIChatMessageResponse"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.Achievement": {
             "type": "object",
             "properties": {
@@ -7689,6 +8112,17 @@
                     "additionalProperties": {
                         "type": "boolean"
                     }
+                }
+            }
+        },
+        "dto.CreateAIChatRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
                 }
             }
         },
@@ -8519,6 +8953,21 @@
                 }
             }
         },
+        "dto.UpdateAIChatRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "name"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.UpdateLesson": {
             "type": "object",
             "properties": {
@@ -9004,6 +9453,19 @@
                 "NotificationTypeStreak",
                 "NotificationTypeReward",
                 "NotifLogOut"
+            ]
+        },
+        "models.SenderType": {
+            "type": "string",
+            "enum": [
+                "user",
+                "assistant",
+                "system"
+            ],
+            "x-enum-varnames": [
+                "SenderTypeUser",
+                "SenderTypeAssistant",
+                "SenderTypeSystem"
             ]
         },
         "models.TimeEventStatus": {

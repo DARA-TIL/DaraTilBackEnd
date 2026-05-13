@@ -1,4 +1,4 @@
-package ws
+package wsNotification
 
 import (
 	"DaraTilBackendV2/internal/domain/models"
@@ -26,17 +26,17 @@ const (
 	maxMessageSize = 512
 )
 
-type Client struct {
+type NotificationClient struct {
 	conn    *websocket.Conn
-	handler *WebSocketManager
+	handler *NotificationWebSocketManager
 	userID  uint
 	connID  string
 	egress  chan models.Notification
 	once    sync.Once
 }
 
-func NewClient(conn *websocket.Conn, handler *WebSocketManager, userID uint) *Client {
-	return &Client{
+func NewClient(conn *websocket.Conn, handler *NotificationWebSocketManager, userID uint) *NotificationClient {
+	return &NotificationClient{
 		conn:    conn,
 		handler: handler,
 		userID:  userID,
@@ -45,7 +45,7 @@ func NewClient(conn *websocket.Conn, handler *WebSocketManager, userID uint) *Cl
 	}
 }
 
-func (c *Client) WriteMessages() {
+func (c *NotificationClient) WriteMessages() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
@@ -73,7 +73,7 @@ func (c *Client) WriteMessages() {
 	}
 }
 
-func (c *Client) ReadMessages() {
+func (c *NotificationClient) ReadMessages() {
 	defer func() {
 		c.Close()
 	}()
@@ -94,7 +94,7 @@ func (c *Client) ReadMessages() {
 	}
 }
 
-func (c *Client) Close() {
+func (c *NotificationClient) Close() {
 	c.once.Do(func() {
 		c.handler.RemoveClient(c)
 		_ = c.conn.Close()

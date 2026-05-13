@@ -1,5 +1,39 @@
 basePath: /api
 definitions:
+  dto.AIChatMessageResponse:
+    properties:
+      chatId:
+        type: integer
+      createdAt:
+        type: string
+      id:
+        type: integer
+      message:
+        type: string
+      senderType:
+        $ref: '#/definitions/models.SenderType'
+      userId:
+        type: integer
+    type: object
+  dto.AIChatResponse:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: integer
+      lastMessage:
+        $ref: '#/definitions/dto.AIChatMessageResponse'
+      messages:
+        items:
+          $ref: '#/definitions/dto.AIChatMessageResponse'
+        type: array
+      name:
+        type: string
+      updatedAt:
+        type: string
+      userId:
+        type: integer
+    type: object
   dto.Achievement:
     properties:
       action:
@@ -30,6 +64,13 @@ definitions:
     required:
     - action
     - rules
+    type: object
+  dto.CreateAIChatRequest:
+    properties:
+      name:
+        type: string
+    required:
+    - name
     type: object
   dto.CreateNotificationRequest:
     properties:
@@ -573,6 +614,16 @@ definitions:
       type:
         type: string
     type: object
+  dto.UpdateAIChatRequest:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    required:
+    - id
+    - name
+    type: object
   dto.UpdateLesson:
     properties:
       author:
@@ -903,6 +954,16 @@ definitions:
     - NotificationTypeStreak
     - NotificationTypeReward
     - NotifLogOut
+  models.SenderType:
+    enum:
+    - user
+    - assistant
+    - system
+    type: string
+    x-enum-varnames:
+    - SenderTypeUser
+    - SenderTypeAssistant
+    - SenderTypeSystem
   models.TimeEventStatus:
     enum:
     - started
@@ -1410,6 +1471,253 @@ paths:
       summary: Get User Activities
       tags:
       - Activity
+  /ai-chat:
+    get:
+      consumes:
+      - application/json
+      description: Get all AI chats of current authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.AIChatResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all AI chats
+      tags:
+      - AI Chat
+    patch:
+      consumes:
+      - application/json
+      description: Update AI chat name. User can update only own chats
+      parameters:
+      - description: AI chat update request
+        in: body
+        name: chatReq
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAIChatRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AIChatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update AI chat
+      tags:
+      - AI Chat
+    post:
+      consumes:
+      - application/json
+      description: Create a new AI chat for current authenticated user
+      parameters:
+      - description: AI chat create request
+        in: body
+        name: chatReq
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAIChatRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.AIChatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create AI chat
+      tags:
+      - AI Chat
+  /ai-chat/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete AI chat by ID. User can delete only own chats
+      parameters:
+      - description: AI chat ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete AI chat
+      tags:
+      - AI Chat
+    get:
+      consumes:
+      - application/json
+      description: Get one AI chat with messages by chat ID. User can access only
+        own chats
+      parameters:
+      - description: AI chat ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AIChatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get AI chat by ID
+      tags:
+      - AI Chat
+  /ai-chat/{id}/messages:
+    get:
+      consumes:
+      - application/json
+      description: Get all messages of one AI chat. User can access only own chat
+        messages
+      parameters:
+      - description: AI chat ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.AIChatMessageResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get AI chat messages
+      tags:
+      - AI Chat
   /assistant/explainWord:
     post:
       consumes:

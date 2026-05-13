@@ -91,3 +91,25 @@ func (r *AIChatMessageRepository) Delete(ctx context.Context, userID uint, id ui
 
 	return nil
 }
+func (r *AIChatMessageRepository) GetRecentByChatID(ctx context.Context, userID uint, chatID uint, limit int) ([]models.AiChatMessage, error) {
+	if userID == 0 || chatID == 0 {
+		return nil, errs.ErrInvalidInput
+	}
+
+	var gormMessages []gormModels.AIChatMessage
+
+	err := r.db.WithContext(ctx).
+		Model(&gormModels.AIChatMessage{}).
+		Joins("JOIN ai_chats ON ai_chats.id = ai_chat_messages.chat_id").
+		Where("ai_chat_messages.chat_id = ? AND ai_chats.user_id = ?", chatID, userID).
+		Limit(limit).
+		Order("ai_chat_messages.created_at DESC").
+		Find(&gormMessages).
+		Error
+	if err != nil {
+		return nil, errhandlers.DBErrHandler(err)
+	}
+
+	messages := gormMappers.GormAIChatMessagesToDomainModel(gormMessages)
+	return messages, nil
+}

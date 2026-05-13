@@ -60,3 +60,13 @@ const (
 	Waiting  TimeEventStatus = "waiting"
 	Canceled TimeEventStatus = "canceled"
 )
+
+type AiChatEventTypes string
+
+const (
+	EventSendMessage          = "ai_chat_send_message"
+	EventUserMessageSaved     = "ai_chat_user_message_saved"
+	EventAssistantTypingEnded = "ai_chat_assistant_typing_ended"
+	EventAssistantTyping      = "ai_chat_assistant_typing"
+	EventError                = "ai_chat_error"
+)

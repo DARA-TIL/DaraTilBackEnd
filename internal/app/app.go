@@ -8,6 +8,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/middleware"
 	"DaraTilBackendV2/internal/presentation/http/service/achievement"
 	"DaraTilBackendV2/internal/presentation/http/service/actionRule"
+	"DaraTilBackendV2/internal/presentation/http/service/aiChat"
 	"DaraTilBackendV2/internal/presentation/http/service/assistant"
 	"DaraTilBackendV2/internal/presentation/http/service/dictionary"
 	"DaraTilBackendV2/internal/presentation/http/service/folklore"
@@ -202,7 +203,13 @@ func (a *App) setupRoutes() {
 	notificationsRoute.Use(middleware.RateLimiter(generalLimiter))
 	notification.RegisterRoutes(notificationsRoute, a.container.NotificationHandler)
 
-	api.GET("/ws", middleware.AuthMiddleware(a.cfg), a.container.WebSocketHandler.ServeWS)
+	aiChatRoute := api.Group("/ai-chat")
+	aiChatRoute.Use(middleware.AuthMiddleware(a.cfg))
+	aiChatRoute.Use(middleware.RateLimiter(generalLimiter))
+	aiChat.RegisterRoutes(aiChatRoute, a.container.AIChatHandler)
+
+	api.GET("/ws/aiChat", middleware.AuthMiddleware(a.cfg), a.container.AiChatWebSocketHandler.ServeWS)
+	api.GET("/ws", middleware.AuthMiddleware(a.cfg), a.container.NotificationWebSocketHandler.ServeWS)
 	setupSwagger(a.router)
 
 }
