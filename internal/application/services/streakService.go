@@ -9,6 +9,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"go.uber.org/zap"
 )
@@ -78,9 +79,9 @@ func (s *StreakService) Handle(ctx context.Context, e Event) error {
 		logger.Error("Failed to get Streak", zap.Error(err))
 		return err
 	}
-	if streak.LastActivity.Equal(today) {
+	if sameDay(streak.LastActivity, today) {
 		return nil
-	} else if today.Equal(streak.LastActivity.AddDate(0, 0, 1)) {
+	} else if sameDay(streak.LastActivity.AddDate(0, 0, 1), today) {
 		logger.Info("Incrementing user streak", zap.Uint("user_id", e.UserID))
 		err = s.repo.Increment(ctx, e.UserID)
 		if err != nil {
@@ -90,6 +91,7 @@ func (s *StreakService) Handle(ctx context.Context, e Event) error {
 		str, err := s.repo.GetByUserID(ctx, e.UserID)
 		if err != nil {
 			logger.Error("Failed to get user streak", zap.Error(err))
+			return nil
 		}
 		notification := buildStreakNotification(e.UserID, str.CurrentStreak)
 
@@ -155,4 +157,9 @@ func buildStreakNotification(userID uint, streak int) models.Notification {
 		UserID:   &userID,
 		IsActive: true,
 	}
+}
+func sameDay(a, b time.Time) bool {
+	ay, am, ad := a.Date()
+	by, bm, bd := b.Date()
+	return ay == by && am == bm && ad == bd
 }

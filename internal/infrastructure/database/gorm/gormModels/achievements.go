@@ -14,7 +14,7 @@ type Achievement struct {
 	Quantity    uint
 	IconURL     string
 
-	UserAchievements []UserAchievement
+	UserAchievements []UserAchievement `gorm:"foreignKey:AchievementID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 type UserAchievement struct {

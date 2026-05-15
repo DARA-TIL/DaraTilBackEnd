@@ -15,7 +15,7 @@ type Lesson struct {
 	Reward        int           `gorm:"not null"`
 	RequiredLevel int           `gorm:"not null"`
 	Blocks        []LessonBlock `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Test          Test          `gorm:"constraint:OnUpdate:CASCADE;OnDelete:CASCADE;"`
+	Test          Test          `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 type LessonBlock struct {

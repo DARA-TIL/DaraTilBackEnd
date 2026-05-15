@@ -28,8 +28,8 @@ type RegionTranslation struct {
 type RegionSlang struct {
 	gorm.Model
 	RegionID     uint
-	Translations []RegionSlangTranslation
-	Region       Region `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Translations []RegionSlangTranslation `gorm:"foreignKey:RegionSlangID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Region       Region                   `gorm:"foreignKey:RegionID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 type RegionSlangTranslation struct {
 	gorm.Model
@@ -44,8 +44,8 @@ type RegionSlangTranslation struct {
 type RegionTraditions struct {
 	gorm.Model
 	RegionID     uint
-	Translations []RegionTraditionsTranslation
-	Region       Region `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Translations []RegionTraditionsTranslation `gorm:"foreignKey:RegionTraditionsID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Region       Region                        `gorm:"foreignKey:RegionID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 type RegionTraditionsTranslation struct {
 	gorm.Model

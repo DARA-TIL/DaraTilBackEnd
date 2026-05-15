@@ -1,122 +1,122 @@
 [
   {
-    "requiredLevel": 1,
-    "code": "abai",
-    "kind": "region",
-    "imageUrl": ""
-  },
-  {
-    "requiredLevel": 1,
+    "requiredLevel": 2,
     "code": "akmola",
     "kind": "region",
-    "imageUrl": ""
+    "imageUrl": "https://source.unsplash.com/1600x900/?burabay,kazakhstan,nature"
   },
   {
-    "requiredLevel": 1,
+    "requiredLevel": 2,
     "code": "aktobe",
     "kind": "region",
-    "imageUrl": ""
+    "imageUrl": "https://source.unsplash.com/1600x900/?aktobe,kazakhstan,steppe"
   },
   {
-    "requiredLevel": 1,
+    "requiredLevel": 3,
     "code": "almaty-region",
     "kind": "region",
-    "imageUrl": ""
-  },
-  {
-    "requiredLevel": 1,
-    "code": "atyrau",
-    "kind": "region",
-    "imageUrl": ""
-  },
-  {
-    "requiredLevel": 1,
-    "code": "east-kazakhstan",
-    "kind": "region",
-    "imageUrl": ""
-  },
-  {
-    "requiredLevel": 1,
-    "code": "zhambyl",
-    "kind": "region",
-    "imageUrl": ""
-  },
-  {
-    "requiredLevel": 1,
-    "code": "zhetisu",
-    "kind": "region",
-    "imageUrl": ""
-  },
-  {
-    "requiredLevel": 1,
-    "code": "west-kazakhstan",
-    "kind": "region",
-    "imageUrl": ""
-  },
-  {
-    "requiredLevel": 1,
-    "code": "karaganda",
-    "kind": "region",
-    "imageUrl": ""
-  },
-  {
-    "requiredLevel": 1,
-    "code": "kostanay",
-    "kind": "region",
-    "imageUrl": ""
-  },
-  {
-    "requiredLevel": 1,
-    "code": "kyzylorda",
-    "kind": "region",
-    "imageUrl": ""
-  },
-  {
-    "requiredLevel": 1,
-    "code": "mangystau",
-    "kind": "region",
-    "imageUrl": ""
-  },
-  {
-    "requiredLevel": 1,
-    "code": "pavlodar",
-    "kind": "region",
-    "imageUrl": ""
-  },
-  {
-    "requiredLevel": 1,
-    "code": "north-kazakhstan",
-    "kind": "region",
-    "imageUrl": ""
-  },
-  {
-    "requiredLevel": 1,
-    "code": "turkistan",
-    "kind": "region",
-    "imageUrl": ""
-  },
-  {
-    "requiredLevel": 1,
-    "code": "ulytau",
-    "kind": "region",
-    "imageUrl": ""
-  },
-  {
-    "requiredLevel": 1,
-    "code": "astana",
-    "kind": "city",
-    "imageUrl": ""
+    "imageUrl": "https://source.unsplash.com/1600x900/?charyn-canyon,kazakhstan"
   },
   {
     "requiredLevel": 1,
     "code": "almaty-city",
     "kind": "city",
-    "imageUrl": ""
+    "imageUrl": "https://source.unsplash.com/1600x900/?almaty,kazakhstan,mountains"
+  },
+  {
+    "requiredLevel": 2,
+    "code": "atyrau",
+    "kind": "region",
+    "imageUrl": "https://source.unsplash.com/1600x900/?atyrau,kazakhstan,caspian"
+  },
+  {
+    "requiredLevel": 4,
+    "code": "abai",
+    "kind": "region",
+    "imageUrl": "https://source.unsplash.com/1600x900/?semey,kazakhstan,steppe"
+  },
+  {
+    "requiredLevel": 3,
+    "code": "jambyl",
+    "kind": "region",
+    "imageUrl": "https://source.unsplash.com/1600x900/?taraz,kazakhstan,mausoleum"
+  },
+  {
+    "requiredLevel": 5,
+    "code": "ulytau",
+    "kind": "region",
+    "imageUrl": "https://source.unsplash.com/1600x900/?ulytau,kazakhstan,mountains"
+  },
+  {
+    "requiredLevel": 2,
+    "code": "kostanay",
+    "kind": "region",
+    "imageUrl": "https://source.unsplash.com/1600x900/?kostanay,kazakhstan,steppe"
+  },
+  {
+    "requiredLevel": 3,
+    "code": "kyzylorda",
+    "kind": "region",
+    "imageUrl": "https://source.unsplash.com/1600x900/?kyzylorda,kazakhstan,syrdarya"
+  },
+  {
+    "requiredLevel": 4,
+    "code": "mangystau",
+    "kind": "region",
+    "imageUrl": "https://source.unsplash.com/1600x900/?bozzhyra,kazakhstan,mangystau"
+  },
+  {
+    "requiredLevel": 2,
+    "code": "north-kazakhstan",
+    "kind": "region",
+    "imageUrl": "https://source.unsplash.com/1600x900/?petropavl,kazakhstan,nature"
   },
   {
     "requiredLevel": 1,
-    "code": "shymkent",
+    "code": "astana-city",
     "kind": "city",
-    "imageUrl": ""
+    "imageUrl": "https://source.unsplash.com/1600x900/?astana,kazakhstan,baiterek"
+  },
+  {
+    "requiredLevel": 2,
+    "code": "pavlodar",
+    "kind": "region",
+    "imageUrl": "https://source.unsplash.com/1600x900/?bayanaul,kazakhstan,nature"
+  },
+  {
+    "requiredLevel": 1,
+    "code": "shymkent-city",
+    "kind": "city",
+    "imageUrl": "https://source.unsplash.com/1600x900/?shymkent,kazakhstan"
+  },
+  {
+    "requiredLevel": 5,
+    "code": "turkestan",
+    "kind": "region",
+    "imageUrl": "https://source.unsplash.com/1600x900/?turkestan,kazakhstan,mausoleum"
+  },
+  {
+    "requiredLevel": 2,
+    "code": "west-kazakhstan",
+    "kind": "region",
+    "imageUrl": "https://source.unsplash.com/1600x900/?oral,kazakhstan,ural-river"
+  },
+  {
+    "requiredLevel": 2,
+    "code": "karaganda",
+    "kind": "region",
+    "imageUrl": "https://source.unsplash.com/1600x900/?karaganda,kazakhstan,steppe"
+  },
+  {
+    "requiredLevel": 4,
+    "code": "jetisu",
+    "kind": "region",
+    "imageUrl": "https://source.unsplash.com/1600x900/?jetisu,kazakhstan,mountains"
+  },
+  {
+    "requiredLevel": 4,
+    "code": "east-kazakhstan",
+    "kind": "region",
+    "imageUrl": "https://source.unsplash.com/1600x900/?altai,kazakhstan,mountains"
   }
 ]
