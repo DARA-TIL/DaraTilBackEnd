@@ -19,6 +19,7 @@ import (
 	"DaraTilBackendV2/internal/application/usecases/regionTraditionsUC/regionTraditionTranslationsUC"
 	"DaraTilBackendV2/internal/application/usecases/regionUC"
 	"DaraTilBackendV2/internal/application/usecases/regionUC/regionTranslationsUC"
+	"DaraTilBackendV2/internal/application/usecases/testSpeechUC"
 	"DaraTilBackendV2/internal/application/usecases/testUC"
 	"DaraTilBackendV2/internal/application/usecases/timeEventParticipantUC"
 	"DaraTilBackendV2/internal/application/usecases/timeEventUC"
@@ -41,6 +42,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
 	"DaraTilBackendV2/internal/presentation/http/service/notification"
 	"DaraTilBackendV2/internal/presentation/http/service/region"
+	"DaraTilBackendV2/internal/presentation/http/service/speechTest"
 	"DaraTilBackendV2/internal/presentation/http/service/test"
 	"DaraTilBackendV2/internal/presentation/http/service/timeEvent"
 	"DaraTilBackendV2/internal/presentation/http/service/user"
@@ -73,6 +75,8 @@ type Container struct {
 	TimeEventParticipantHandler  *timeEvent.TimeEventParticipantHandler
 	NotificationHandler          *notification.NotificationHandler
 	AIChatHandler                *aiChat.AiChatHandler
+	SpeechTestHandler            *speechTest.SpeechTestHandler
+	SpeechTestSessionHandler     *speechTest.SpeechTestSessionHandler
 	CronScheduler                *scheduler.CronScheduler
 }
 
@@ -105,6 +109,8 @@ func NewContainer(cfg *config.Config) *Container {
 	timeEventRepo := repository.NewTimeEventRepository(db)
 	timeEventParticipantRepo := repository.NewTimeEventParticipantRepository(db)
 	notificationRepo := repository.NewNotificationRepository(db)
+	speechTestRepo := repository.NewSpeechTestRepository(db)
+	speechTestSessionRepo := repository.NewSpeechTestSessionRepository(db)
 	aiChatRepo := repository.NewAIChatRepository(db)
 	aiChatMessageRepo := repository.NewAIChatMessageRepository(db)
 	//AI
@@ -298,11 +304,11 @@ func NewContainer(cfg *config.Config) *Container {
 	aiChatUpdateUC := aiChatUC.NewUpdateUC(aiChatRepo)
 
 	aiChatGetMessagesUC := aiChatUC.NewGetMessagesUC(aiChatMessageRepo)
-	aiChatSendMessageUC := aiChatUC.NewSendMessageUC(
-		aiChatRepo,
-		aiChatMessageRepo,
-		geminiAI,
-	)
+	aiChatSendMessageUC := aiChatUC.NewSendMessageUC(aiChatRepo, aiChatMessageRepo, geminiAI)
+
+	speechTestUC := testSpeechUC.NewTestSpeechUC(speechTestRepo)
+	speechTestSessionUC := testSpeechUC.NewTestSpeechSessionUC(speechTestRepo, speechTestSessionRepo, userRepo, geminiAI)
+
 	//Pub Subs
 	publisher.AddSubscribers(
 		increaseUserAchievementSub,
@@ -524,6 +530,8 @@ func NewContainer(cfg *config.Config) *Container {
 		aiChatDeleteUC,
 		aiChatGetMessagesUC,
 	)
+	testSpeechHandler := speechTest.NewSpeechTestHandler(speechTestUC)
+	testSpeechSessionHandler := speechTest.NewSpeechTestSessionHandler(speechTestSessionUC)
 	leaderboardHandler := leaderboard.NewLeaderboardHandler(leaderboardUseCase)
 
 	userActivityHandler := userActivity.NewUserActivityHandler(userActivityService)
@@ -560,6 +568,8 @@ func NewContainer(cfg *config.Config) *Container {
 		TimeEventParticipantHandler:  timeEventParticipantHandler,
 		CronScheduler:                cronScheduler,
 		AIChatHandler:                aiChatHandler,
+		SpeechTestHandler:            testSpeechHandler,
+		SpeechTestSessionHandler:     testSpeechSessionHandler,
 		NotificationHandler:          notificationHandler,
 	}
 }

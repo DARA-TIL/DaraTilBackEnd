@@ -65,6 +65,15 @@ definitions:
     - action
     - rules
     type: object
+  dto.CheckPronounceResponse:
+    properties:
+      ai_response:
+        type: string
+      is_correct:
+        type: boolean
+      test:
+        $ref: '#/definitions/dto.SpeechTestResponse'
+    type: object
   dto.CreateAIChatRequest:
     properties:
       name:
@@ -513,6 +522,92 @@ definitions:
     - email
     - password
     - username
+    type: object
+  dto.SpeechTestCreateRequest:
+    properties:
+      difficulty:
+        allOf:
+        - $ref: '#/definitions/models.SpeechDifficulty'
+        enum:
+        - easy
+        - medium
+        - hard
+      en_text:
+        type: string
+      kz_text:
+        type: string
+      ru_text:
+        type: string
+    required:
+    - difficulty
+    - en_text
+    - kz_text
+    - ru_text
+    type: object
+  dto.SpeechTestListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dto.SpeechTestResponse'
+        type: array
+      total:
+        type: integer
+    type: object
+  dto.SpeechTestResponse:
+    properties:
+      difficulty:
+        $ref: '#/definitions/models.SpeechDifficulty'
+      en_text:
+        type: string
+      id:
+        type: integer
+      kz_text:
+        type: string
+      ru_text:
+        type: string
+    type: object
+  dto.SpeechTestSessionResponse:
+    properties:
+      correct_count:
+        type: integer
+      id:
+        type: integer
+      is_ended:
+        type: boolean
+      speech_tests:
+        items:
+          $ref: '#/definitions/dto.SpeechTestResponse'
+        type: array
+      user_id:
+        type: integer
+    type: object
+  dto.SpeechTestSessionResultResponse:
+    properties:
+      reward:
+        type: integer
+      session:
+        $ref: '#/definitions/dto.SpeechTestSessionResponse'
+    type: object
+  dto.SpeechTestUpdateRequest:
+    properties:
+      difficulty:
+        allOf:
+        - $ref: '#/definitions/models.SpeechDifficulty'
+        enum:
+        - easy
+        - medium
+        - hard
+      en_text:
+        type: string
+      kz_text:
+        type: string
+      ru_text:
+        type: string
+    required:
+    - difficulty
+    - en_text
+    - kz_text
+    - ru_text
     type: object
   dto.Streak:
     properties:
@@ -964,6 +1059,16 @@ definitions:
     - SenderTypeUser
     - SenderTypeAssistant
     - SenderTypeSystem
+  models.SpeechDifficulty:
+    enum:
+    - hard
+    - easy
+    - medium
+    type: string
+    x-enum-varnames:
+    - SpeechDifficultyHard
+    - SpeechDifficultyEasy
+    - SpeechDifficultyMedium
   models.TimeEventStatus:
     enum:
     - started
@@ -4632,6 +4737,366 @@ paths:
       summary: Update region
       tags:
       - Region
+  /speech-test-session/check:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Check user's audio pronunciation for selected speech test
+      parameters:
+      - description: Speech test ID
+        in: formData
+        name: test_id
+        required: true
+        type: integer
+      - description: Audio file
+        in: formData
+        name: audio
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CheckPronounceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Check speech pronunciation
+      tags:
+      - Speech Test Session
+  /speech-test-session/end:
+    post:
+      consumes:
+      - application/json
+      description: End active speech test session and give reward to current authenticated
+        user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SpeechTestSessionResultResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: End speech test session
+      tags:
+      - Speech Test Session
+  /speech-test-session/next:
+    get:
+      consumes:
+      - application/json
+      description: Get random speech test that has not been used in current active
+        session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SpeechTestResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get next speech test
+      tags:
+      - Speech Test Session
+  /speech-test-session/start:
+    post:
+      consumes:
+      - application/json
+      description: Start a new speech test session or return active session for current
+        authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SpeechTestSessionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Start speech test session
+      tags:
+      - Speech Test Session
+  /speech-tests:
+    get:
+      consumes:
+      - application/json
+      description: Get all speech pronunciation tests
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SpeechTestListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all speech tests
+      tags:
+      - Speech Test
+    post:
+      consumes:
+      - application/json
+      description: Create a new speech pronunciation test
+      parameters:
+      - description: Speech test create request
+        in: body
+        name: testReq
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SpeechTestCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.SpeechTestResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create speech test
+      tags:
+      - Speech Test
+  /speech-tests/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete speech pronunciation test by ID
+      parameters:
+      - description: Speech test ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete speech test
+      tags:
+      - Speech Test
+    get:
+      consumes:
+      - application/json
+      description: Get one speech pronunciation test by ID
+      parameters:
+      - description: Speech test ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SpeechTestResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get speech test by ID
+      tags:
+      - Speech Test
+    put:
+      consumes:
+      - application/json
+      description: Update speech pronunciation test by ID
+      parameters:
+      - description: Speech test ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Speech test update request
+        in: body
+        name: testReq
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SpeechTestUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SpeechTestResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update speech test
+      tags:
+      - Speech Test
   /test/create:
     post:
       consumes:

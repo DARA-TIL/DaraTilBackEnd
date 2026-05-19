@@ -5513,6 +5513,546 @@ const docTemplate = `{
                 }
             }
         },
+        "/speech-test-session/check": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Check user's audio pronunciation for selected speech test",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Speech Test Session"
+                ],
+                "summary": "Check speech pronunciation",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Speech test ID",
+                        "name": "test_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Audio file",
+                        "name": "audio",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CheckPronounceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/speech-test-session/end": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "End active speech test session and give reward to current authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Speech Test Session"
+                ],
+                "summary": "End speech test session",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SpeechTestSessionResultResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/speech-test-session/next": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get random speech test that has not been used in current active session",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Speech Test Session"
+                ],
+                "summary": "Get next speech test",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SpeechTestResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/speech-test-session/start": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Start a new speech test session or return active session for current authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Speech Test Session"
+                ],
+                "summary": "Start speech test session",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SpeechTestSessionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/speech-tests": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all speech pronunciation tests",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Speech Test"
+                ],
+                "summary": "Get all speech tests",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SpeechTestListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new speech pronunciation test",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Speech Test"
+                ],
+                "summary": "Create speech test",
+                "parameters": [
+                    {
+                        "description": "Speech test create request",
+                        "name": "testReq",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SpeechTestCreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SpeechTestResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/speech-tests/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get one speech pronunciation test by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Speech Test"
+                ],
+                "summary": "Get speech test by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Speech test ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SpeechTestResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update speech pronunciation test by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Speech Test"
+                ],
+                "summary": "Update speech test",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Speech test ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Speech test update request",
+                        "name": "testReq",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SpeechTestUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SpeechTestResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete speech pronunciation test by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Speech Test"
+                ],
+                "summary": "Delete speech test",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Speech test ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/test/create": {
             "post": {
                 "security": [
@@ -8118,6 +8658,20 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CheckPronounceResponse": {
+            "type": "object",
+            "properties": {
+                "ai_response": {
+                    "type": "string"
+                },
+                "is_correct": {
+                    "type": "boolean"
+                },
+                "test": {
+                    "$ref": "#/definitions/dto.SpeechTestResponse"
+                }
+            }
+        },
         "dto.CreateAIChatRequest": {
             "type": "object",
             "required": [
@@ -8803,6 +9357,138 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.SpeechTestCreateRequest": {
+            "type": "object",
+            "required": [
+                "difficulty",
+                "en_text",
+                "kz_text",
+                "ru_text"
+            ],
+            "properties": {
+                "difficulty": {
+                    "enum": [
+                        "easy",
+                        "medium",
+                        "hard"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.SpeechDifficulty"
+                        }
+                    ]
+                },
+                "en_text": {
+                    "type": "string"
+                },
+                "kz_text": {
+                    "type": "string"
+                },
+                "ru_text": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SpeechTestListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.SpeechTestResponse"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.SpeechTestResponse": {
+            "type": "object",
+            "properties": {
+                "difficulty": {
+                    "$ref": "#/definitions/models.SpeechDifficulty"
+                },
+                "en_text": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "kz_text": {
+                    "type": "string"
+                },
+                "ru_text": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SpeechTestSessionResponse": {
+            "type": "object",
+            "properties": {
+                "correct_count": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_ended": {
+                    "type": "boolean"
+                },
+                "speech_tests": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.SpeechTestResponse"
+                    }
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.SpeechTestSessionResultResponse": {
+            "type": "object",
+            "properties": {
+                "reward": {
+                    "type": "integer"
+                },
+                "session": {
+                    "$ref": "#/definitions/dto.SpeechTestSessionResponse"
+                }
+            }
+        },
+        "dto.SpeechTestUpdateRequest": {
+            "type": "object",
+            "required": [
+                "difficulty",
+                "en_text",
+                "kz_text",
+                "ru_text"
+            ],
+            "properties": {
+                "difficulty": {
+                    "enum": [
+                        "easy",
+                        "medium",
+                        "hard"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.SpeechDifficulty"
+                        }
+                    ]
+                },
+                "en_text": {
+                    "type": "string"
+                },
+                "kz_text": {
+                    "type": "string"
+                },
+                "ru_text": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.Streak": {
             "type": "object",
             "properties": {
@@ -9469,6 +10155,19 @@ const docTemplate = `{
                 "SenderTypeUser",
                 "SenderTypeAssistant",
                 "SenderTypeSystem"
+            ]
+        },
+        "models.SpeechDifficulty": {
+            "type": "string",
+            "enum": [
+                "hard",
+                "easy",
+                "medium"
+            ],
+            "x-enum-varnames": [
+                "SpeechDifficultyHard",
+                "SpeechDifficultyEasy",
+                "SpeechDifficultyMedium"
             ]
         },
         "models.TimeEventStatus": {

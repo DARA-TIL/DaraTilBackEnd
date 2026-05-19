@@ -16,6 +16,7 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
 	"DaraTilBackendV2/internal/presentation/http/service/notification"
 	"DaraTilBackendV2/internal/presentation/http/service/region"
+	"DaraTilBackendV2/internal/presentation/http/service/speechTest"
 	"DaraTilBackendV2/internal/presentation/http/service/test"
 	"DaraTilBackendV2/internal/presentation/http/service/timeEvent"
 	"DaraTilBackendV2/internal/presentation/http/service/user"
@@ -207,6 +208,15 @@ func (a *App) setupRoutes() {
 	aiChatRoute.Use(middleware.AuthMiddleware(a.cfg))
 	aiChatRoute.Use(middleware.RateLimiter(generalLimiter))
 	aiChat.RegisterRoutes(aiChatRoute, a.container.AIChatHandler)
+	speechTestRoutes := api.Group("/speech-tests")
+	speechTestRoutes.Use(middleware.AuthMiddleware(a.cfg))
+	speechTestRoutes.Use(middleware.RateLimiter(generalLimiter))
+	speechTest.RegisterRoutes(speechTestRoutes, a.container.SpeechTestHandler)
+
+	speechSessionRoutes := api.Group("/speech-test-session")
+	speechSessionRoutes.Use(middleware.AuthMiddleware(a.cfg))
+	speechSessionRoutes.Use(middleware.RateLimiter(generalLimiter))
+	speechTest.RegisterSessionRoutes(speechSessionRoutes, a.container.SpeechTestSessionHandler)
 
 	api.GET("/ws/aiChat", middleware.AuthMiddleware(a.cfg), a.container.AiChatWebSocketHandler.ServeWS)
 	api.GET("/ws", middleware.AuthMiddleware(a.cfg), a.container.NotificationWebSocketHandler.ServeWS)

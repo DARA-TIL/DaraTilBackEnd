@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -309,6 +310,123 @@ Keep answers clear and concise. For corrections, show the corrected version firs
 
 	logger.Error("all Gemini models failed", zap.Error(lastErr))
 	return "", errs.ErrAi
+}
+
+type pronounceResponse struct {
+	IsCorrectPronounce bool   `json:"is_correct_pronounce"`
+	Explanation        string `json:"explanation"`
+}
+
+func (ai *AiGemini) IsCorrectPronounce(
+	ctx context.Context,
+	text string,
+	audio io.Reader,
+) (*models.AiPronounceResponse, error) {
+	audioBytes, err := io.ReadAll(audio)
+	if err != nil {
+		return nil, fmt.Errorf("read audio: %w", err)
+	}
+
+	if len(audioBytes) == 0 {
+		return nil, fmt.Errorf("audio is empty")
+	}
+
+	prompt := fmt.Sprintf(`
+You are a pronunciation checker for Kazakh language.
+
+Expected text:
+%s
+
+Listen to the audio and determine whether the user pronounced the expected text correctly.
+
+If the pronunciation is incorrect, explain the mistake clearly.
+If the pronunciation is correct, write a short motivating text in Kazakh.
+
+Return only valid JSON with this structure:
+{
+  "is_correct_pronounce": true,
+  "explanation": "..."
+}
+`, text)
+
+	answerConfig := &genai.GenerateContentConfig{
+		ResponseMIMEType: "application/json",
+		ResponseJsonSchema: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"is_correct_pronounce": map[string]any{
+					"type":        "boolean",
+					"description": "Whether the user's pronunciation is correct",
+				},
+				"explanation": map[string]any{
+					"type":        "string",
+					"description": "Explanation or motivating message",
+				},
+			},
+			"required": []string{
+				"is_correct_pronounce",
+				"explanation",
+			},
+		},
+	}
+
+	if len(geminiModels) == 0 {
+		return nil, fmt.Errorf("gemini models list is empty")
+	}
+
+	var lastErr error
+
+	for _, modelName := range geminiModels {
+		parts := []*genai.Part{
+			genai.NewPartFromText(prompt),
+			{
+				InlineData: &genai.Blob{
+					MIMEType: "audio/webm",
+					Data:     audioBytes,
+				},
+			},
+		}
+
+		contents := []*genai.Content{
+			genai.NewContentFromParts(parts, genai.RoleUser),
+		}
+
+		resp, err := ai.client.Models.GenerateContent(
+			ctx,
+			modelName,
+			contents,
+			answerConfig,
+		)
+		if err != nil {
+			lastErr = fmt.Errorf("model %s: %w", modelName, err)
+			continue
+		}
+
+		resultText := resp.Text()
+		if resultText == "" {
+			lastErr = fmt.Errorf("model %s returned empty response", modelName)
+			continue
+		}
+
+		var result pronounceResponse
+
+		if err := json.Unmarshal([]byte(resultText), &result); err != nil {
+			lastErr = fmt.Errorf(
+				"parse gemini response from model %s: %w, response: %s",
+				modelName,
+				err,
+				resultText,
+			)
+			continue
+		}
+
+		return &models.AiPronounceResponse{
+			IsCorrectPronounce: result.IsCorrectPronounce,
+			Explanation:        result.Explanation,
+		}, nil
+	}
+
+	return nil, lastErr
 }
 func isRateLimitError(err error) bool {
 	if err == nil {
