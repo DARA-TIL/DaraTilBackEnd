@@ -1,6 +1,7 @@
 package testSpeechUC
 
 import (
+	"DaraTilBackendV2/internal/application/usecases/subscriptionUC"
 	errs "DaraTilBackendV2/internal/domain/domErr"
 	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/domain/repo"
@@ -10,10 +11,11 @@ import (
 )
 
 type TestSpeechSessionUC struct {
-	testRepo         repo.SpeechTestRepo
-	sessionRepo      repo.SpeechTestSession
-	userRepo         repo.UserRepo
-	speechRecognizer repo.SpeechRecognizer
+	testRepo          repo.SpeechTestRepo
+	sessionRepo       repo.SpeechTestSession
+	userRepo          repo.UserRepo
+	speechRecognizer  repo.SpeechRecognizer
+	checkDailyUsageUC *subscriptionUC.CheckDailyActionLimitUC
 }
 
 func NewTestSpeechSessionUC(
@@ -21,12 +23,14 @@ func NewTestSpeechSessionUC(
 	sessionRepo repo.SpeechTestSession,
 	userRepo repo.UserRepo,
 	speechRecognizer repo.SpeechRecognizer,
+	checkDailyUsageUC *subscriptionUC.CheckDailyActionLimitUC,
 ) *TestSpeechSessionUC {
 	return &TestSpeechSessionUC{
-		testRepo:         testRepo,
-		sessionRepo:      sessionRepo,
-		userRepo:         userRepo,
-		speechRecognizer: speechRecognizer,
+		testRepo:          testRepo,
+		sessionRepo:       sessionRepo,
+		userRepo:          userRepo,
+		speechRecognizer:  speechRecognizer,
+		checkDailyUsageUC: checkDailyUsageUC,
 	}
 }
 
@@ -53,6 +57,9 @@ func (uc *TestSpeechSessionUC) StartSession(ctx context.Context, userID uint) (*
 }
 
 func (uc *TestSpeechSessionUC) GetNextTest(ctx context.Context, userID uint) (*models.SpeechTest, error) {
+	if err := uc.checkDailyUsageUC.Execute(ctx, userID, "speechTest"); err != nil {
+		return nil, err
+	}
 	_, err := uc.sessionRepo.GetActiveByUserID(ctx, userID)
 	if err != nil {
 		if errors.Is(err, errs.ErrNotFound) {

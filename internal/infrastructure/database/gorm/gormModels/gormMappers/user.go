@@ -27,6 +27,7 @@ func GormUserToDomain(user gormModels.User) models.User {
 		Streak:       GormStreakToDomain(user.Streak),
 		AuthProvider: user.AuthProvider,
 		Progress:     GormUserProgressToDomain(user.Progress),
+		Subscription: GormSubscriptionPtrToDomain(user.Subscription),
 	}
 }
 func GormUsersToDomain(users []gormModels.User) []models.User {

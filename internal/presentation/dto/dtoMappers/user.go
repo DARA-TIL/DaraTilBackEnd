@@ -45,6 +45,7 @@ func UserToDto(user models.User) dto.User {
 		AuthProvider: user.AuthProvider,
 		Progress:     UserProgressToDto(user.Progress),
 		Streak:       StreakToDTO(user.Streak),
+		Subscription: DomainSubscriptionPtrToDTO(user.Subscription),
 	}
 }
 

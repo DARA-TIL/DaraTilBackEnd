@@ -2,6 +2,7 @@ package assistantUC
 
 import (
 	"DaraTilBackendV2/internal/application/services"
+	"DaraTilBackendV2/internal/application/usecases/subscriptionUC"
 	"DaraTilBackendV2/internal/application/utils"
 	errs "DaraTilBackendV2/internal/domain/domErr"
 	"DaraTilBackendV2/internal/domain/models"
@@ -14,20 +15,26 @@ import (
 )
 
 type WordExplainUC struct {
-	dictionaryRepo repo.DictionaryRepo
-	explainer      repo.WordExplainer
-	publisher      services.Publisher
+	dictionaryRepo    repo.DictionaryRepo
+	explainer         repo.WordExplainer
+	publisher         services.Publisher
+	checkDailyUsageUC *subscriptionUC.CheckDailyActionLimitUC
 }
 
-func NewWordExplainUC(explainer repo.WordExplainer, publisher services.Publisher, dictionaryRepo repo.DictionaryRepo) *WordExplainUC {
+func NewWordExplainUC(explainer repo.WordExplainer, publisher services.Publisher, dictionaryRepo repo.DictionaryRepo, checkDailyUsageUC *subscriptionUC.CheckDailyActionLimitUC) *WordExplainUC {
 	return &WordExplainUC{
-		dictionaryRepo: dictionaryRepo,
-		explainer:      explainer,
-		publisher:      publisher,
+		dictionaryRepo:    dictionaryRepo,
+		explainer:         explainer,
+		publisher:         publisher,
+		checkDailyUsageUC: checkDailyUsageUC,
 	}
 }
 
 func (uc *WordExplainUC) Explain(ctx context.Context, req models.WordRequest, userID uint) (*models.WordExplainResult, error) {
+	err := uc.checkDailyUsageUC.Execute(ctx, userID, "explain")
+	if err != nil {
+		return nil, err
+	}
 	existingWord, dbErr := uc.dictionaryRepo.GetExactWord(ctx, req.Word, req.Block)
 	if dbErr != nil {
 		if !errors.Is(dbErr, errs.ErrNotFound) {

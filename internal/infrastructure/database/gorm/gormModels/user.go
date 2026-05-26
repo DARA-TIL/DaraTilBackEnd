@@ -10,11 +10,12 @@ type User struct {
 	Email        string `gorm:"unique; not null"`
 	Password     string `gorm:"not null"`
 	Avatar       string
-	Role         string       `gorm:"not null"`
-	AuthProvider string       `gorm:"not null"`
-	Streak       Streak       `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Progress     UserProgress `gorm:"constraint:OnDelete:CASCADE; OnUpdate:CASCADE;"`
-	Tokens       []Token      `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
+	Role         string        `gorm:"not null"`
+	AuthProvider string        `gorm:"not null"`
+	Streak       Streak        `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Progress     UserProgress  `gorm:"constraint:OnDelete:CASCADE; OnUpdate:CASCADE;"`
+	Tokens       []Token       `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
+	Subscription *Subscription `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 type UserProgress struct {

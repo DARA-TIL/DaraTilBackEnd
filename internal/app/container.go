@@ -12,13 +12,16 @@ import (
 	"DaraTilBackendV2/internal/application/usecases/jwtTokenUC"
 	"DaraTilBackendV2/internal/application/usecases/leaderboardUC"
 	"DaraTilBackendV2/internal/application/usecases/lessonUC"
+	"DaraTilBackendV2/internal/application/usecases/mockPaymentProviderUC"
 	"DaraTilBackendV2/internal/application/usecases/notificationUC"
+	"DaraTilBackendV2/internal/application/usecases/paymentUC"
 	"DaraTilBackendV2/internal/application/usecases/regionSlangUC"
 	"DaraTilBackendV2/internal/application/usecases/regionSlangUC/regionSlangTranslationsUC"
 	"DaraTilBackendV2/internal/application/usecases/regionTraditionsUC"
 	"DaraTilBackendV2/internal/application/usecases/regionTraditionsUC/regionTraditionTranslationsUC"
 	"DaraTilBackendV2/internal/application/usecases/regionUC"
 	"DaraTilBackendV2/internal/application/usecases/regionUC/regionTranslationsUC"
+	"DaraTilBackendV2/internal/application/usecases/subscriptionUC"
 	"DaraTilBackendV2/internal/application/usecases/testSpeechUC"
 	"DaraTilBackendV2/internal/application/usecases/testUC"
 	"DaraTilBackendV2/internal/application/usecases/timeEventParticipantUC"
@@ -41,8 +44,10 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/service/leaderboard"
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
 	"DaraTilBackendV2/internal/presentation/http/service/notification"
+	"DaraTilBackendV2/internal/presentation/http/service/payment"
 	"DaraTilBackendV2/internal/presentation/http/service/region"
 	"DaraTilBackendV2/internal/presentation/http/service/speechTest"
+	"DaraTilBackendV2/internal/presentation/http/service/subscription"
 	"DaraTilBackendV2/internal/presentation/http/service/test"
 	"DaraTilBackendV2/internal/presentation/http/service/timeEvent"
 	"DaraTilBackendV2/internal/presentation/http/service/user"
@@ -77,6 +82,9 @@ type Container struct {
 	AIChatHandler                *aiChat.AiChatHandler
 	SpeechTestHandler            *speechTest.SpeechTestHandler
 	SpeechTestSessionHandler     *speechTest.SpeechTestSessionHandler
+	SubscriptionHandler          *subscription.SubscriptionHandler
+	SubscriptionPlanHandler      *subscription.SubscriptionPlanHandler
+	PaymentHandler               *payment.PaymentHandler
 	CronScheduler                *scheduler.CronScheduler
 }
 
@@ -113,6 +121,10 @@ func NewContainer(cfg *config.Config) *Container {
 	speechTestSessionRepo := repository.NewSpeechTestSessionRepository(db)
 	aiChatRepo := repository.NewAIChatRepository(db)
 	aiChatMessageRepo := repository.NewAIChatMessageRepository(db)
+	subscriptionRepo := repository.NewSubscriptionRepository(db)
+	subscriptionPlanRepo := repository.NewSubscriptionPlanRepository(db)
+	dailyActionUsageRepo := repository.NewDailyActionUsageRepository(db)
+	paymentRepo := repository.NewPaymentRepository(db)
 	//AI
 	geminiAI := gemini.NewGeminiAI(cfg)
 
@@ -120,7 +132,11 @@ func NewContainer(cfg *config.Config) *Container {
 	streakService := services.NewStreakService(streakRepo)
 	userActivityService := services.NewUserActivityService(userActivityRepo)
 	publisher := services.NewActionPublisher(actionRuleRepo)
-
+	subscriptionService := services.NewSubscriptionService(
+		subscriptionRepo,
+		subscriptionPlanRepo,
+	)
+	mockPaymentProvider := mockPaymentProviderUC.NewMockPaymentProvider()
 	// ActionRuleUCS
 	createActionRuleUC := actionRuleUC.NewCreateUC(actionRuleRepo)
 	createMultiActionRuleUC := actionRuleUC.NewCreateMultiUC(actionRuleRepo)
@@ -187,8 +203,38 @@ func NewContainer(cfg *config.Config) *Container {
 	deleteFavoriteUC := dictionaryUC.NewDeleteFavoriteUC(dictionaryRepo)
 	getFavoriteWordsUC := dictionaryUC.NewGetFavoritesUC(dictionaryRepo)
 
+	//paymentUCs
+	createPaymentUC := paymentUC.NewCreatePaymentUC(
+		paymentRepo,
+		subscriptionPlanRepo,
+		mockPaymentProvider,
+	)
+
+	confirmPaymentUC := paymentUC.NewConfirmPaymentUC(
+		paymentRepo,
+		subscriptionService,
+	)
+
+	// SubscriptionUCs
+	createSubscriptionUC := subscriptionUC.NewCreateSubscriptionUC(subscriptionRepo, subscriptionPlanRepo)
+	updateSubscriptionUC := subscriptionUC.NewUpdateSubscriptionUC(subscriptionRepo, subscriptionPlanRepo)
+	deleteSubscriptionUC := subscriptionUC.NewDeleteSubscriptionUC(subscriptionRepo)
+	getSubscriptionByIDUC := subscriptionUC.NewGetSubscriptionByIDUC(subscriptionRepo)
+	getActiveSubscriptionByUserIDUC := subscriptionUC.NewGetActiveSubscriptionByUserIDUC(subscriptionRepo)
+	listSubscriptionsUC := subscriptionUC.NewListSubscriptionsUC(subscriptionRepo)
+	cancelSubscriptionUC := subscriptionUC.NewCancelSubscriptionUC(subscriptionRepo)
+	expireSubscriptionUC := subscriptionUC.NewExpireSubscriptionUC(subscriptionRepo)
+	checkDailyActionLimitUC := subscriptionUC.NewCheckDailyActionLimitUC(subscriptionRepo, dailyActionUsageRepo)
+
+	// SubscriptionPlanUCs
+	createSubscriptionPlanUC := subscriptionUC.NewCreateSubscriptionPlanUC(subscriptionPlanRepo)
+	updateSubscriptionPlanUC := subscriptionUC.NewUpdateSubscriptionPlanUC(subscriptionPlanRepo)
+	deleteSubscriptionPlanUC := subscriptionUC.NewDeleteSubscriptionPlanUC(subscriptionPlanRepo)
+	getSubscriptionPlanByIDUC := subscriptionUC.NewGetSubscriptionPlanByIDUC(subscriptionPlanRepo)
+	listSubscriptionPlansUC := subscriptionUC.NewListSubscriptionPlansUC(subscriptionPlanRepo)
+
 	//AssistantUCS
-	wordExplainUC := assistantUC.NewWordExplainUC(geminiAI, publisher, dictionaryRepo)
+	wordExplainUC := assistantUC.NewWordExplainUC(geminiAI, publisher, dictionaryRepo, checkDailyActionLimitUC)
 
 	//LessonUCS
 	createLessonUC := lessonUC.NewCreateUC(lessonRepo)
@@ -285,6 +331,7 @@ func NewContainer(cfg *config.Config) *Container {
 	getNotificationsUC := notificationUC.NewGetAllUC(notificationRepo)
 	deleteNotificationForUserUC := notificationUC.NewDeleteNotificationForUserUC(notificationRepo)
 	deleteAllNotificationsForUserUC := notificationUC.NewDeleteAllNotificationsForUserUC(notificationRepo)
+
 	//TimeEventUCs
 	createTimeEventUC := timeEventUC.NewCreateUC(timeEventRepo)
 	deleteTimeEventUC := timeEventUC.NewDeleteUC(timeEventRepo)
@@ -304,10 +351,10 @@ func NewContainer(cfg *config.Config) *Container {
 	aiChatUpdateUC := aiChatUC.NewUpdateUC(aiChatRepo)
 
 	aiChatGetMessagesUC := aiChatUC.NewGetMessagesUC(aiChatMessageRepo)
-	aiChatSendMessageUC := aiChatUC.NewSendMessageUC(aiChatRepo, aiChatMessageRepo, geminiAI)
+	aiChatSendMessageUC := aiChatUC.NewSendMessageUC(aiChatRepo, aiChatMessageRepo, geminiAI, checkDailyActionLimitUC)
 
 	speechTestUC := testSpeechUC.NewTestSpeechUC(speechTestRepo)
-	speechTestSessionUC := testSpeechUC.NewTestSpeechSessionUC(speechTestRepo, speechTestSessionRepo, userRepo, geminiAI)
+	speechTestSessionUC := testSpeechUC.NewTestSpeechSessionUC(speechTestRepo, speechTestSessionRepo, userRepo, geminiAI, checkDailyActionLimitUC)
 
 	//Pub Subs
 	publisher.AddSubscribers(
@@ -370,6 +417,10 @@ func NewContainer(cfg *config.Config) *Container {
 		getLikedFolkloreUC,
 		streakService,
 		cfg,
+	)
+	paymentHandler := payment.NewPaymentHandler(
+		createPaymentUC,
+		confirmPaymentUC,
 	)
 
 	folkloreHandler := folklore.NewFolkloreHandler(
@@ -530,6 +581,24 @@ func NewContainer(cfg *config.Config) *Container {
 		aiChatDeleteUC,
 		aiChatGetMessagesUC,
 	)
+	subscriptionHandler := subscription.NewSubscriptionHandler(
+		createSubscriptionUC,
+		updateSubscriptionUC,
+		deleteSubscriptionUC,
+		getSubscriptionByIDUC,
+		getActiveSubscriptionByUserIDUC,
+		listSubscriptionsUC,
+		cancelSubscriptionUC,
+		expireSubscriptionUC,
+	)
+
+	subscriptionPlanHandler := subscription.NewSubscriptionPlanHandler(
+		createSubscriptionPlanUC,
+		updateSubscriptionPlanUC,
+		deleteSubscriptionPlanUC,
+		getSubscriptionPlanByIDUC,
+		listSubscriptionPlansUC,
+	)
 	testSpeechHandler := speechTest.NewSpeechTestHandler(speechTestUC)
 	testSpeechSessionHandler := speechTest.NewSpeechTestSessionHandler(speechTestSessionUC)
 	leaderboardHandler := leaderboard.NewLeaderboardHandler(leaderboardUseCase)
@@ -571,5 +640,8 @@ func NewContainer(cfg *config.Config) *Container {
 		SpeechTestHandler:            testSpeechHandler,
 		SpeechTestSessionHandler:     testSpeechSessionHandler,
 		NotificationHandler:          notificationHandler,
+		SubscriptionHandler:          subscriptionHandler,
+		SubscriptionPlanHandler:      subscriptionPlanHandler,
+		PaymentHandler:               paymentHandler,
 	}
 }

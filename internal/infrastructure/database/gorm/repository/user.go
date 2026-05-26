@@ -7,6 +7,7 @@ import (
 	"DaraTilBackendV2/internal/infrastructure/database/gorm/gormModels/gormMappers"
 	"context"
 	"log"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -59,7 +60,10 @@ func (u *UserRepository) Create(ctx context.Context, user models.User) (*models.
 
 func (u *UserRepository) GetByEmail(ctx context.Context, email string) (*models.User, error) {
 	var userGorm gormModels.User
-	if err := u.db.WithContext(ctx).Preload("Progress").Preload("Streak").Where("email = ?", email).First(&userGorm).Error; err != nil {
+	if err := u.db.WithContext(ctx).Preload("Progress").
+		Preload("Streak").
+		Preload("Subscription", "active_until > ?", time.Now()).
+		Where("email = ?", email).First(&userGorm).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
 	user := gormMappers.GormUserToDomain(userGorm)
@@ -68,7 +72,7 @@ func (u *UserRepository) GetByEmail(ctx context.Context, email string) (*models.
 
 func (u *UserRepository) GetByID(ctx context.Context, id uint) (*models.User, error) {
 	var userGorm gormModels.User
-	if err := u.db.WithContext(ctx).Preload("Progress").Preload("Streak").Where("id = ?", id).First(&userGorm).Error; err != nil {
+	if err := u.db.WithContext(ctx).Preload("Progress").Preload("Streak").Preload("Subscription", "active_until > ?", time.Now()).Where("id = ?", id).First(&userGorm).Error; err != nil {
 		return nil, errhandlers.DBErrHandler(err)
 	}
 	user := gormMappers.GormUserToDomain(userGorm)

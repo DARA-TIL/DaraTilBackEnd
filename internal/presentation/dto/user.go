@@ -13,15 +13,16 @@ type LoginRequest struct {
 }
 
 type User struct {
-	ID           uint         `json:"id"`
-	Username     string       `json:"username"`
-	Email        string       `json:"email"`
-	Password     string       `json:"password"`
-	Avatar       string       `json:"avatar"`
-	Role         string       `json:"role"`
-	AuthProvider string       `json:"authProvider"`
-	Progress     UserProgress `json:"progress"`
-	Streak       Streak       `json:"streak"`
+	ID           uint                  `json:"id"`
+	Username     string                `json:"username"`
+	Email        string                `json:"email"`
+	Password     string                `json:"password"`
+	Avatar       string                `json:"avatar"`
+	Role         string                `json:"role"`
+	AuthProvider string                `json:"authProvider"`
+	Progress     UserProgress          `json:"progress"`
+	Streak       Streak                `json:"streak"`
+	Subscription *SubscriptionResponse `json:"subscription,omitempty"`
 }
 
 type UserProgress struct {

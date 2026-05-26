@@ -18,9 +18,10 @@ type UserClaims struct {
 }
 
 type CustomClaims struct {
-	UserID   uint   `json:"userId"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Role     string `json:"role"`
+	UserID    uint   `json:"userId"`
+	Username  string `json:"username"`
+	Email     string `json:"email"`
+	Role      string `json:"role"`
+	IsPremium bool   `json:"isPremium"`
 	jwt.RegisteredClaims
 }

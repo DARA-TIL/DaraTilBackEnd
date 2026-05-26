@@ -11,6 +11,7 @@ type User struct {
 	Streak       Streak
 	Progress     UserProgress
 	Tokens       []Token
+	Subscription *Subscription
 }
 
 type UserProgress struct {

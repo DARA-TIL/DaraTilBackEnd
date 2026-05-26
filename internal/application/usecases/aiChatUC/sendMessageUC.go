@@ -1,6 +1,7 @@
 package aiChatUC
 
 import (
+	"DaraTilBackendV2/internal/application/usecases/subscriptionUC"
 	errs "DaraTilBackendV2/internal/domain/domErr"
 	"DaraTilBackendV2/internal/domain/models"
 	"DaraTilBackendV2/internal/domain/repo"
@@ -21,20 +22,23 @@ type SendMessageResult struct {
 }
 
 type SendMessageUC struct {
-	repo        repo.AIChatRepo
-	messageRepo repo.AIChatMessageRepo
-	aiProvider  repo.AIProvider
+	repo              repo.AIChatRepo
+	messageRepo       repo.AIChatMessageRepo
+	aiProvider        repo.AIProvider
+	checkDailyUsageUC *subscriptionUC.CheckDailyActionLimitUC
 }
 
 func NewSendMessageUC(
 	repo repo.AIChatRepo,
 	messageRepo repo.AIChatMessageRepo,
 	aiProvider repo.AIProvider,
+	checkDailyUsageUC *subscriptionUC.CheckDailyActionLimitUC,
 ) *SendMessageUC {
 	return &SendMessageUC{
-		repo:        repo,
-		messageRepo: messageRepo,
-		aiProvider:  aiProvider,
+		repo:              repo,
+		messageRepo:       messageRepo,
+		aiProvider:        aiProvider,
+		checkDailyUsageUC: checkDailyUsageUC,
 	}
 }
 
@@ -42,7 +46,9 @@ func (uc *SendMessageUC) CreateChat(ctx context.Context, userID uint, id *uint, 
 	if userID == 0 {
 		return nil, errs.ErrInvalidInput
 	}
-
+	if err := uc.checkDailyUsageUC.Execute(ctx, userID, "aiChat"); err != nil {
+		return nil, err
+	}
 	text = strings.TrimSpace(text)
 	if text == "" {
 		return nil, errs.ErrInvalidInput

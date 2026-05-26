@@ -36,6 +36,8 @@ func HandleDomainError(c *gin.Context, err error) {
 		Fail(c, http.StatusUnauthorized, "unauthorized")
 	case errors.Is(err, errs.ErrForbidden):
 		Fail(c, http.StatusForbidden, "forbidden")
+	case errors.Is(err, errs.ErrLimitWithoutPremium):
+		Fail(c, http.StatusLocked, "premium required: free daily limit exceeded")
 	case errors.Is(err, errs.ErrNotFound):
 		Fail(c, http.StatusNotFound, "not found")
 	case errors.Is(err, errs.ErrConflict):

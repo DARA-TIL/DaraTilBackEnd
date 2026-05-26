@@ -15,8 +15,10 @@ import (
 	"DaraTilBackendV2/internal/presentation/http/service/leaderboard"
 	"DaraTilBackendV2/internal/presentation/http/service/lesson"
 	"DaraTilBackendV2/internal/presentation/http/service/notification"
+	"DaraTilBackendV2/internal/presentation/http/service/payment"
 	"DaraTilBackendV2/internal/presentation/http/service/region"
 	"DaraTilBackendV2/internal/presentation/http/service/speechTest"
+	"DaraTilBackendV2/internal/presentation/http/service/subscription"
 	"DaraTilBackendV2/internal/presentation/http/service/test"
 	"DaraTilBackendV2/internal/presentation/http/service/timeEvent"
 	"DaraTilBackendV2/internal/presentation/http/service/user"
@@ -217,6 +219,19 @@ func (a *App) setupRoutes() {
 	speechSessionRoutes.Use(middleware.AuthMiddleware(a.cfg))
 	speechSessionRoutes.Use(middleware.RateLimiter(generalLimiter))
 	speechTest.RegisterSessionRoutes(speechSessionRoutes, a.container.SpeechTestSessionHandler)
+
+	subscriptions := api.Group("/subscriptions")
+	subscriptions.Use(middleware.AuthMiddleware(a.cfg))
+	subscriptions.Use(middleware.RateLimiter(generalLimiter))
+	subscription.RegisterSubscriptionRoutes(subscriptions, a.container.SubscriptionHandler)
+
+	payments := api.Group("/payments")
+	payments.Use(middleware.AuthMiddleware(a.cfg))
+	payments.Use(middleware.RateLimiter(generalLimiter))
+	payment.RegisterPaymentRoutes(payments, a.container.PaymentHandler)
+	plans := api.Group("/subscription-plans")
+	plans.Use(middleware.AuthMiddleware(a.cfg))
+	subscription.RegisterSubscriptionPlanRoutes(plans, a.container.SubscriptionPlanHandler)
 
 	api.GET("/ws/aiChat", middleware.AuthMiddleware(a.cfg), a.container.AiChatWebSocketHandler.ServeWS)
 	api.GET("/ws", middleware.AuthMiddleware(a.cfg), a.container.NotificationWebSocketHandler.ServeWS)
